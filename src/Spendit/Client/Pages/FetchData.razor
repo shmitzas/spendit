@@ -1,0 +1,43 @@
+﻿@page "/fetchdata"
+@using Spendit.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+<table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Password</th>
+                <th>Email</th>
+                <th>Settings</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                @foreach(var user in _users)
+                {
+                    <td>@user.Id</td>
+                    <td>@user.Username</td>
+                    <td>@user.Password</td>
+                    <td>@user.Email</td>
+                    <td>@user.Settings</td>
+                }
+            </tr>
+        </tbody>
+    </table>
+}
+
+@code {
+    private User[] _users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _users = await Http.GetFromJsonAsync<User[]>("api/users");
+    }
+}
