@@ -7,5 +7,7 @@
         public string Password { get; set; }
         public string Email { get; set; }
         public string? Settings { get; set; }
+        public DateTime? createdDate { get; set; }
+        public DateTime? updatedDate { get; set; }
     }
 }

@@ -1,6 +1,9 @@
 ﻿@page "/fetchdata"
-@using Spendit.Shared.Models
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Spendit.Shared.Models;
+@using Spendit.Shared.Models.Users
 @inject HttpClient Http
+@attribute [Authorize] 
 
 <PageTitle>Weather forecast</PageTitle>
 
@@ -19,16 +22,16 @@
             </tr>
         </thead>
         <tbody>
-            <tr>
-                @foreach(var user in _users)
-                {
+            @foreach(var user in _users)
+            {
+                <tr>
                     <td>@user.Id</td>
                     <td>@user.Username</td>
                     <td>@user.Password</td>
                     <td>@user.Email</td>
                     <td>@user.Settings</td>
-                }
-            </tr>
+                </tr>
+            }
         </tbody>
     </table>
 }
@@ -36,8 +39,19 @@
 @code {
     private User[] _users;
 
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    _users = await Http.GetFromJsonAsync<User[]>("api/users");
+    //}
     protected override async Task OnInitializedAsync()
     {
-        _users = await Http.GetFromJsonAsync<User[]>("api/users");
+        try
+        {
+            _users = await Http.GetFromJsonAsync<User[]>("api/users");
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
     }
 }

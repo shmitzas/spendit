@@ -1,4 +1,4 @@
-﻿namespace Spendit.Shared.Models
+﻿namespace Spendit.Shared.Models.Users
 {
     public class NewUser
     {

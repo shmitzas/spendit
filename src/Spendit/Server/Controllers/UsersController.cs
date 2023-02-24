@@ -2,10 +2,12 @@
 using Microsoft.EntityFrameworkCore;
 using Spendit.Server.Data;
 using Spendit.Server.Models.Users;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Spendit.Server.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
     public class UsersController : Controller
     {
@@ -81,6 +83,12 @@ namespace Spendit.Server.Controllers
                 return Ok(User);
             }
             return NotFound();
+        }
+
+        public void SetupUser(User user)
+        {
+            _DbContext.Users.Add(user);
+            _DbContext.SaveChanges();
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace Spendit.Server.Models.Transactions
+﻿namespace Spendit.Shared.Models.Transactions
 {
     public class Transaction
     {

@@ -4,6 +4,8 @@
     {
         public int Id { get; set; }
         public int UserId { get; set; }
-        public int Name { get; set; }
+        public string Name { get; set; }
+        public DateTime? createdDate { get; set; }
+        public DateTime? updatedDate { get; set; }
     }
 }
