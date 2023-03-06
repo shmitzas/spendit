@@ -1,0 +1,21 @@
+﻿a {
+  text-decoration: none !important;
+}
+
+.navbar {
+  background-color: #EEE;
+}
+.navbar .nav-link a {
+  color: #272727;
+}
+.navbar .navbar-brand {
+  color: #272727;
+}
+
+.login a {
+  color: #0AB945;
+}
+
+.logout a {
+  color: #EEE;
+}

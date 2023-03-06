@@ -1,0 +1,32 @@
+﻿body {
+}
+
+$yellow: #FFE401;
+$dark-gray: #272727;
+$gray: #EEE;
+$red: #F22424;
+$green: #0AB945;
+
+a {
+    text-decoration: none !important;
+}
+
+.navbar {
+    background-color: $gray;
+
+    .nav-link a {
+        color: $dark-gray;
+    }
+
+    .navbar-brand {
+        color: $dark-gray;
+    }
+}
+
+.login a {
+    color: $green;
+}
+
+.logout a {
+    color: $gray;
+}
