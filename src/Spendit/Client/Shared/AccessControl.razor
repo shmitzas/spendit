@@ -8,11 +8,23 @@
 
 <AuthorizeView>
     <Authorized>
-        Hello, @context.User.Identity.Name!
-        <a href="#" @onclick="BeginSignOut">Log out</a>
+        <NavLink class="logout">
+            <button type="button" class="btn btn-outline-primary">
+                <a href="#" @onclick="BeginSignOut">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    Sign out
+                </a>
+            </button>
+        </NavLink>
     </Authorized>
     <NotAuthorized>
-        <a href="authentication/login">Log in</a>
+        <NavLink class="login">
+            <button type="button" class="btn btn-outline-success">
+                <a href="authentication/login">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    Sign in</a>
+            </button>
+        </NavLink>
     </NotAuthorized>
 </AuthorizeView>
 

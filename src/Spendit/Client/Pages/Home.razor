@@ -1,0 +1,65 @@
+﻿@page "/home"
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@using Spendit.Shared.Models.Users
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject HttpClient Http
+@inject IConfiguration Configuration
+@attribute [Authorize]
+
+<PageTitle>Home</PageTitle>
+
+<h1>Home page</h1>
+
+<p>Here you can see you widgets (transactions, budget progress, etc.)</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Email</th>
+            <th>Settings</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in _users)
+        {
+            <tr>
+                <td>@user.Id</td>
+                <td>@_clientId</td>
+                <td>@user.Password</td>
+                <td>@user.Email</td>
+                <td>@user.Settings</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private User[] _users;
+    private string _username;
+    private string _clientId;
+    //protected override async Task OnInitializedAsync()
+    //{
+    //    _users = await Http.GetFromJsonAsync<User[]>("api/users");
+    //}
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var _username = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
+            var _clientId = (string)Configuration["Auth0:ClientUsername"];
+            _users = await Http.GetFromJsonAsync<User[]>("api/users");
+            Console.WriteLine(_clientId + "| Username: " + _username);
+        }
+        catch (AccessTokenNotAvailableException exception)
+        {
+            exception.Redirect();
+        }
+    }
+}
