@@ -1,12 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
-using REST_API.Models.Users;
+using REST_API.Models.Transactions;
 
 namespace REST_API.Controllers
 {
     [ApiController]
-    [Route("api/transactions")]
+    [Route("api/[controller]")]
     public class TransactionsController : Controller
     {
         private readonly API_DbContext _DbContext;
@@ -16,69 +17,75 @@ namespace REST_API.Controllers
         }
 
         [HttpGet]
-        async public Task<IActionResult> GetAllTransactions()
+        [Route("{userId:int}")]
+        async public Task<IActionResult> GetAllTransactions([FromRoute] int userId)
         {
-            return Ok(_DbContext.Users.ToListAsync());
+            var result = await _DbContext.Transactions.Where(t => t.UserId == userId).ToListAsync();
+            return Ok(result);
         }
 
-        [HttpGet]
-        [Route("{id:int}")]
-        async public Task<IActionResult> GetTransaction([FromRoute] int id)
-        {
-            var User = _DbContext.Users.FindAsync(id);
 
-            if (User.Result != null)
+        [HttpGet]
+        [Route("{userId:int}/{id:int}")]
+        async public Task<IActionResult> GetTransaction([FromRoute] int userId, [FromRoute] int id)
+        {
+            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
+
+            if (Transaction != null)
             {
-                return Ok(User);
+                return Ok(Transaction);
             }
             return NotFound();
         }
 
         [HttpPost]
-        async public Task<IActionResult> AddTransaction(User UserInfo)
+        async public Task<IActionResult> AddTransaction(Transaction TransactionInfo)
         {
-            var User = new User()
+            var Transaction = new Transaction()
             {
-                Username = UserInfo.Username,
-                Password = UserInfo.Password,
-                Email = UserInfo.Email,
-                Settings = ""
+                UserId = TransactionInfo.UserId,
+                CategoryId = TransactionInfo.CategoryId,
+                Type = TransactionInfo.Type,
+                Amount = TransactionInfo.Amount,
+                Currency = TransactionInfo.Currency,
+                Description = TransactionInfo.Description
             };
-            await _DbContext.Users.AddAsync(User);
+            await _DbContext.Transactions.AddAsync(Transaction);
             await _DbContext.SaveChangesAsync();
-            return Ok(User);
+            return Ok(Transaction);
         }
 
         [HttpPut]
-        [Route("{id:int}")]
-        async public Task<IActionResult> UpdateTransaction([FromRoute] int id, UpdateUser UserInfo)
+        [Route("{userId:int}/{id:int}")]
+        async public Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction TransactionInfo)
         {
-            var User = _DbContext.Users.FindAsync(id).Result;
-
-            if (User != null)
+            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
+            if (Transaction != null)
             {
-                User.Password = UserInfo.Password;
-                User.Email = UserInfo.Email;
-                User.Settings = UserInfo.Settings;
+                Transaction.CategoryId = TransactionInfo.CategoryId;
+                Transaction.Type = TransactionInfo.Type;
+                Transaction.Amount = TransactionInfo.Amount;
+                Transaction.Currency = TransactionInfo.Currency;
+                Transaction.Description = TransactionInfo.Description;
 
                 await _DbContext.SaveChangesAsync();
-                return Ok(User);
+                return Ok(Transaction);
             }
             return NotFound();
         }
 
         [HttpDelete]
-        [Route("{id:int}")]
-        async public Task<IActionResult> DeleteTransaction([FromRoute] int id)
+        [Route("{userId:int}/{id:int}")]
+        async public Task<IActionResult> DeleteTransaction([FromRoute] int userId, [FromRoute] int id)
         {
-            var User = _DbContext.Users.FindAsync(id).Result;
+            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
 
-            if (User != null)
+            if (Transaction != null)
             {
-                _DbContext.Remove(User);
+                _DbContext.Remove(Transaction);
 
                 await _DbContext.SaveChangesAsync();
-                return Ok(User);
+                return Ok(Transaction);
             }
             return NotFound();
         }
