@@ -1,0 +1,51 @@
+﻿@page "/auth"
+@using WebApp.Auth
+@using WebApp.Services;
+@using WebApp.Models;
+@inject IJSRuntime js
+@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+@inject UsersService _users;
+
+<div class="container-sm">
+    <div class="row">
+        <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
+            <div class="mb-3 text-center">
+                <h3>LOGIN</h3>
+            </div>
+            <div class="mb-3">
+                <label>Username</label>
+                <input @bind="model.Username" class="form-control" placeholder="username" />
+            </div>
+            <div class="mb-3">
+                <label>Password</label>
+                <input @bind="model.Password" type="password" class="form-control" placeholder="password" />
+            </div>
+            <div class="mb-3 d-grid gap-2">
+                <label>Password</label>
+                <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private class Model
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
+    private Model model = new Model();
+    private async Task Authenticate()
+    {
+        var userId = await _users.SignIn(model.Username, model.Password); //TODO: Add password checking
+        var userAccount = await _users.GetUser(userId);
+        if (userAccount == null)
+        {
+            await js.InvokeVoidAsync("alert", "Username or Password is invalid!");
+        }
+        var authProvider = (AuthProvider)authStateProvider;
+        await authProvider.UpdateAuthState(new User { Username = userAccount.Username });
+        navManager.NavigateTo("/", true);
+    }
+}

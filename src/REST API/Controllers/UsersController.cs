@@ -6,7 +6,7 @@ using REST_API.Models.Users;
 namespace REST_API.Controllers
 {
     [ApiController]
-    [Route("api/users")]
+    [Route("api/[controller]")]
     public class UsersController : Controller
     {
         private readonly API_DbContext _DbContext;
@@ -29,7 +29,34 @@ namespace REST_API.Controllers
 
             if (User.Result != null)
             {
-                return Ok(User);
+                return Ok(User.Result);
+            }
+            return NotFound();
+        }
+        [HttpGet("user/{username}")]
+        async public Task<IActionResult> GetUserId(string username)
+        {
+            var User = _DbContext.Users.Where(u => u.Username == username).SingleAsync();
+
+            if (User.Result != null)
+            {
+                return Ok(User.Result);
+            }
+            return NotFound();
+        }
+
+        [HttpGet("auth/{credentials}")]
+        async public Task<IActionResult> SignUserIn(string credentials)
+        {
+            var cred = credentials.Split(" ");
+            var username = cred[0];
+            var password = cred[1];
+
+            var User = _DbContext.Users.Where(u => u.Username == username && u.Password == password).SingleAsync();
+
+            if (User.Result != null)
+            {
+                return Ok(User.Result);
             }
             return NotFound();
         }
