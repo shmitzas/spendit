@@ -17,7 +17,7 @@ namespace REST_API.Controllers
 
         [HttpGet]
         [Route("{userId:int}")]
-        async public Task<IActionResult> GetAllTransactions([FromRoute] int userId)
+        public async Task<IActionResult> GetAllTransactions([FromRoute] int userId)
         {
             var result = await _DbContext.Transactions.Where(t => t.UserId == userId).ToListAsync();
             return Ok(result);
@@ -26,7 +26,7 @@ namespace REST_API.Controllers
 
         [HttpGet]
         [Route("{userId:int}/{id:int}")]
-        async public Task<IActionResult> GetTransaction([FromRoute] int userId, [FromRoute] int id)
+        public async Task<IActionResult> GetTransaction([FromRoute] int userId, [FromRoute] int id)
         {
             var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
 
@@ -38,7 +38,7 @@ namespace REST_API.Controllers
         }
 
         [HttpPost]
-        async public Task<IActionResult> AddTransaction(Transaction TransactionInfo)
+        public async Task<IActionResult> AddTransaction(Transaction TransactionInfo)
         {
             var Transaction = new Transaction()
             {
@@ -56,7 +56,7 @@ namespace REST_API.Controllers
 
         [HttpPut]
         [Route("{userId:int}/{id:int}")]
-        async public Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction TransactionInfo)
+        public async Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction TransactionInfo)
         {
             var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
             if (Transaction != null)
@@ -75,7 +75,7 @@ namespace REST_API.Controllers
 
         [HttpDelete]
         [Route("{userId:int}/{id:int}")]
-        async public Task<IActionResult> DeleteTransaction([FromRoute] int userId, [FromRoute] int id)
+        public async Task<IActionResult> DeleteTransaction([FromRoute] int userId, [FromRoute] int id)
         {
             var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
 

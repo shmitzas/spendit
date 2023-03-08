@@ -7,72 +7,71 @@
 <PageTitle>Spendit - Transactions</PageTitle>
 <AuthorizeView>
     <Authorized>
-        <div class="container-sm">
-            <div class="row">
-                <div class="col-12 ms-5 me-5 mt-5 mb-5">
-                    <h2 class="text-center">Transaction manager</h2>
-                    @if (transaction != null)
-                    {
-                        <table class="table">
-                            <thead>
+        <div class="row">
+            <div class="col-12 mt-5 mb-5">
+                @if (transaction != null)
+                {
+                    <h2 class="text-center">Most recent transaction</h2>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">ID</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Ammount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row">@transaction.Id</th>
+                                <td>@transaction.Description</td>
+                                <td>@transaction.Amount @transaction.Currency</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                }
+                @if (transactions != null)
+                {
+                    <h2 class="text-center">Recent transactions</h2>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="w-70">Description</th>
+                                <th scope="col" class="w-10">Type</th>
+                                <th scope="col" class="w-20">Ammount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                            @foreach (var tr in transactions)
+                            {
                                 <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Ammount</th>
+                                    <td>@tr.Description</td>
+                                    <td>@tr.Type</td>
+                                    <td>@tr.Amount @tr.Currency</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">@transaction.Id</th>
-                                    <td>@transaction.Description</td>
-                                    <td>@transaction.Amount @transaction.Currency</td>
-                                </tr>
-
-                            </tbody>
-                        </table>
-                    }
-                    @if (transactions != null)
-                    {
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">ID</th>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Ammount</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-
-                                @foreach (var tr in transactions)
-                                {
-                                    <tr>
-                                        <th scope="row">@tr.Id</th>
-                                        <td>@tr.Description</td>
-                                        <td>@tr.Amount @tr.Currency</td>
-                                    </tr>
-                                }
+                            }
 
 
-                            </tbody>
-                        </table>
-                    }
-                    else
-                    {
-                        <ErrorBoundary>
-                            <div class="alert alert-danger d-flex align-items-center" role="alert">
-                                <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                                <div>
-                                    Something went wrong! Try refreshing the page or come back later!
-                                </div>
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <ErrorBoundary>
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill" /></svg>
+                            <div>
+                                Something went wrong! Try refreshing the page or come back later!
                             </div>
-                        </ErrorBoundary>
-                    }
-                </div>
+                        </div>
+                    </ErrorBoundary>
+                }
             </div>
         </div>
     </Authorized>
     <NotAuthorized>
-        <h2>Nieko nera, prisijunk :)</h2>
+        <UnauthorizedAccessRedirect />
     </NotAuthorized>
 </AuthorizeView>
 

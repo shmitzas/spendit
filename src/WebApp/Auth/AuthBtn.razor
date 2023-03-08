@@ -1,0 +1,24 @@
+﻿@inject AuthenticationStateProvider authStateProvider
+@inject NavigationManager navManager
+
+<AuthorizeView>
+    <Authorized>
+        <NavLink class="nav-link" href="/">
+            <button @onclick="Logout" type="button" class="btn btn-primary rounded-pill">Logout</button>
+        </NavLink>
+    </Authorized>
+    <NotAuthorized>
+        <NavLink class="nav-link" href="auth">
+            <button type="button" class="btn btn-success rounded-pill">Login</button>
+        </NavLink>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private async Task Logout()
+    {
+        var authProvider = (AuthProvider)authStateProvider;
+        await authProvider.UpdateAuthState(null);
+        navManager.NavigateTo("/", true);
+    }
+}

@@ -1,74 +1,104 @@
 ﻿@page "/settings"
+@using WebApp.Services;
+@using WebApp.Models;
+@using WebApp.Auth;
+@inject IJSRuntime js
+@inject UsersService _users;
+@attribute [Authorize]
 
 <PageTitle>Spendit - Settings</PageTitle>
 
-<div class="container-sm">
-    <div class="row">
-        <div class="col-12 ms-5 me-5 mt-5 mb-5">
-            <h2 class="text-center">Account settings</h2>
+<div class="row">
+    <div class="col-12 mt-5 mb-5">
+        <h2 class="text-center">Account settings</h2>
+        @if (_user == null || _CurrentCurrency == null || _Currencies == null)
+        {
+            <div class="text-center">Loading...</div>
+        }
+        else
+        {
             <form>
-                <div class="mb-3 row">
+                <div class="row mb-3">
                     <label for="staticEmail" class="col-sm-2 col-form-label">Username</label>
                     <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="User's Username">
+                        <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
                     </div>
                 </div>
-                <div class="mb-3 row">
+                <div class="row mb-3">
                     <label for="InputEmail" class="col-sm-2 col-form-label">Email address</label>
                     <div class="col-sm-10">
-                        <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" value="User Email">
+                        <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
                     </div>
                 </div>
-                <div class="mb-3 row">
+                <div class="row mb-3">
                     <label for="CurrentPassword" class="col-sm-2 col-form-label">Current password</label>
                     <div class="col-sm-10">
-                        <input type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
+                        <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
                     </div>
                 </div>
-                <div class="mb-3 row">
+                <div class="row mb-3">
                     <label for="NewPassword" class="col-sm-2 col-form-label">New password</label>
                     <div class="col-sm-10">
-                        <input type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
+                        <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
                     </div>
                 </div>
-                <div class="dropdown mb-3">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Currency
-                    </button>
-                    <ul class="dropdown-menu">
-                        @foreach (var currency in _Currencies)
-                        {
-                            if (_CurrentCurrency == currency)
-                            {
-                                <li><a class="dropdown-item active" href="settings" aria-current="true">@currency</a></li>
-                            }
-                            else
-                            {
-                                <li><a class="dropdown-item" href="settings">@currency</a></li>
-                            }
-                        }
-                    </ul>
+                <div class="row mb-3">
+                    <label for="dropdown" class="col-sm-2 col-form-label">Main currency</label>
+                    <div class="col-sm-10">
+                        <div class="dropdown">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                @_CurrentCurrency
+                            </button>
+                            <ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
+                                @foreach (var currency in _Currencies)
+                                {
+                                    if (_CurrentCurrency != currency)
+                                    {
+                                        <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <button type="submit" class="btn btn-primary">Save changes</button>
+                <button @onclick="OnSubmit" type="submit" class="btn btn-primary">Save changes</button>
             </form>
-        </div>
+        }
     </div>
 </div>
 
 @code {
+    @using System.Text.Json
+
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+    private string _oldPassword;
+    private string _newPassword;
+    private User _user;
+    private string _CurrentCurrency;
+    private List<string> _Currencies;
+    private Dictionary<string, string> _settings;
 
     protected override async Task OnInitializedAsync()
     {
-        GetCurrencies();
+
+        var authState = await authenticationState;
+        var username = authState.User.Identity.Name;
+        int userID = await _users.GetUserId(username);
+        User resp = await _users.GetUser(userID);
+        await GetCurrencies(resp.Settings);
+        _user = resp;
     }
 
-
-    private string _CurrentCurrency;
-    private List<string> _Currencies;
-
-    protected void GetCurrencies()
+    protected async Task GetCurrencies(string settings)
     {
-        _CurrentCurrency = "EUR";
+        _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
+
+        if (_settings["currency"] == "" || _settings["currency"] == null)
+        {
+            _CurrentCurrency = "EUR";
+        }
+        else _CurrentCurrency = _settings["currency"];
         List<string> currencies = new List<string>
         {
             "EUR", "USD", "RUB"
@@ -76,9 +106,34 @@
         _Currencies = currencies;
     }
 
-    protected void OnSelect(ChangeEventArgs e)
+    protected async Task OnSubmit()
     {
-        _CurrentCurrency = e.Value.ToString();
+        if (_user.Password == _oldPassword)
+        {
+            
+            if(_newPassword != null || _newPassword != "")
+                _user.Password = _newPassword;
+            _settings["currency"] = _CurrentCurrency;
+            _user.Settings = JsonSerializer.Serialize(_settings);
+            var res = await _users.UpdateUserInfo(_user);
+            if (res)
+            {
+                await js.InvokeVoidAsync("alert", "Data updated successfuly!");
+            }
+            else
+            {
+                await js.InvokeVoidAsync("alert", "Data updating failed!");
+            }
+        }
+        else
+        {
+            await js.InvokeVoidAsync("alert", "Data updating failed!");
+        }
+    }
+
+    protected void UpdateCurrency(string newCurrency)
+    {
+        _CurrentCurrency = newCurrency;
     }
 
 }

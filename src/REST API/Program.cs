@@ -54,11 +54,11 @@ namespace REST_API
         {
             List<User> Users = new List<User>
             {
-                new User { Id = 1, Username = "User1", Password = "User1", Email = "User1@gmail.com", Settings = "a"},
-                new User { Id = 2, Username = "User2", Password = "User2", Email = "User2@gmail.com", Settings = "b"},
-                new User { Id = 3, Username = "User3", Password = "User3", Email = "User3@gmail.com", Settings = "c"},
-                new User { Id = 4, Username = "User4", Password = "User4", Email = "User4@gmail.com", Settings = "d"},
-                new User { Id = 5, Username = "User5", Password = "User5", Email = "User5@gmail.com", Settings = "e"},
+                new User { Id = 1, Username = "User1", Password = "User1", Email = "User1@gmail.com", Settings = "{\"currency\": \"EUR\"}"},
+                new User { Id = 2, Username = "User2", Password = "User2", Email = "User2@gmail.com", Settings = "{\"currency\": \"EUR\"}"},
+                new User { Id = 3, Username = "User3", Password = "User3", Email = "User3@gmail.com", Settings = "{\"currency\": \"EUR\"}"},
+                new User { Id = 4, Username = "User4", Password = "User4", Email = "User4@gmail.com", Settings = "{\"currency\": \"EUR\"}"},
+                new User { Id = 5, Username = "User5", Password = "User5", Email = "User5@gmail.com", Settings = "{\"currency\": \"EUR\"}"},
             };
             List<Transaction> Transactions = new List<Transaction>
             {

@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
 using REST_API.Models.Users;
+using System.Text.Json;
 
 namespace REST_API.Controllers
 {
@@ -16,53 +17,53 @@ namespace REST_API.Controllers
         }
 
         [HttpGet]
-        async public Task<IActionResult> GetAllUsers()
+        public async Task<IActionResult> GetAllUsers()
         {
-            return Ok(_DbContext.Users.ToListAsync());
+            return Ok(await _DbContext.Users.ToListAsync());
         }
 
         [HttpGet]
         [Route("{id:int}")]
-        async public Task<IActionResult> GetUser([FromRoute] int id)
+        public async Task<IActionResult> GetUser([FromRoute] int id)
         {
-            var User = _DbContext.Users.FindAsync(id);
+            var User = await _DbContext.Users.FindAsync(id);
 
-            if (User.Result != null)
+            if (User != null)
             {
-                return Ok(User.Result);
+                return Ok(User);
             }
             return NotFound();
         }
         [HttpGet("user/{username}")]
-        async public Task<IActionResult> GetUserId(string username)
+        public async Task<IActionResult> GetUserId(string username)
         {
-            var User = _DbContext.Users.Where(u => u.Username == username).SingleAsync();
+            var User = await _DbContext.Users.Where(u => u.Username == username).SingleAsync();
 
-            if (User.Result != null)
+            if (User != null)
             {
-                return Ok(User.Result);
+                return Ok(User);
             }
             return NotFound();
         }
 
         [HttpGet("auth/{credentials}")]
-        async public Task<IActionResult> SignUserIn(string credentials)
+        public async Task<IActionResult> SignUserIn(string credentials)
         {
             var cred = credentials.Split(" ");
             var username = cred[0];
             var password = cred[1];
 
-            var User = _DbContext.Users.Where(u => u.Username == username && u.Password == password).SingleAsync();
+            var User = await _DbContext.Users.Where(u => u.Username == username && u.Password == password).SingleAsync();
 
-            if (User.Result != null)
+            if (User != null)
             {
-                return Ok(User.Result);
+                return Ok(User);
             }
             return NotFound();
         }
 
         [HttpPost]
-        async public Task<IActionResult> AddUser(User NewUser)
+        public async Task<IActionResult> AddUser(User NewUser)
         {
             var User = new User()
             {
@@ -76,10 +77,10 @@ namespace REST_API.Controllers
         }
 
         [HttpPut]
-        [Route("{id:int}")]
-        async public Task<IActionResult> UpdateUser([FromRoute] int id, UpdateUser UserInfo)
+        public async Task<IActionResult> UpdateUser(string content)
         {
-            var User = _DbContext.Users.FindAsync(id).Result;
+            var UserInfo = JsonSerializer.Deserialize<User>(content);
+            var User = await _DbContext.Users.Where(u => u.Id == UserInfo.Id).SingleAsync();
             
             if (User != null) 
             {
@@ -95,7 +96,7 @@ namespace REST_API.Controllers
 
         [HttpDelete]
         [Route("{id:int}")]
-        async public Task<IActionResult> DeleteUser([FromRoute] int id)
+        public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
             var User = _DbContext.Users.FindAsync(id).Result;
 

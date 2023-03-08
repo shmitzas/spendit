@@ -1,0 +1,31 @@
+﻿@page "/overview"
+@using WebApp.Services;
+@using WebApp.Models;
+@using WebApp.Auth;
+@inject TransactionsService _transactions;
+@attribute [Authorize]
+
+<PageTitle>Spendit - Overview</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <p>Authorized :)</p>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <UnauthorizedAccessRedirect />
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState> authenticationState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await authenticationState;
+        var username = authState.User.Identity.Name;
+    }
+}
