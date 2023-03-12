@@ -1,9 +1,11 @@
 ﻿@page "/settings"
-@using WebApp.Services;
-@using WebApp.Models;
-@using WebApp.Auth;
+@using WebApp.Services
+@using WebApp.Models
+@using WebApp.Auth
+@using System.Text.Json
 @inject IJSRuntime js
-@inject UsersService _users;
+@inject UsersService _users
+@inject NavigationManager navManager
 @attribute [Authorize]
 
 <PageTitle>Spendit - Settings</PageTitle>
@@ -17,66 +19,62 @@
         }
         else
         {
-            <form>
-                <div class="row mb-3">
-                    <label for="staticEmail" class="col-sm-2 col-form-label">Username</label>
-                    <div class="col-sm-10">
-                        <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
-                    </div>
+            <div class="row mb-3">
+                <label for="staticEmail" class="col-sm-2 col-form-label">Username</label>
+                <div class="col-sm-10">
+                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
                 </div>
-                <div class="row mb-3">
-                    <label for="InputEmail" class="col-sm-2 col-form-label">Email address</label>
-                    <div class="col-sm-10">
-                        <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-                    </div>
+            </div>
+            <div class="row mb-3">
+                <label for="InputEmail" class="col-sm-2 col-form-label">Email address</label>
+                <div class="col-sm-10">
+                    <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
                 </div>
-                <div class="row mb-3">
-                    <label for="CurrentPassword" class="col-sm-2 col-form-label">Current password</label>
-                    <div class="col-sm-10">
-                        <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
-                    </div>
+            </div>
+            <div class="row mb-3">
+                <label for="CurrentPassword" class="col-sm-2 col-form-label">Current password</label>
+                <div class="col-sm-10">
+                    <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
                 </div>
-                <div class="row mb-3">
-                    <label for="NewPassword" class="col-sm-2 col-form-label">New password</label>
-                    <div class="col-sm-10">
-                        <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
-                    </div>
+            </div>
+            <div class="row mb-3">
+                <label for="NewPassword" class="col-sm-2 col-form-label">New password</label>
+                <div class="col-sm-10">
+                    <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
                 </div>
-                <div class="row mb-3">
-                    <label for="dropdown" class="col-sm-2 col-form-label">Main currency</label>
-                    <div class="col-sm-10">
-                        <div class="dropdown">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                @_CurrentCurrency
-                            </button>
-                            <ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
-                                @foreach (var currency in _Currencies)
+            </div>
+            <div class="row mb-3">
+                <label for="dropdown" class="col-sm-2 col-form-label">Main currency</label>
+                <div class="col-sm-10">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            @_CurrentCurrency
+                        </button>
+                        <ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
+                            @foreach (var currency in _Currencies)
+                            {
+                                if (_CurrentCurrency != currency)
                                 {
-                                    if (_CurrentCurrency != currency)
-                                    {
-                                        <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
-                                    }
+                                    <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
                                 }
-                            </ul>
-                        </div>
+                            }
+                        </ul>
                     </div>
                 </div>
-                <button @onclick="OnSubmit" type="submit" class="btn btn-primary">Save changes</button>
-            </form>
+            </div>
+            <button class="btn btn-primary" @onclick="UpdateSettings">Save changes</button>
         }
     </div>
 </div>
 
 @code {
-    @using System.Text.Json
-
     [CascadingParameter]
     private Task<AuthenticationState> authenticationState { get; set; }
     private string _oldPassword;
     private string _newPassword;
     private User _user;
     private string _CurrentCurrency;
-    private List<string> _Currencies;
+    private List<string> _Currencies = new List<string> { "EUR" };
     private Dictionary<string, string> _settings;
 
     protected override async Task OnInitializedAsync()
@@ -106,28 +104,32 @@
         _Currencies = currencies;
     }
 
-    protected async Task OnSubmit()
+    private async Task UpdateSettings()
     {
         if (_user.Password == _oldPassword)
         {
-            
-            if(_newPassword != null || _newPassword != "")
+            if (_newPassword != null || _newPassword != "")
                 _user.Password = _newPassword;
+            else
+                await js.InvokeVoidAsync("alert", "New password CAN NOT be blank!");
+
             _settings["currency"] = _CurrentCurrency;
             _user.Settings = JsonSerializer.Serialize(_settings);
-            var res = await _users.UpdateUserInfo(_user);
+            bool res = await _users.UpdateUserInfo(_user);
             if (res)
             {
                 await js.InvokeVoidAsync("alert", "Data updated successfuly!");
+                navManager.NavigateTo("/settings", true);
             }
             else
             {
                 await js.InvokeVoidAsync("alert", "Data updating failed!");
+                await js.InvokeVoidAsync("console.log", "Update failed");
             }
         }
         else
         {
-            await js.InvokeVoidAsync("alert", "Data updating failed!");
+            await js.InvokeVoidAsync("alert", "Current password is incorrect!");
         }
     }
 

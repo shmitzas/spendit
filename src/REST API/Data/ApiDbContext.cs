@@ -6,9 +6,9 @@ using REST_API.Models.Users;
 
 namespace REST_API.Data
 {
-    public class API_DbContext : DbContext
+    public class ApiDbContext : DbContext
     {
-        public API_DbContext(DbContextOptions options) : base(options)
+        public ApiDbContext(DbContextOptions options) : base(options)
         {
 
         }

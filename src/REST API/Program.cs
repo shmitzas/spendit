@@ -21,15 +21,15 @@ namespace REST_API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            if (DevMode) builder.Services.AddDbContext<API_DbContext>(options => options.UseInMemoryDatabase("InMemoryDB"));
-            else builder.Services.AddDbContext<API_DbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("SpenditDB")));
+            if (DevMode) builder.Services.AddDbContext<ApiDbContext>(options => options.UseInMemoryDatabase("InMemoryDB"));
+            else builder.Services.AddDbContext<ApiDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("SpenditDB")));
 
             var app = builder.Build();
 
             if (DevMode)
             {
                 var scope = app.Services.CreateScope();
-                API_DbContext context = scope.ServiceProvider.GetService<API_DbContext>();
+                ApiDbContext context = scope.ServiceProvider.GetService<ApiDbContext>();
                 SetupInMemoryDatabase(context);
             }
 
@@ -50,7 +50,7 @@ namespace REST_API
             app.Run();
         }
 
-        private static void SetupInMemoryDatabase(API_DbContext context)
+        private static void SetupInMemoryDatabase(ApiDbContext context)
         {
             List<User> Users = new List<User>
             {

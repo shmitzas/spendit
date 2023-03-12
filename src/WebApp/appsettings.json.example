@@ -2,8 +2,9 @@
   "Logging": {
     "LogLevel": {
       "Default": "Information",
-      "Microsoft.AspNetCore": "Warning"
+      "Microsoft.AspNetCore": "Warning",
+      "DetailedErrors": "true"
     }
   },
-  "RestApiUrl": "<url>"
+  "RestApiUrl": "https://localhost:7229"
 }

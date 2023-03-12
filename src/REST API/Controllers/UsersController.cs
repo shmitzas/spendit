@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using REST_API.Data;
 using REST_API.Models.Users;
 using System.Text.Json;
@@ -10,10 +11,12 @@ namespace REST_API.Controllers
     [Route("api/[controller]")]
     public class UsersController : Controller
     {
-        private readonly API_DbContext _DbContext;
-        public UsersController(API_DbContext DbContext) 
+        private readonly ApiDbContext _DbContext;
+        private readonly ILogger<UsersController> _logger;
+        public UsersController(ApiDbContext DbContext, ILogger<UsersController> logger)
         {
             _DbContext = DbContext;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -26,13 +29,13 @@ namespace REST_API.Controllers
         [Route("{id:int}")]
         public async Task<IActionResult> GetUser([FromRoute] int id)
         {
-            var User = await _DbContext.Users.FindAsync(id);
+            var User = await _DbContext.Users.Where(u => u.Id == id).SingleAsync();
 
             if (User != null)
             {
                 return Ok(User);
             }
-            return NotFound();
+            return NotFound(new User());
         }
         [HttpGet("user/{username}")]
         public async Task<IActionResult> GetUserId(string username)
@@ -43,23 +46,40 @@ namespace REST_API.Controllers
             {
                 return Ok(User);
             }
-            return NotFound();
+            return NotFound(new User());
         }
 
-        [HttpGet("auth/{credentials}")]
-        public async Task<IActionResult> SignUserIn(string credentials)
+        //[HttpGet("auth/{credentials}")]
+        //public async Task<IActionResult> SignUserIn(string credentials)
+        //{
+        //    try
+        //    {
+        //        var cred = credentials.Split(" ");
+        //        var username = cred[0];
+        //        var password = cred[1];
+
+        //        var User = await _DbContext.Users.Where(u => u.Username == username && u.Password == password).SingleAsync();
+        //        return Ok(User);
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        //Console.WriteLine(ex.Message);
+        //        return NotFound(new User());
+        //    }
+        //}
+
+        [HttpPut("auth/")]
+        public async Task<IActionResult> SignUserIn(User user)
         {
-            var cred = credentials.Split(" ");
-            var username = cred[0];
-            var password = cred[1];
-
-            var User = await _DbContext.Users.Where(u => u.Username == username && u.Password == password).SingleAsync();
-
-            if (User != null)
+            try
             {
+                var User = await _DbContext.Users.Where(u => u.Username == user.Username && u.Password == user.Password).SingleAsync();
                 return Ok(User);
             }
-            return NotFound();
+            catch (InvalidOperationException ex)
+            {
+                return NotFound(new User());
+            }
         }
 
         [HttpPost]
@@ -77,21 +97,28 @@ namespace REST_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUser(string content)
+        public async Task<IActionResult> UpdateUser(User userInfo)
         {
-            var UserInfo = JsonSerializer.Deserialize<User>(content);
-            var User = await _DbContext.Users.Where(u => u.Id == UserInfo.Id).SingleAsync();
-            
-            if (User != null) 
+            try
             {
-                User.Password = UserInfo.Password;
-                User.Email = UserInfo.Email;
-                User.Settings = UserInfo.Settings;
+                var user = await _DbContext.Users.Where(u => u.Id == userInfo.Id).SingleAsync();
+                if (userInfo.Password == null || userInfo.Email == null || userInfo.Settings == null)
+                {
+                    return NotFound();
+                }
+                user.Password = userInfo.Password;
+                user.Email = userInfo.Email;
+                user.Settings = userInfo.Settings;
 
+                _DbContext.Users.Update(user);
                 await _DbContext.SaveChangesAsync();
-                return Ok(User);
+                return Ok();
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                return NotFound();
+            }
         }
 
         [HttpDelete]
@@ -107,7 +134,7 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok(User);
             }
-            return NotFound();
+            return NotFound(new User());
         }
     }
 }

@@ -26,7 +26,10 @@ public class AuthProvider : AuthenticationStateProvider
             {
                 var claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, userSession.Username)
+                    new Claim(ClaimTypes.NameIdentifier, userSession.Id.ToString()),
+                    new Claim(ClaimTypes.Name, userSession.Username),
+                    new Claim(ClaimTypes.Email, userSession.Email),
+                    new Claim("settings", userSession.Settings)
                 }, "CustomAuth"));
                 return await Task.FromResult(new AuthenticationState(claimsPrincipal));
             }

@@ -9,8 +9,8 @@ namespace REST_API.Controllers
     [Route("api/[controller]")]
     public class TransactionsController : Controller
     {
-        private readonly API_DbContext _DbContext;
-        public TransactionsController(API_DbContext DbContext)
+        private readonly ApiDbContext _DbContext;
+        public TransactionsController(ApiDbContext DbContext)
         {
             _DbContext = DbContext;
         }

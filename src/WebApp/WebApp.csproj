@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="appsettings.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\REST API\REST API.csproj" />
   </ItemGroup>
 
@@ -16,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="appsettings.json" />
     <None Include="compilerconfig.json" />
   </ItemGroup>
 

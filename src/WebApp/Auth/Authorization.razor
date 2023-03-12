@@ -4,7 +4,7 @@
 @inject IJSRuntime js
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
-@inject UsersService _users;
+@inject UsersService _users
 
 <div class="row">
     <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
@@ -13,11 +13,11 @@
         </div>
         <div class="mb-3">
             <label>Username</label>
-            <input @bind="model.Username" class="form-control" placeholder="username" />
+            <input @bind="_user.Username" class="form-control" placeholder="username" />
         </div>
         <div class="mb-3">
             <label>Password</label>
-            <input @bind="model.Password" type="password" class="form-control" placeholder="password" />
+            <input @bind="_user.Password" type="password" class="form-control" placeholder="password" />
         </div>
         <div class="mb-3 d-grid gap-2">
             <button @onclick="Authenticate" class="btn btn-primary">Login</button>
@@ -26,19 +26,14 @@
 </div>
 
 @code {
-    private class Model
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
-    private Model model = new Model();
+    private User _user;
 
     private async Task Authenticate()
     {
-        if (model.Username != "" && model.Password != "")
+        if (_user.Username != "" && _user.Password != "")
         {
-            var userId = await _users.SignIn(model.Username, model.Password); //TODO: Add password checking
-            if (userId != 0)
+            var userInfo = await _users.SignIn(_user); //TODO: Perdaryt pagal nauja AuthProvider struktura
+            if (userInfo != null || userInfo.Username != "")
             {
                 var userAccount = await _users.GetUser(userId);
                 if (userAccount == null)
@@ -48,7 +43,10 @@
                 else
                 {
                     var authProvider = (AuthProvider)authStateProvider;
-                    await authProvider.UpdateAuthState(new User { Username = userAccount.Username });
+                    await authProvider.UpdateAuthState(new User { 
+                            Username = userAccount.Username,
+                            Id = userAccount.Id,
+                    });
                     navManager.NavigateTo("/overview", true);
                 }
             }
