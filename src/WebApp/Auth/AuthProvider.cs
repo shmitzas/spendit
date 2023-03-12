@@ -28,8 +28,9 @@ public class AuthProvider : AuthenticationStateProvider
                 {
                     new Claim(ClaimTypes.NameIdentifier, userSession.Id.ToString()),
                     new Claim(ClaimTypes.Name, userSession.Username),
+                    new Claim("Password", userSession.Password),
                     new Claim(ClaimTypes.Email, userSession.Email),
-                    new Claim("settings", userSession.Settings)
+                    new Claim("Settings", userSession.Settings)
                 }, "CustomAuth"));
                 return await Task.FromResult(new AuthenticationState(claimsPrincipal));
             }
@@ -42,20 +43,52 @@ public class AuthProvider : AuthenticationStateProvider
     }
     public async Task UpdateAuthState(User userSession)
     {
-        ClaimsPrincipal claimsPrincipal;
-        if (userSession != null)
+        try
         {
-            await _session.SetAsync("UserSession", userSession);
-            claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+            ClaimsPrincipal claimsPrincipal;
+            if (userSession != null)
             {
-                new Claim(ClaimTypes.Name, userSession.Username)
+                await _session.SetAsync("UserSession", userSession);
+                claimsPrincipal = new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, userSession.Id.ToString()),
+                new Claim(ClaimTypes.Name, userSession.Username),
+                new Claim("Password", userSession.Password),
+                new Claim(ClaimTypes.Email, userSession.Email),
+                new Claim("Settings", userSession.Settings)
             }));
+            }
+            else
+            {
+                await _session.DeleteAsync("UserSession");
+                claimsPrincipal = _anonymous;
+            }
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
-        else
+        catch (Exception ex)
         {
-            await _session.DeleteAsync("UserSession");
-            claimsPrincipal = _anonymous;
+            Console.WriteLine($"UpdateAuthState: {ex}");
         }
-        NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
+    }
+    
+    public async Task<User> GetCurrentUserAsync()
+    {
+        try
+        {
+            var authState = await GetAuthenticationStateAsync();
+            return new User
+            {
+                Id = int.Parse(authState.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                Username = authState.User.FindFirstValue(ClaimTypes.Name),
+                Password = authState.User.FindFirstValue("Password"),
+                Email = authState.User.FindFirstValue(ClaimTypes.Email),
+                Settings = authState.User.FindFirstValue("Settings")
+            };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+            return new User();
+        }
     }
 }

@@ -3,6 +3,7 @@
 @using WebApp.Models
 @using WebApp.Auth
 @inject TransactionsService _transactions
+@inject AuthenticationStateProvider authStateProvider
 @attribute [Authorize]
 <PageTitle>Spendit - Transactions</PageTitle>
 <AuthorizeView>
@@ -78,16 +79,15 @@
 
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
-
+    private AuthProvider authProvider;
     private IEnumerable<Transaction>? transactions;
     private Transaction? transaction;
+    private User _user;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authenticationState;
-        var username = authState.User.Identity.Name;
-        transactions = await _transactions.GetTransactions(username);
+        authProvider = (AuthProvider)authStateProvider;
+        _user = await authProvider.GetCurrentUserAsync();
+        transactions = await _transactions.GetTransactions(_user.Id);
     }
 }

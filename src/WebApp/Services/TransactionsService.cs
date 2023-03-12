@@ -10,15 +10,13 @@ namespace WebApp.Services
             _httpClient = httpClient;
             _usersService = usersService;
         }
-        public async Task<IEnumerable<Transaction>> GetTransactions(string username)
+        public async Task<IEnumerable<Transaction>> GetTransactions(int userId)
         {
-            int userID = await _usersService.GetUserId(username);
-            return await _httpClient.GetFromJsonAsync<Transaction[]>("/api/transactions/" + userID);
+            return await _httpClient.GetFromJsonAsync<Transaction[]>("/api/transactions/" + userId);
         }
-        public async Task<Transaction> GetTransaction(string username, int transactionID)
+        public async Task<Transaction> GetTransaction(int userId, int transactionId)
         {
-            int userID = await _usersService.GetUserId(username);
-            return await _httpClient.GetFromJsonAsync<Transaction>("/api/transactions/" + userID + "/" + transactionID);
+            return await _httpClient.GetFromJsonAsync<Transaction>("/api/transactions/" + userId + "/" + transactionId);
         }
     }
 }

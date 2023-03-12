@@ -6,6 +6,7 @@
 @inject IJSRuntime js
 @inject UsersService _users
 @inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
 @attribute [Authorize]
 
 <PageTitle>Spendit - Settings</PageTitle>
@@ -68,24 +69,20 @@
 </div>
 
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
     private string _oldPassword;
     private string _newPassword;
     private User _user;
     private string _CurrentCurrency;
+    private AuthProvider authProvider;
     private List<string> _Currencies = new List<string> { "EUR" };
     private Dictionary<string, string> _settings;
 
     protected override async Task OnInitializedAsync()
     {
+        authProvider = (AuthProvider)authStateProvider;
+        _user = await authProvider.GetCurrentUserAsync();
 
-        var authState = await authenticationState;
-        var username = authState.User.Identity.Name;
-        int userID = await _users.GetUserId(username);
-        User resp = await _users.GetUser(userID);
-        await GetCurrencies(resp.Settings);
-        _user = resp;
+        await GetCurrencies(_user.Settings);
     }
 
     protected async Task GetCurrencies(string settings)
@@ -119,6 +116,7 @@
             if (res)
             {
                 await js.InvokeVoidAsync("alert", "Data updated successfuly!");
+                await authProvider.UpdateAuthState(_user);
                 navManager.NavigateTo("/settings", true);
             }
             else
@@ -137,5 +135,4 @@
     {
         _CurrentCurrency = newCurrency;
     }
-
 }

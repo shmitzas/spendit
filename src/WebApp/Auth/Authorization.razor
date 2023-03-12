@@ -27,33 +27,41 @@
 
 @code {
     private User _user;
+    protected override async Task OnInitializedAsync()
+    {
+        _user = new User();
+    }
 
     private async Task Authenticate()
     {
-        if (_user.Username != "" && _user.Password != "")
+        try
         {
-            var userInfo = await _users.SignIn(_user); //TODO: Perdaryt pagal nauja AuthProvider struktura
-            if (userInfo != null || userInfo.Username != "")
+            if (_user.Username != "" && _user.Password != "")
             {
-                var userAccount = await _users.GetUser(userId);
-                if (userAccount == null)
+                var userInfo = await _users.SignIn(_user); //TODO: Perdaryt pagal nauja AuthProvider struktura
+                if (userInfo != null || userInfo.Username != "")
                 {
-                    await js.InvokeVoidAsync("alert", "Username or Password is invalid!");
+                    var authProvider = (AuthProvider)authStateProvider;
+                    await authProvider.UpdateAuthState(
+                        new User
+                            {
+                                Id = userInfo.Id,
+                                Username = userInfo.Username,
+                                Password = userInfo.Password,
+                                Email = userInfo.Email,
+                                Settings = userInfo.Settings
+                            });
+                    navManager.NavigateTo("/overview", true);
                 }
                 else
                 {
-                    var authProvider = (AuthProvider)authStateProvider;
-                    await authProvider.UpdateAuthState(new User { 
-                            Username = userAccount.Username,
-                            Id = userAccount.Id,
-                    });
-                    navManager.NavigateTo("/overview", true);
+                    await js.InvokeVoidAsync("alert", "Username or Password is invalid!");
                 }
             }
-            else
-            {
-                await js.InvokeVoidAsync("alert", "Username or Password is invalid!");
-            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Authenticate: {ex}");
         }
     }
 }
