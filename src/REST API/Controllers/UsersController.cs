@@ -56,9 +56,11 @@ namespace REST_API.Controllers
             {
                 var user = new User()
                 {
+                    Id = await _DbContext.Users.MaxAsync(u => (int)u.Id)+1,
                     Username = userInfo.Username,
                     Password = userInfo.Password,
-                    Email = userInfo.Email
+                    Email = userInfo.Email,
+                    Settings = "{\"currency\": \"EUR\"}"
                 };
                 await _DbContext.Users.AddAsync(user);
                 await _DbContext.SaveChangesAsync();
@@ -66,7 +68,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new User());
+                return BadRequest(new User());
             }
         }
 

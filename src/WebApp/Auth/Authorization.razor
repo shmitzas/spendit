@@ -1,32 +1,76 @@
 ﻿@page "/auth"
+@using System.Text.RegularExpressions;
 @using WebApp.Services
 @using WebApp.Models
+@using WebApp.Shared
 @inject IJSRuntime js
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject UsersService _users
+@inject SweetAlertService alertService
 
-<div class="row">
-    <div class="col-lg-4 offset-lg-4 pt-4 pb-4 border">
-        <div class="mb-3 text-center">
-            <h3>LOGIN</h3>
-        </div>
-        <div class="mb-3">
-            <label>Username</label>
-            <input @bind="_user.Username" class="form-control" placeholder="username" />
-        </div>
-        <div class="mb-3">
-            <label>Password</label>
-            <input @bind="_user.Password" type="password" class="form-control" placeholder="password" />
-        </div>
-        <div class="mb-3 d-grid gap-2">
-            <button @onclick="Authenticate" class="btn btn-primary">Login</button>
+@if (showLogin)
+{
+    <div class="row justify-content-center align-items-center mb-5">
+        <div class="col-4 card bg-white shadow-lg mt-5 rounded-5">
+            <div class="card-body mt-3 mb-3">
+                <h3 class="card-title mb-5">Sign in</h3>
+                <div class="form-floating">
+                    <input @bind="_user.Username" class="form-control rounded-pill ps-4" id="username" placeholder="Username" />
+                    <label for="username" class="ps-4">Username</label>
+                </div>
+                <div class="mt-3 form-floating">
+                    <input @bind="_user.Password" type="password" class="form-control rounded-pill ps-4" id="password" placeholder="Password" />
+                    <label for="password" class="ps-4">Password</label>
+                </div>
+                <div class="mt-5 d-flex justify-content-between">
+                    <div class="align-self-center col-8 mt-2 mb-2">
+                        <a class="createAccount" @onclick="ShowRegister" href="/auth">Create an account</a>
+                    </div>
+                    <button @onclick="Authenticate" class="btn btn-primary rounded-pill col-4">Sign in</button>
+                </div>
+            </div>
         </div>
     </div>
-</div>
+}
+else
+{
+    <div class="row justify-content-center align-items-center mb-5">
+        <div class="col-4 card bg-white shadow-lg mt-5 rounded-5">
+            <div class="card-body mt-3 mb-3">
+                <h3 class="card-title mb-5">Sign up</h3>
+                <div class="form-floating">
+                    <input @bind="_username" class="form-control rounded-pill ps-4" id="username" placeholder="Username" />
+                    <label for="username" class="ps-4">Username</label>
+                </div>
+                <div class="form-floating mt-3">
+                    <input @bind="_email" class="form-control rounded-pill ps-4" id="email" placeholder="Email address" />
+                    <label for="email" class="ps-4">Email</label>
+                </div>
+                <div class="mt-3 form-floating">
+                    <input @bind="_password" type="password" class="form-control rounded-pill ps-4" id="password" placeholder="Password" />
+                    <label for="password" class="ps-4">Password</label>
+                </div>
+                <div class="mt-5 d-flex justify-content-between">
+                    <div class="align-self-center col-8">
+                        <span>
+                            Already have an account?<br>
+                            <a class="createAccount" @onclick="ShowLogin" href="/auth">Sign in</a>
+                        </span>
+                    </div>
+                    <button @onclick="Register" class="btn btn-primary rounded-pill col-4">Sign up</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 @code {
     private User _user;
+    private string _username;
+    private string _email;
+    private string _password;
+    private bool showLogin = true;
     protected override async Task OnInitializedAsync()
     {
         _user = new User();
@@ -38,8 +82,8 @@
         {
             if (_user.Username != "" && _user.Password != "")
             {
-                var userInfo = await _users.SignIn(_user); //TODO: Perdaryt pagal nauja AuthProvider struktura
-                if (userInfo != null || userInfo.Username != "")
+                var userInfo = await _users.SignIn(_user);
+                if (!String.IsNullOrEmpty(userInfo.Username))
                 {
                     var authProvider = (AuthProvider)authStateProvider;
                     await authProvider.UpdateAuthState(
@@ -55,13 +99,203 @@
                 }
                 else
                 {
-                    await js.InvokeVoidAsync("alert", "Username or Password is invalid!");
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Warning",
+                            Text = "Username or Password you entered is incorrect!",
+                            Icon = SweetAlertIcon.Warning,
+                            ConfirmButtonText = "Ok",
+                        });
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Authenticate: {ex}");
+            await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Error",
+                    Text = "Oops.. An error occured, please try again.",
+                    Icon = SweetAlertIcon.Error,
+                    ConfirmButtonText = "Ok",
+                });
         }
+    }
+
+    private async Task Register()
+    {
+        if (!String.IsNullOrEmpty(_username))
+        {
+            if (await ValidateUsername(_username))
+            {
+                _user.Username = _username;
+
+                if (!String.IsNullOrEmpty(_email))
+                {
+                    if (await ValidateEmail(_email))
+                    {
+                        _user.Email = _email;
+                        if (!String.IsNullOrEmpty(_password))
+                        {
+                            if (await ValidatePassword(_password))
+                            {
+                                if (await CheckPasswordLenght(_password))
+                                {
+                                    _user.Password = _password;
+
+                                    bool res = await _users.AddUser(_user);
+                                    if (res)
+                                    {
+                                        var confirmation = await alertService.FireAsync(new SweetAlertOptions
+                                            {
+                                                Title = "Success",
+                                                Text = "Your account has been created!",
+                                                Icon = SweetAlertIcon.Success,
+                                                ConfirmButtonText = "Ok",
+                                            });
+                                        if (confirmation.IsConfirmed || confirmation.IsDismissed)
+                                        {
+                                            await Authenticate();
+                                        }
+                                    }
+                                    else
+                                    {
+                                        await alertService.FireAsync(new SweetAlertOptions
+                                            {
+                                                Title = "Error",
+                                                Text = "Oops... An error occured, please try again.",
+                                                Icon = SweetAlertIcon.Error,
+                                                ConfirmButtonText = "Ok",
+                                            });
+                                    }
+                                }
+                                else
+                                {
+                                    await alertService.FireAsync(new SweetAlertOptions
+                                        {
+                                            Title = "Warning",
+                                            Text = "Password must be at least 8 characters long!",
+                                            Icon = SweetAlertIcon.Warning,
+                                            ConfirmButtonText = "Ok",
+                                        });
+                                }
+                            }
+                            else
+                            {
+                                await alertService.FireAsync(new SweetAlertOptions
+                                    {
+                                        Title = "Warning",
+                                        Text = "Current password contains illegal characters!",
+                                        Icon = SweetAlertIcon.Warning,
+                                        ConfirmButtonText = "Ok",
+                                    });
+                            }
+                        }
+                        else
+                        {
+                            await alertService.FireAsync(new SweetAlertOptions
+                                {
+                                    Title = "Warning",
+                                    Text = "You have to enter a password!",
+                                    Icon = SweetAlertIcon.Warning,
+                                    ConfirmButtonText = "Ok",
+                                });
+                        }
+                    }
+                    else
+                    {
+                        await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Warning",
+                                Text = "Email address contains illegal characters or is incorrect!",
+                                Icon = SweetAlertIcon.Warning,
+                                ConfirmButtonText = "Ok",
+                            });
+                    }
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Warning",
+                            Text = "You have to enter an email address!",
+                            Icon = SweetAlertIcon.Warning,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
+            }
+            else
+            {
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Warning",
+                        Text = "Username contains illegal characters!",
+                        Icon = SweetAlertIcon.Warning,
+                        ConfirmButtonText = "Ok",
+                    });
+            }
+        }
+        else
+        {
+            await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Warning",
+                    Text = "You have to enter a username!",
+                    Icon = SweetAlertIcon.Warning,
+                    ConfirmButtonText = "Ok",
+                });
+        }
+    }
+    private async Task<bool>ValidateUsername(string input)
+    {
+        if (Regex.IsMatch(input, @"^[a-zA-Z0-9]+$"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    private async Task<bool>CheckPasswordLenght(string input)
+    {
+        if (input.Length < 8)
+            return false;
+        else
+        {
+            return true;
+        }
+    }
+    private async Task<bool>ValidatePassword(string input)
+    {
+        if (Regex.IsMatch(input, @"^[a-zA-Z0-9!@#$%^&*()\-+=\[\]{};:'"",.<>/?\\|]+$"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    private async Task<bool>ValidateEmail(string input)
+    {
+        if (Regex.IsMatch(input, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private async Task ShowRegister()
+    {
+        showLogin = false;
+        StateHasChanged();
+    }
+    private async Task ShowLogin()
+    {
+        showLogin = true;
+        StateHasChanged();
     }
 }

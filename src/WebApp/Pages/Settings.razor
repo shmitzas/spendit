@@ -3,10 +3,12 @@
 @using WebApp.Models
 @using WebApp.Auth
 @using System.Text.Json
+@using System.Text.RegularExpressions
 @inject IJSRuntime js
 @inject UsersService _users
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
+@inject SweetAlertService alertService
 @attribute [Authorize]
 
 <PageTitle>Spendit - Settings</PageTitle>
@@ -14,7 +16,7 @@
 <div class="row">
     <div class="col-12 mt-5 mb-5">
         <h2 class="text-center">Account settings</h2>
-        @if (_user == null || _CurrentCurrency == null || _Currencies == null)
+        @if (_user == null || _CurrentCurrency == null)
         {
             <div class="text-center">Loading...</div>
         }
@@ -51,19 +53,20 @@
                         <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                             @_CurrentCurrency
                         </button>
-                        <ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
-                            @foreach (var currency in _Currencies)
-                            {
-                                if (_CurrentCurrency != currency)
-                                {
-                                    <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
-                                }
-                            }
-                        </ul>
+                        @*<ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
+                    @foreach (var currency in _Currencies)
+                    {
+                    if (_CurrentCurrency != currency)
+                    {
+                    <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
+                    }
+                    }
+                    </ul>*@
                     </div>
                 </div>
             </div>
             <button class="btn btn-primary" @onclick="UpdateSettings">Save changes</button>
+            <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
         }
     </div>
 </div>
@@ -82,10 +85,15 @@
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
 
-        await GetCurrencies(_user.Settings);
+        await GetCurrency(_user.Settings);
+
+        var alert = alertService.Mixin(new SweetAlertOptions
+            {
+                Title = "Error",
+            });
     }
 
-    protected async Task GetCurrencies(string settings)
+    protected async Task GetCurrency(string settings)
     {
         _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
 
@@ -93,46 +101,185 @@
         {
             _CurrentCurrency = "EUR";
         }
-        else _CurrentCurrency = _settings["currency"];
-        List<string> currencies = new List<string>
+        else
         {
-            "EUR", "USD", "RUB"
-        };
-        _Currencies = currencies;
+            _CurrentCurrency = _settings["currency"];
+        }
     }
 
     private async Task UpdateSettings()
     {
         if (_user.Password == _oldPassword)
         {
-            if (_newPassword != null || _newPassword != "")
-                _user.Password = _newPassword;
-            else
-                await js.InvokeVoidAsync("alert", "New password CAN NOT be blank!");
-
-            _settings["currency"] = _CurrentCurrency;
-            _user.Settings = JsonSerializer.Serialize(_settings);
-            bool res = await _users.UpdateUserInfo(_user);
-            if (res)
+            if (!String.IsNullOrEmpty(_user.Email))
             {
-                await js.InvokeVoidAsync("alert", "Data updated successfuly!");
-                await authProvider.UpdateAuthState(_user);
-                navManager.NavigateTo("/settings", true);
+                if (await ValidateEmail(_user.Email))
+                {
+                    if (!String.IsNullOrEmpty(_newPassword))
+                    {
+                        if (await ValidatePassword(_newPassword))
+                        {
+                            if (await CheckPasswordLenght(_newPassword))
+                            {
+                                _user.Password = _newPassword;
+                            }
+                            else
+                            {
+                                await alertService.FireAsync(new SweetAlertOptions
+                                    {
+                                        Title = "Warning",
+                                        Text = "Password must be at least 8 characters long!",
+                                        Icon = SweetAlertIcon.Warning,
+                                        ConfirmButtonText = "Ok",
+                                    });
+                            }
+                        }
+                        else
+                        {
+                            await alertService.FireAsync(new SweetAlertOptions
+                                {
+                                    Title = "Warning",
+                                    Text = "Current password contains illegal characters!",
+                                    Icon = SweetAlertIcon.Warning,
+                                    ConfirmButtonText = "Ok",
+                                });
+                        }
+                    }
+                    _settings["currency"] = _CurrentCurrency;
+                    _user.Settings = JsonSerializer.Serialize(_settings);
+
+                    bool res = await _users.UpdateUser(_user);
+                    if (res)
+                    {
+                        var confirmation = await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Success",
+                                Text = "Your information has been updated!",
+                                Icon = SweetAlertIcon.Success,
+                                ConfirmButtonText = "Ok",
+                            });
+                        if (confirmation.IsConfirmed || confirmation.IsDismissed)
+                        {
+                            await authProvider.UpdateAuthState(_user);
+                            navManager.NavigateTo("/settings", true);
+                        }
+                    }
+                    else
+                    {
+                        await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Error",
+                                Text = "Oops... An error occured, please try again.",
+                                Icon = SweetAlertIcon.Error,
+                                ConfirmButtonText = "Ok",
+                            });
+                    }
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Warning",
+                            Text = "Email address contains illegal characters or is incorrect!",
+                            Icon = SweetAlertIcon.Warning,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
             }
             else
             {
-                await js.InvokeVoidAsync("alert", "Data updating failed!");
-                await js.InvokeVoidAsync("console.log", "Update failed");
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Warning",
+                        Text = "You have to enter an email address!",
+                        Icon = SweetAlertIcon.Warning,
+                        ConfirmButtonText = "Ok",
+                    });
             }
         }
         else
         {
-            await js.InvokeVoidAsync("alert", "Current password is incorrect!");
+            await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Warning",
+                    Text = "Current password is incorrect!",
+                    Icon = SweetAlertIcon.Warning,
+                    ConfirmButtonText = "Ok",
+                });
         }
     }
 
     protected void UpdateCurrency(string newCurrency)
     {
         _CurrentCurrency = newCurrency;
+    }
+    private async Task DeleteAccount()
+    {
+        var confirmation = await alertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Are you sure?",
+                Text = "This action is irreversible! Are you sure you want to do this?",
+                Icon = SweetAlertIcon.Warning,
+                ShowCancelButton = true,
+                ConfirmButtonText = "Yes",
+                CancelButtonText = "No"
+            });
+        if (confirmation.IsConfirmed || confirmation.IsDismissed)
+        {
+            bool res = await _users.DeleteUser(_user.Id);
+            if (res)
+            {
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Success",
+                        Text = "Account deleted successfuly!",
+                        Icon = SweetAlertIcon.Success,
+                        Timer = 2000
+                    });
+                await authProvider.UpdateAuthState(null);
+                navManager.NavigateTo("/", true);
+            }
+            else
+            {
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Error",
+                        Text = "Oops... An error occured, please try again.",
+                        Icon = SweetAlertIcon.Error,
+                        ConfirmButtonText = "Ok",
+                    });
+            }
+        }
+    }
+    private async Task<bool> CheckPasswordLenght(string input)
+    {
+        if (input.Length < 8)
+            return false;
+        else
+        {
+            return true;
+        }
+    }
+    private async Task<bool> ValidatePassword(string input)
+    {
+        if (Regex.IsMatch(input, @"^[a-zA-Z0-9!@#$%^&*()\-+=\[\]{};:'"",.<>/?\\|]+$"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    private async Task<bool> ValidateEmail(string input)
+    {
+        if (Regex.IsMatch(input, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 }

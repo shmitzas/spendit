@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using WebApp.Services;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using CurrieTechnologies.Razor.SweetAlert2;
 
 namespace WebApp
 {
@@ -19,7 +20,7 @@ namespace WebApp
             builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
             builder.Services.AddHttpClient<TransactionsService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
             builder.Services.AddHttpClient<UsersService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
-            
+            builder.Services.AddSweetAlert2();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

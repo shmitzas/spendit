@@ -1,11 +1,11 @@
-﻿body {
-}
-
-$yellow: #FFE401;
+﻿$yellow: #FFE401;
 $dark-gray: #272727;
 $gray: #EEE;
 $red: #F22424;
 $green: #0AB945;
+
+body {
+}
 
 a {
     text-decoration: none !important;
@@ -29,4 +29,9 @@ a {
 
 .logout a {
     color: $gray;
+}
+
+.createAccount {
+    color: dodgerblue !important;
+    vertical-align: middle;
 }

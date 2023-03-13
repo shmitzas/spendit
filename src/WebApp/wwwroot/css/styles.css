@@ -19,3 +19,8 @@
 .logout a {
   color: #EEE;
 }
+
+.createAccount {
+  color: dodgerblue !important;
+  vertical-align: middle;
+}
