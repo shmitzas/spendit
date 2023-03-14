@@ -13,64 +13,72 @@
 
 <PageTitle>Spendit - Settings</PageTitle>
 
-<div class="row">
-    <div class="col-12 mt-5 mb-5">
-        <h2 class="text-center">Account settings</h2>
-        @if (_user == null || _CurrentCurrency == null)
-        {
-            <div class="text-center">Loading...</div>
-        }
-        else
-        {
-            <div class="row mb-3">
-                <label for="staticEmail" class="col-sm-2 col-form-label">Username</label>
-                <div class="col-sm-10">
-                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="InputEmail" class="col-sm-2 col-form-label">Email address</label>
-                <div class="col-sm-10">
-                    <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="CurrentPassword" class="col-sm-2 col-form-label">Current password</label>
-                <div class="col-sm-10">
-                    <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="NewPassword" class="col-sm-2 col-form-label">New password</label>
-                <div class="col-sm-10">
-                    <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
-                </div>
-            </div>
-            <div class="row mb-3">
-                <label for="dropdown" class="col-sm-2 col-form-label">Main currency</label>
-                <div class="col-sm-10">
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            @_CurrentCurrency
-                        </button>
-                        @*<ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
-                    @foreach (var currency in _Currencies)
-                    {
-                    if (_CurrentCurrency != currency)
-                    {
-                    <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
-                    }
-                    }
-                    </ul>*@
-                    </div>
-                </div>
-            </div>
-            <button class="btn btn-primary" @onclick="UpdateSettings">Save changes</button>
-            <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
-        }
-    </div>
-</div>
+<AuthorizeView>
+    <Authorized>
 
+        <div class="row">
+            <div class="col-12 mt-5 mb-5">
+                <h2 class="text-center">Account settings</h2>
+                @if (_user == null || _CurrentCurrency == null)
+                {
+                    <div class="text-center">Loading...</div>
+                }
+                else
+                {
+                    <div class="row mb-3">
+                        <label for="staticEmail" class="col-sm-2 col-form-label">Username</label>
+                        <div class="col-sm-10">
+                            <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="InputEmail" class="col-sm-2 col-form-label">Email address</label>
+                        <div class="col-sm-10">
+                            <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="CurrentPassword" class="col-sm-2 col-form-label">Current password</label>
+                        <div class="col-sm-10">
+                            <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="NewPassword" class="col-sm-2 col-form-label">New password</label>
+                        <div class="col-sm-10">
+                            <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="dropdown" class="col-sm-2 col-form-label">Main currency</label>
+                        <div class="col-sm-10">
+                            <div class="dropdown">
+                                <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    @_CurrentCurrency
+                                </button>
+                                @*<ul class="dropdown-menu" onchange="UpdateCurrency(this.value)">
+                            @foreach (var currency in _Currencies)
+                            {
+                            if (_CurrentCurrency != currency)
+                            {
+                            <li><a class="dropdown-item" href="settings" value="@currency">@currency</a></li>
+                            }
+                            }
+                            </ul>*@
+                            </div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" @onclick="UpdateSettings">Save changes</button>
+                    <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
+                }
+            </div>
+        </div>
+
+    </Authorized>
+    <NotAuthorized>
+        <UnauthorizedAccessRedirect />
+    </NotAuthorized>
+</AuthorizeView>
 @code {
     private string _oldPassword;
     private string _newPassword;
@@ -86,11 +94,6 @@
         _user = await authProvider.GetCurrentUserAsync();
 
         await GetCurrency(_user.Settings);
-
-        var alert = alertService.Mixin(new SweetAlertOptions
-            {
-                Title = "Error",
-            });
     }
 
     protected async Task GetCurrency(string settings)

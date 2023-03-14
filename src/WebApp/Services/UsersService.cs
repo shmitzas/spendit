@@ -39,7 +39,6 @@ namespace WebApp.Services
             {
                 user = await SanitizeUpdatedUser(user);
                 var content = await SerializeObj(user);
-                Console.Write($"\n\n\n{content}");
                 var res = await _httpClient.PutAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
                 {

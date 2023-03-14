@@ -32,7 +32,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new User());
+                return NotFound();
             }
         }
         [HttpPut("auth")]
@@ -45,12 +45,12 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new User());
+                return NotFound();
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(User userInfo) //TODO: Implement
+        public async Task<IActionResult> AddUser(User userInfo)
         {
             try
             {
@@ -64,11 +64,11 @@ namespace REST_API.Controllers
                 };
                 await _DbContext.Users.AddAsync(user);
                 await _DbContext.SaveChangesAsync();
-                return Ok(User);
+                return Ok();
             }
             catch (Exception ex)
             {
-                return BadRequest(new User());
+                return BadRequest();
             }
         }
 
@@ -99,7 +99,7 @@ namespace REST_API.Controllers
 
         [HttpDelete]
         [Route("{id:int}")]
-        public async Task<IActionResult> DeleteUser([FromRoute] int id) //TODO: Implement
+        public async Task<IActionResult> DeleteUser([FromRoute] int id)
         {
             try
             {
@@ -111,7 +111,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound(new User());
+                return NotFound();
             }
         }
 

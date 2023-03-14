@@ -9,5 +9,10 @@
     </NotAuthorized>
 </AuthorizeView>
 @code {
-
+    bool isWaiting = true;
+    protected async override Task OnInitializedAsync()
+    {
+        await Task.Delay(2000);
+        isWaiting = false;
+    }
 }

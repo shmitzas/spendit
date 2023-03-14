@@ -19,74 +19,122 @@ namespace REST_API.Controllers
         [Route("{userId:int}")]
         public async Task<IActionResult> GetAllTransactions([FromRoute] int userId)
         {
-            var result = await _DbContext.Transactions.Where(t => t.UserId == userId).ToListAsync();
-            return Ok(result);
+            try
+            {
+                var transaction = await _DbContext.Transactions
+                    .Where(t => t.UserId == userId)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .ToListAsync();
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
         }
-
-
+        [HttpGet]
+        [Route("{userId:int}/search={query}")]
+        public async Task<IActionResult> SearchTransactions([FromRoute] int userId, string query)
+        {
+            try
+            {
+                var transactions = await _DbContext.Transactions
+                    .Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId)
+                    .OrderByDescending(t => t.CreatedAt)
+                    .ToListAsync();
+                foreach(var tr in transactions)
+                {
+                    Console.WriteLine(tr.Description);
+                }
+                return Ok(transactions);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
         [HttpGet]
         [Route("{userId:int}/{id:int}")]
         public async Task<IActionResult> GetTransaction([FromRoute] int userId, [FromRoute] int id)
         {
-            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
-
-            if (Transaction != null)
+            try
             {
-                return Ok(Transaction);
+                var transaction = await _DbContext.Transactions
+                    .Where(t => t.UserId == userId && t.Id == id)
+                    .SingleAsync();
+                return Ok(transaction);
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTransaction(Transaction TransactionInfo)
+        public async Task<IActionResult> AddTransaction(Transaction transactionInfo)
         {
-            var Transaction = new Transaction()
+            try
             {
-                UserId = TransactionInfo.UserId,
-                CategoryId = TransactionInfo.CategoryId,
-                Type = TransactionInfo.Type,
-                Amount = TransactionInfo.Amount,
-                Currency = TransactionInfo.Currency,
-                Description = TransactionInfo.Description
-            };
-            await _DbContext.Transactions.AddAsync(Transaction);
-            await _DbContext.SaveChangesAsync();
-            return Ok(Transaction);
+                var Transaction = new Transaction()
+                {
+                    UserId = transactionInfo.UserId,
+                    CategoryId = 0,
+                    Type = transactionInfo.Type,
+                    Amount = transactionInfo.Amount,
+                    Currency = transactionInfo.Currency,
+                    Description = transactionInfo.Description,
+                    CreatedAt = transactionInfo.CreatedAt == null ? DateTime.Now : transactionInfo.CreatedAt,
+                    UpdatedAt = DateTime.Now
+                };
+                await _DbContext.Transactions.AddAsync(Transaction);
+                await _DbContext.SaveChangesAsync();
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest();
+            }
         }
 
         [HttpPut]
         [Route("{userId:int}/{id:int}")]
-        public async Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction TransactionInfo)
+        public async Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction transactionInfo)
         {
-            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
-            if (Transaction != null)
+            try
             {
-                Transaction.CategoryId = TransactionInfo.CategoryId;
-                Transaction.Type = TransactionInfo.Type;
-                Transaction.Amount = TransactionInfo.Amount;
-                Transaction.Currency = TransactionInfo.Currency;
-                Transaction.Description = TransactionInfo.Description;
+                var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
+                Transaction.CategoryId = transactionInfo.CategoryId;
+                Transaction.Type = transactionInfo.Type;
+                Transaction.Amount = transactionInfo.Amount;
+                Transaction.Currency = transactionInfo.Currency;
+                Transaction.Description = transactionInfo.Description;
+                Transaction.UpdatedAt = DateTime.Now;
 
                 await _DbContext.SaveChangesAsync();
-                return Ok(Transaction);
+                return Ok();
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
         }
 
         [HttpDelete]
         [Route("{userId:int}/{id:int}")]
         public async Task<IActionResult> DeleteTransaction([FromRoute] int userId, [FromRoute] int id)
         {
-            var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
-
-            if (Transaction != null)
+            try
             {
-                _DbContext.Remove(Transaction);
-
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
+                _DbContext.Remove(transaction);
                 await _DbContext.SaveChangesAsync();
-                return Ok(Transaction);
+                return Ok();
             }
-            return NotFound();
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
         }
     }
 }

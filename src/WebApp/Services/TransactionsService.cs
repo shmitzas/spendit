@@ -2,6 +2,8 @@
 using System.Text.Json;
 using System.Text;
 using WebApp.Models;
+using System.Collections.Generic;
+
 namespace WebApp.Services
 {
     public class TransactionsService
@@ -38,6 +40,17 @@ namespace WebApp.Services
             catch (Exception ex)
             {
                 return new Transaction();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> Search(int userId, string query)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync <IEnumerable<Transaction>> ($"/api/transactions/{userId}/search={query}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
             }
         }
         public async Task<bool> AddTransaction(int userId, Transaction transaction)

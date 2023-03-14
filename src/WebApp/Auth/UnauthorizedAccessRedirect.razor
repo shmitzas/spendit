@@ -2,10 +2,6 @@
 @code {
     protected override void OnInitialized()
     {
-        Redirect();
-    }
-    private async Task Redirect()
-    {
         navManager.NavigateTo("/auth", true);
     }
 } 

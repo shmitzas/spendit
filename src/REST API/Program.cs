@@ -62,22 +62,22 @@ namespace REST_API
             };
             List<Transaction> Transactions = new List<Transaction>
             {
-                new Transaction { Id = 1, UserId= 1, CategoryId = 0, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary"},
-                new Transaction { Id = 2, UserId= 1, CategoryId = 0, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription"},
-                new Transaction { Id = 3, UserId= 1, CategoryId = 0, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent + comodities"},
-                new Transaction { Id = 4, UserId= 1, CategoryId = 0, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment"},
-                new Transaction { Id = 5, UserId= 2, CategoryId = 0, Type="Income", Amount=3598.6M, Currency = "EUR",  Description = "Salary"},
-                new Transaction { Id = 6, UserId= 2, CategoryId = 0, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present"},
-                new Transaction { Id = 7, UserId= 2, CategoryId = 0, Type="Expense", Amount=1500M, Currency = "EUR",  Description = "Car loan"},
-                new Transaction { Id = 8, UserId= 3, CategoryId = 0, Type="Income", Amount=5000M, Currency = "EUR",  Description = "Salary"},
-                new Transaction { Id = 9, UserId= 3, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Bought shares"},
-                new Transaction { Id = 10, UserId= 3, CategoryId = 0, Type="Income", Amount=545.89M, Currency = "EUR",  Description = "Fixed car issues and passed mandatory car check for 2 years"},
-                new Transaction { Id = 11, UserId= 3, CategoryId = 0, Type="Expense", Amount=100M, Currency = "EUR",  Description = "Bought new sneakers and clothes at SportsDirect"},
-                new Transaction { Id = 12, UserId= 4, CategoryId = 0, Type="Income", Amount=2000M, Currency = "EUR",  Description = "Salary"},
-                new Transaction { Id = 13, UserId= 4, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Bought new TV and PS5"},
-                new Transaction { Id = 14, UserId= 5, CategoryId = 0, Type="Income", Amount=900M, Currency = "EUR",  Description = "Salary"},
-                new Transaction { Id = 15, UserId= 5, CategoryId = 0, Type="Expense", Amount=100M, Currency = "EUR",  Description = "Lunch with clients"},
-                new Transaction { Id = 16, UserId= 5, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Present for parent's anniversary."},
+                new Transaction { Id = 1, UserId= 1, CategoryId = 0, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 2, UserId= 1, CategoryId = 0, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 3, UserId= 1, CategoryId = 0, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent + comodities", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 4, UserId= 1, CategoryId = 0, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 5, UserId= 2, CategoryId = 0, Type="Income", Amount=3598.6M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 6, UserId= 2, CategoryId = 0, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 7, UserId= 2, CategoryId = 0, Type="Expense", Amount=1500M, Currency = "EUR",  Description = "Car loan", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 8, UserId= 3, CategoryId = 0, Type="Income", Amount=5000M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 9, UserId= 3, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Bought shares", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 10, UserId= 3, CategoryId = 0, Type="Income", Amount=545.89M, Currency = "EUR",  Description = "Fixed car issues and passed mandatory car check for 2 years", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 11, UserId= 3, CategoryId = 0, Type="Expense", Amount=100M, Currency = "EUR",  Description = "Bought new sneakers and clothes at SportsDirect", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 12, UserId= 4, CategoryId = 0, Type="Income", Amount=2000M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 13, UserId= 4, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Bought new TV and PS5", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 14, UserId= 5, CategoryId = 0, Type="Income", Amount=900M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 15, UserId= 5, CategoryId = 0, Type="Expense", Amount=100M, Currency = "EUR",  Description = "Lunch with clients", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = 16, UserId= 5, CategoryId = 0, Type="Expense", Amount=1000M, Currency = "EUR",  Description = "Present for parent's anniversary.", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
             };
             List<Category> Categories = new List<Category>
             {

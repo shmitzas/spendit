@@ -2,74 +2,100 @@
 @using WebApp.Services
 @using WebApp.Models
 @using WebApp.Auth
+@using System.Text.RegularExpressions
 @inject TransactionsService _transactions
 @inject AuthenticationStateProvider authStateProvider
+@inject SweetAlertService alertService
+@inject IJSRuntime js
 @attribute [Authorize]
+
 <PageTitle>Spendit - Transactions</PageTitle>
+
 <AuthorizeView>
     <Authorized>
         <div class="row">
             <div class="col-12 mt-5 mb-5">
-                @if (transaction != null)
-                {
-                    <h2 class="text-center">Most recent transaction</h2>
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col">ID</th>
-                                <th scope="col">Description</th>
-                                <th scope="col">Ammount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <th scope="row">@transaction.Id</th>
-                                <td>@transaction.Description</td>
-                                <td>@transaction.Amount @transaction.Currency</td>
-                            </tr>
-
-                        </tbody>
-                    </table>
-                }
-                @if (transactions != null)
-                {
-                    <h2 class="text-center">Recent transactions</h2>
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th scope="col" class="w-70">Description</th>
-                                <th scope="col" class="w-10">Type</th>
-                                <th scope="col" class="w-20">Ammount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-
-                            @foreach (var tr in transactions)
-                            {
-                                <tr>
-                                    <td>@tr.Description</td>
-                                    <td>@tr.Type</td>
-                                    <td>@tr.Amount @tr.Currency</td>
-                                </tr>
-                            }
-
-
-                        </tbody>
-                    </table>
-                }
-                else
-                {
-                    <ErrorBoundary>
-                        <div class="alert alert-danger d-flex align-items-center" role="alert">
-                            <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill" /></svg>
-                            <div>
-                                Something went wrong! Try refreshing the page or come back later!
+                <div class="row justify-content-center">
+                    <div class="col-6 mt-5 mb-5 justify-content-center rounded-pill">
+                        <div class="wrapper">
+                            <div class="searchBar">
+                                <input @onkeyup="SearchOnEnter" @bind="_query" id="searchQueryInput" type="text" name="searchQueryInput" placeholder="Search" />
+                                <button @onclick="Search" id="searchQuerySubmit" type="submit" name="searchQuerySubmit">
+                                    <i class="fa fa-search"></i>
+                                </button>
                             </div>
                         </div>
-                    </ErrorBoundary>
-                }
+                    </div>
+                </div>
+                <div class="row mt-5 align-items-center">
+                    <div class="col">
+                        <h2 class="m-0">All transactions</h2>
+                    </div>
+                    <div class="col text-right">
+                        <button @onclick="AddTransaction" class="btn btn-success rounded-5 float-end">+</button>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Description</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @orderByDate"></i></a></th>
+                                    <th scope="col"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @orderByAmount"></i></a></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (transactions != null && transactions.Count() > 0)
+                                {
+                                    foreach (var tr in transactions)
+                                    {
+                                        <tr>
+                                            <td>@tr.Description</td>
+                                            <td>@tr.Type</td>
+                                            <td>@tr.CreatedAt.ToString("yyyy-MM-dd")</td>
+                                            <td>@tr.Amount @tr.Currency</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
+        @*
+        <div class="container" style="width:100%">
+        <div class='form-group mb-3'>
+        <label for='description'>Description</label>
+        <textarea class='form-control' id='description'></textarea>
+        </div>
+        <div class='form-group mb-3'>
+        <div class="row">
+        <div class="col-8 text-start">
+        <label for='amount'>Amount</label>
+        <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
+        </div>
+        <div class="col-4 text-start">
+        <label for='currency'>Currency</label>
+        <input value="EUR" type='text' class='form-control' id='currency' disabled>
+        </div>
+        </div>
+        </div>
+        <div class='form-group mb-3 text-start'>
+        <label for='type'>Type</label>
+        <select class="form-select" aria-label="Expense">
+        <option selected>Expense</option>
+        <option value="1">Income</option>
+        </select>
+        </div>
+        <div class='form-group mb-3 text-start'>
+        <label for='date'>Date</label>
+        <input type='date' class='form-control' id='date' placeholder='Select date'>
+        </div>
+        </div>
+        *@
     </Authorized>
     <NotAuthorized>
         <UnauthorizedAccessRedirect />
@@ -82,12 +108,142 @@
     private AuthProvider authProvider;
     private IEnumerable<Transaction>? transactions;
     private Transaction? transaction;
+    private string orderByDate;
+    private string orderByAmount;
     private User _user;
+    private string _query;
 
     protected override async Task OnInitializedAsync()
     {
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
         transactions = await _transactions.GetTransactions(_user.Id);
+        orderByDate = "fa-sort-down";
+        orderByAmount = "fa-sort-down";
+        await alertService.EnableInputAsync();
+    }
+    private async Task OrderByDate()
+    {
+        if (this.orderByDate == "fa-sort-down")
+        {
+            transactions = transactions.OrderBy(t => t.CreatedAt);
+            orderByDate = "fa-sort-up";
+            StateHasChanged();
+        }
+        else
+        {
+            transactions = transactions.OrderByDescending(t => t.CreatedAt);
+            orderByDate = "fa-sort-down";
+            StateHasChanged();
+        }
+
+    }
+    private async Task OrderByAmount()
+    {
+        if (this.orderByAmount == "fa-sort-down")
+        {
+            transactions = transactions.OrderBy(t => t.Amount);
+            orderByAmount = "fa-sort-up";
+            StateHasChanged();
+        }
+        else
+        {
+            transactions = transactions.OrderByDescending(t => t.Amount);
+            orderByAmount = "fa-sort-down";
+            StateHasChanged();
+        }
+    }
+    private async Task AddTransaction()
+    {
+        var tr = new Transaction();
+        tr.Description = "before";
+        string defCurrency = "EUR";
+        //var res = await alertService.FireAsync(new SweetAlertOptions
+        //    {
+        //        Title = "New transaction",
+        //        ShowCancelButton = true,
+        //        ShowConfirmButton = true,
+        //        ConfirmButtonText = "Ok",
+        //        CancelButtonText = "Close",
+        //        InputLabel = "Desc",
+        //        Input = "textarea",
+        //        Html = @"<div class=""container"" style=""width:100%"">
+        //                    <div class=""form-group mb-3 text-start mt-3"">
+        //                        <label for=""description"">Description</label>
+        //                        <textarea @bind=""tr.Description"" type=""text""class=""form-control"" id=""description""></textarea>
+        //                    </div>
+        //                    <div class=""form-group mb-3"">
+        //                        <div class=""row"">
+        //                            <div class=""col-8 text-start"">
+        //                                <label for=""amount"">Amount</label>
+        //                                <input @bind=""tr.Amount"" type=""number"" class=""form-control"" id=""amount"" placeholder=""Enter transaction amount"">
+        //                            </div>
+        //                            <div class=""col-4 text-start"">
+        //                                <label for=""currency"">Currency</label>
+        //                                <input @bind=""defCurrency"" value=""EUR"" type=""text"" class=""form-control"" id=""currency"" disabled>
+        //                            </div>
+        //                        </div>
+        //                    </div>
+        //                    <div class=""form-group mb-3 text-start"">
+        //                        <label for=""type"">Type</label>
+        //                        <select class=""form-select"" aria-label=""Expense"">
+        //                            <option selected @bind=""tr.Type"">Expense</option>
+        //                            <option value=""1"">Income</option>
+        //                        </select>
+        //                    </div>
+        //                    <div class=""form-group mb-3 text-start"">
+        //                        <label for=""date"">Date</label>
+        //                        <input @bind=""tr.CreatedAt"" type=""date"" class=""form-control"" id=""date"" placeholder=""Select date"">
+        //                    </div>
+        //                </div>",
+
+        //    });
+        var res = await js.InvokeAsync<string[]>("Swal.fire", new //Perdaryt, reikia naudoti alertą JS formatu, tsg atlikus viską Values grąžint atgal į šitą funkciją
+        {
+            title = "Multiple inputs",
+            html = "<input id='swal-input1' class='swal2-input'>" +
+                   "<input id='swal-input2' class='swal2-input'>",
+            focusConfirm = false,
+            preConfirm = DotNetObjectReference.Create(this, async (i) =>
+            {
+                return await js.InvokeAsync<string[]>("Array", new object[] {
+                    await js.InvokeAsync<string>("document.getElementById", "swal-input1").ConfigureAwait(false),
+                    await js.InvokeAsync<string>("document.getElementById", "swal-input2").ConfigureAwait(false)
+                });
+            })
+        });
+
+        if (res.IsConfirmed)
+        {
+            var result = tr.Description;
+            Console.WriteLine(result);
+        }
+    }
+    private async Task EditTransaction()
+    {
+
+    }
+    private async Task DeleteTransaction()
+    {
+
+    }
+    private async Task Search()
+    {
+        if (String.IsNullOrEmpty(_query))
+        {
+            transactions = await _transactions.GetTransactions(_user.Id);
+        }
+        else
+        {
+            transactions = await _transactions.Search(_user.Id, _query);
+        }
+        StateHasChanged();
+    }
+    private async void SearchOnEnter(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await Search();
+        }
     }
 }
