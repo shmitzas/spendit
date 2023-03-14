@@ -1,4 +1,5 @@
 ﻿@page "/transactions"
+@using System.Text.Json;
 @using WebApp.Services
 @using WebApp.Models
 @using WebApp.Auth
@@ -6,7 +7,7 @@
 @inject TransactionsService _transactions
 @inject AuthenticationStateProvider authStateProvider
 @inject SweetAlertService alertService
-@inject IJSRuntime js
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Spendit - Transactions</PageTitle>
@@ -67,32 +68,32 @@
         </div>
         @*
         <div class="container" style="width:100%">
-        <div class='form-group mb-3'>
-        <label for='description'>Description</label>
-        <textarea class='form-control' id='description'></textarea>
+        <div class="form-group mb-3">
+        <label for="description">Description</label>
+        <textarea class="form-control" id="description"></textarea>
         </div>
-        <div class='form-group mb-3'>
+        <div class="form-group mb-3">
         <div class="row">
         <div class="col-8 text-start">
-        <label for='amount'>Amount</label>
-        <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
+        <label for="amount">Amount</label>
+        <input type="number" class="form-control" id="amount" placeholder="Enter transaction amount">
         </div>
         <div class="col-4 text-start">
-        <label for='currency'>Currency</label>
-        <input value="EUR" type='text' class='form-control' id='currency' disabled>
+        <label for="currency">Currency</label>
+        <input value="EUR" type="text" class="form-control" id="currency" disabled>
         </div>
         </div>
         </div>
-        <div class='form-group mb-3 text-start'>
-        <label for='type'>Type</label>
+        <div class="form-group mb-3 text-start">
+        <label for="type">Type</label>
         <select class="form-select" aria-label="Expense">
         <option selected>Expense</option>
         <option value="1">Income</option>
         </select>
         </div>
-        <div class='form-group mb-3 text-start'>
-        <label for='date'>Date</label>
-        <input type='date' class='form-control' id='date' placeholder='Select date'>
+        <div class="form-group mb-3 text-start">
+        <label for="date">Date</label>
+        <input type="date" class="form-control" id="date" placeholder="Select date">
         </div>
         </div>
         *@
@@ -120,7 +121,13 @@
         transactions = await _transactions.GetTransactions(_user.Id);
         orderByDate = "fa-sort-down";
         orderByAmount = "fa-sort-down";
-        await alertService.EnableInputAsync();
+
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender != null)
+        {
+        }
     }
     private async Task OrderByDate()
     {
@@ -155,70 +162,65 @@
     }
     private async Task AddTransaction()
     {
+        //var res = await _module.InvokeAsync<string>("AddTransactions");
         var tr = new Transaction();
         tr.Description = "before";
         string defCurrency = "EUR";
-        //var res = await alertService.FireAsync(new SweetAlertOptions
-        //    {
-        //        Title = "New transaction",
-        //        ShowCancelButton = true,
-        //        ShowConfirmButton = true,
-        //        ConfirmButtonText = "Ok",
-        //        CancelButtonText = "Close",
-        //        InputLabel = "Desc",
-        //        Input = "textarea",
-        //        Html = @"<div class=""container"" style=""width:100%"">
-        //                    <div class=""form-group mb-3 text-start mt-3"">
-        //                        <label for=""description"">Description</label>
-        //                        <textarea @bind=""tr.Description"" type=""text""class=""form-control"" id=""description""></textarea>
-        //                    </div>
-        //                    <div class=""form-group mb-3"">
-        //                        <div class=""row"">
-        //                            <div class=""col-8 text-start"">
-        //                                <label for=""amount"">Amount</label>
-        //                                <input @bind=""tr.Amount"" type=""number"" class=""form-control"" id=""amount"" placeholder=""Enter transaction amount"">
-        //                            </div>
-        //                            <div class=""col-4 text-start"">
-        //                                <label for=""currency"">Currency</label>
-        //                                <input @bind=""defCurrency"" value=""EUR"" type=""text"" class=""form-control"" id=""currency"" disabled>
-        //                            </div>
-        //                        </div>
-        //                    </div>
-        //                    <div class=""form-group mb-3 text-start"">
-        //                        <label for=""type"">Type</label>
-        //                        <select class=""form-select"" aria-label=""Expense"">
-        //                            <option selected @bind=""tr.Type"">Expense</option>
-        //                            <option value=""1"">Income</option>
-        //                        </select>
-        //                    </div>
-        //                    <div class=""form-group mb-3 text-start"">
-        //                        <label for=""date"">Date</label>
-        //                        <input @bind=""tr.CreatedAt"" type=""date"" class=""form-control"" id=""date"" placeholder=""Select date"">
-        //                    </div>
-        //                </div>",
-
-        //    });
-        var res = await js.InvokeAsync<string[]>("Swal.fire", new //Perdaryt, reikia naudoti alertą JS formatu, tsg atlikus viską Values grąžint atgal į šitą funkciją
+        var swalOptions = new
         {
-            title = "Multiple inputs",
-            html = "<input id='swal-input1' class='swal2-input'>" +
-                   "<input id='swal-input2' class='swal2-input'>",
-            focusConfirm = false,
-            preConfirm = DotNetObjectReference.Create(this, async (i) =>
-            {
-                return await js.InvokeAsync<string[]>("Array", new object[] {
-                    await js.InvokeAsync<string>("document.getElementById", "swal-input1").ConfigureAwait(false),
-                    await js.InvokeAsync<string>("document.getElementById", "swal-input2").ConfigureAwait(false)
-                });
-            })
-        });
+            title = "Modal Title",
+            html = @"<div class='container' style='width:100%'>
+                        <div class='form-group mb-3'>
+                            <label for='description'>Description</label>
+                            <textarea class='form-control' id='description'></textarea>
+                        </div>
+                        <div class='form-group mb-3'>
+                            <div class='row'>
+                                <div class='col-8 text-start'>
+                                    <label for='amount'>Amount</label>
+                                    <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
+                                </div>
+                                <div class='col-4 text-start'>
+                                    <label for='currency'>Currency</label>
+                                    <input value='EUR' type='text' class='form-control' id='currency' disabled>
+                                </div>
+                            </div>
+                        </div>
+                        <div class='form-group mb-3 text-start'>
+                            <label for='type'>Type</label>
+                            <select class='form-select' aria-label='Expense'>
+                                <option selected>Expense</option>
+                                <option value='1'>Income</option>
+                            </select>
+                        </div>
+                        <div class='form-group mb-3 text-start'>
+                            <label for='date'>Date</label>
+                            <input type='date' class='form-control' id='date' placeholder='Select date'>
+                        </div>
+                    </div>",
+            showCancelButton = true,
+            confirmButtonText = "Save",
+            cancelButtonText = "Cancel"
+        };
 
-        if (res.IsConfirmed)
+        var swalResult = await JSRuntime.InvokeAsync<string>("Swal.fire", swalOptions);
+
+        if (swalResult != null && swalResult.Contains("confirm"))
         {
-            var result = tr.Description;
-            Console.WriteLine(result);
+            var resultDict = new Dictionary<string, string>();
+            var resultValue = await JSRuntime.InvokeAsync<JsonElement>("JSON.parse", swalResult);
+
+            resultDict.Add("description", resultValue.GetProperty("value").GetProperty("description").GetString());
+            resultDict.Add("amount", resultValue.GetProperty("value").GetProperty("amount").GetString());
+            resultDict.Add("type", resultValue.GetProperty("value").GetProperty("type").GetString());
+            resultDict.Add("date", resultValue.GetProperty("value").GetProperty("date").GetString());
+
+            // Use the resultDict as needed
+            // ...
+            Console.WriteLine(swalResult);
         }
     }
+        
     private async Task EditTransaction()
     {
 
