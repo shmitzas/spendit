@@ -1,5 +1,3 @@
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Authorization;
 using WebApp.Services;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -20,6 +18,7 @@ namespace WebApp
             builder.Services.AddScoped<AuthenticationStateProvider, AuthProvider>();
             builder.Services.AddHttpClient<TransactionsService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
             builder.Services.AddHttpClient<UsersService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
+            builder.Services.AddScoped<InputValidationService>();
             builder.Services.AddSweetAlert2();
             var app = builder.Build();
 
@@ -29,7 +28,6 @@ namespace WebApp
                 app.UseExceptionHandler("/Error");
                 app.UseHsts();
             }
-
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();

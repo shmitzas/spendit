@@ -37,7 +37,6 @@ namespace WebApp.Services
         {
             try
             {
-                user = await SanitizeUpdatedUser(user);
                 var content = await SerializeObj(user);
                 var res = await _httpClient.PutAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
@@ -55,7 +54,6 @@ namespace WebApp.Services
         {
             try
             {
-                user = await SanitizeNewUser(user);
                 var content = await SerializeObj(user);
                 var res = await _httpClient.PostAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
@@ -85,41 +83,5 @@ namespace WebApp.Services
                 return false;
             }
         }
-
-        private async Task<User> SanitizeNewUser(User user)
-        {
-            user.Username = await SanitizeUsername(user.Username);
-            user.Password = await SanitizePassword(user.Password);
-            user.Email = await SanitizeEmail(user.Email);
-            return user;
-        }
-        private async Task<User> SanitizeUpdatedUser(User user)
-        {
-            user.Password = await SanitizePassword(user.Password);
-            user.Email = await SanitizeEmail(user.Email);
-            return user;
-        }
-
-        //Allows only letters and numbers
-        private async Task<string> SanitizeUsername(string input)
-        {
-            return Regex.Replace(input, @"[^a-zA-Z0-9]", "");
-        }
-
-        /*
-         Allowed special characters are
-         !@#$%^&*()-+=[]{};:'",.<>/?\|.
-        */
-        private async Task<string> SanitizePassword(string input)
-        {
-            return Regex.Replace(input, @"[^\w!@#$%^&*()\-+=\[\]{};:'"",.<>/?\\|]", "");
-        }
-
-        //Allows only characters used for email address
-        private async Task<string> SanitizeEmail(string input)
-        {
-            return Regex.Replace(input, @"[^a-zA-Z0-9!@#$%^&*()\-+=\[\]{};:'"",.<>/?\\|]+$", "");
-        }
-        
     }
 }

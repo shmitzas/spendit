@@ -6,7 +6,8 @@
 @inject IJSRuntime js
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
-@inject UsersService _users
+@inject UsersService usersService
+@inject InputValidationService validationService
 @inject SweetAlertService alertService
 
 @if (showLogin)
@@ -82,7 +83,7 @@ else
         {
             if (_user.Username != "" && _user.Password != "")
             {
-                var userInfo = await _users.SignIn(_user);
+                var userInfo = await usersService.SignIn(_user);
                 if (!String.IsNullOrEmpty(userInfo.Username))
                 {
                     var authProvider = (AuthProvider)authStateProvider;
@@ -125,24 +126,24 @@ else
     {
         if (!String.IsNullOrEmpty(_username))
         {
-            if (await ValidateUsername(_username))
+            if (await validationService.ValidateUsername(_username))
             {
                 _user.Username = _username;
 
                 if (!String.IsNullOrEmpty(_email))
                 {
-                    if (await ValidateEmail(_email))
+                    if (await validationService.ValidateEmail(_email))
                     {
                         _user.Email = _email;
                         if (!String.IsNullOrEmpty(_password))
                         {
-                            if (await ValidatePassword(_password))
+                            if (await validationService.ValidatePassword(_password))
                             {
-                                if (await CheckPasswordLenght(_password))
+                                if (await validationService.CheckPasswordRequirements(_password))
                                 {
                                     _user.Password = _password;
 
-                                    bool res = await _users.AddUser(_user);
+                                    bool res = await usersService.AddUser(_user);
                                     if (res)
                                     {
                                         var confirmation = await alertService.FireAsync(new SweetAlertOptions
@@ -245,49 +246,6 @@ else
                 });
         }
     }
-    private async Task<bool>ValidateUsername(string input)
-    {
-        if (Regex.IsMatch(input, @"^[a-zA-Z0-9]+$"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    private async Task<bool>CheckPasswordLenght(string input)
-    {
-        if (input.Length < 8)
-            return false;
-        else
-        {
-            return true;
-        }
-    }
-    private async Task<bool>ValidatePassword(string input)
-    {
-        if (Regex.IsMatch(input, @"^[a-zA-Z0-9!@#$%^&*()\-+=\[\]{};:'"",.<>/?\\|]+$"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-    private async Task<bool>ValidateEmail(string input)
-    {
-        if (Regex.IsMatch(input, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     private async Task ShowRegister()
     {
         showLogin = false;

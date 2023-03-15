@@ -67,7 +67,7 @@ public class AuthProvider : AuthenticationStateProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"UpdateAuthState: {ex}");
+            Console.WriteLine($"AuthProvider.UpdateAuthState: {ex}");    
         }
     }
     
@@ -87,7 +87,6 @@ public class AuthProvider : AuthenticationStateProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
             return new User();
         }
     }

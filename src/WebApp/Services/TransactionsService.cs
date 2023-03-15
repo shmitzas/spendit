@@ -35,7 +35,7 @@ namespace WebApp.Services
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<Transaction>($"/api/transactions/{userId}/" + transactionId);
+                return await _httpClient.GetFromJsonAsync<Transaction>($"/api/transactions/{userId}/{transactionId}");
             }
             catch (Exception ex)
             {
@@ -53,12 +53,12 @@ namespace WebApp.Services
                 return new List<Transaction>();
             }
         }
-        public async Task<bool> AddTransaction(int userId, Transaction transaction)
+        public async Task<bool> AddTransaction(Transaction transaction)
         {
             try
             {
                 var content = await SerializeObj(transaction);
-                var res = await _httpClient.PostAsync($"/api/transactions/{userId}/", content);
+                var res = await _httpClient.PostAsync("/api/transactions", content);
                 if (res.IsSuccessStatusCode)
                     return true;
                 return false;
@@ -68,12 +68,12 @@ namespace WebApp.Services
                 return false;
             }
         }
-        public async Task<bool> UpdateTransaction(int userId, Transaction transaction)
+        public async Task<bool> UpdateTransaction(Transaction transaction)
         {
             try
             {
                 var content = await SerializeObj(transaction);
-                var res = await _httpClient.PutAsync($"/api/transactions/{userId}/", content);
+                var res = await _httpClient.PutAsync("/api/transactions", content);
                 if (res.IsSuccessStatusCode)
                     return true;
                 return false;
@@ -98,6 +98,5 @@ namespace WebApp.Services
                 return false;
             }
         }
-
     }
 }

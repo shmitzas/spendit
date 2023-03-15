@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
 using REST_API.Models.Transactions;
@@ -21,10 +22,7 @@ namespace REST_API.Controllers
         {
             try
             {
-                var transaction = await _DbContext.Transactions
-                    .Where(t => t.UserId == userId)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .ToListAsync();
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
                 return Ok(transaction);
             }
             catch (Exception ex)
@@ -38,14 +36,7 @@ namespace REST_API.Controllers
         {
             try
             {
-                var transactions = await _DbContext.Transactions
-                    .Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .ToListAsync();
-                foreach(var tr in transactions)
-                {
-                    Console.WriteLine(tr.Description);
-                }
+                var transactions = await _DbContext.Transactions.Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId).ToListAsync();
                 return Ok(transactions);
             }
             catch (Exception ex)
@@ -76,18 +67,19 @@ namespace REST_API.Controllers
         {
             try
             {
-                var Transaction = new Transaction()
+                var transaction = new Transaction()
                 {
+                    Id = await _DbContext.Transactions.MaxAsync(t => (int)t.Id) + 1,
                     UserId = transactionInfo.UserId,
                     CategoryId = 0,
                     Type = transactionInfo.Type,
                     Amount = transactionInfo.Amount,
                     Currency = transactionInfo.Currency,
                     Description = transactionInfo.Description,
-                    CreatedAt = transactionInfo.CreatedAt == null ? DateTime.Now : transactionInfo.CreatedAt,
+                    CreatedAt = transactionInfo.CreatedAt,
                     UpdatedAt = DateTime.Now
                 };
-                await _DbContext.Transactions.AddAsync(Transaction);
+                await _DbContext.Transactions.AddAsync(transaction);
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
@@ -98,19 +90,20 @@ namespace REST_API.Controllers
         }
 
         [HttpPut]
-        [Route("{userId:int}/{id:int}")]
-        public async Task<IActionResult> UpdateTransaction([FromRoute] int userId, [FromRoute] int id, Transaction transactionInfo)
+        public async Task<IActionResult> UpdateTransaction(Transaction transactionInfo)
         {
             try
             {
-                var Transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
-                Transaction.CategoryId = transactionInfo.CategoryId;
-                Transaction.Type = transactionInfo.Type;
-                Transaction.Amount = transactionInfo.Amount;
-                Transaction.Currency = transactionInfo.Currency;
-                Transaction.Description = transactionInfo.Description;
-                Transaction.UpdatedAt = DateTime.Now;
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == transactionInfo.UserId && t.Id == transactionInfo.Id).SingleAsync();
+                transaction.CategoryId = transactionInfo.CategoryId;
+                transaction.Type = transactionInfo.Type;
+                transaction.Amount = transactionInfo.Amount;
+                transaction.Currency = transactionInfo.Currency;
+                transaction.Description = transactionInfo.Description;
+                transaction.CreatedAt = transactionInfo.CreatedAt;
+                transaction.UpdatedAt = DateTime.Now;
 
+                _DbContext.Transactions.Update(transaction);
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }

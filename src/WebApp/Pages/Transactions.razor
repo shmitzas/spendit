@@ -4,14 +4,14 @@
 @using WebApp.Models
 @using WebApp.Auth
 @using System.Text.RegularExpressions
-@inject TransactionsService _transactions
+@inject TransactionsService transactionsService
 @inject AuthenticationStateProvider authStateProvider
 @inject SweetAlertService alertService
+@inject InputValidationService validationService
 @inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Spendit - Transactions</PageTitle>
-
 <AuthorizeView>
     <Authorized>
         <div class="row">
@@ -41,10 +41,11 @@
                         <table class="table table-hover">
                             <thead>
                                 <tr>
-                                    <th scope="col">Description</th>
-                                    <th scope="col">Type</th>
-                                    <th scope="col"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @orderByDate"></i></a></th>
-                                    <th scope="col"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @orderByAmount"></i></a></th>
+                                    <th scope="col" class="col-4">Description</th>
+                                    <th scope="col" class="col-2">Type</th>
+                                    <th scope="col" class="col-3"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @orderByDate"></i></a></th>
+                                    <th scope="col" class="col-2"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @orderByAmount"></i></a></th>
+                                    <th scope="col" class="col-3"></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -57,6 +58,10 @@
                                             <td>@tr.Type</td>
                                             <td>@tr.CreatedAt.ToString("yyyy-MM-dd")</td>
                                             <td>@tr.Amount @tr.Currency</td>
+                                            <td>
+                                                <button @onclick="()=>EditTransaction(tr.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
+                                                <button @onclick="()=>DeleteTransaction(tr.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
                                         </tr>
                                     }
                                 }
@@ -66,40 +71,9 @@
                 </div>
             </div>
         </div>
-        @*
-        <div class="container" style="width:100%">
-        <div class="form-group mb-3">
-        <label for="description">Description</label>
-        <textarea class="form-control" id="description"></textarea>
-        </div>
-        <div class="form-group mb-3">
-        <div class="row">
-        <div class="col-8 text-start">
-        <label for="amount">Amount</label>
-        <input type="number" class="form-control" id="amount" placeholder="Enter transaction amount">
-        </div>
-        <div class="col-4 text-start">
-        <label for="currency">Currency</label>
-        <input value="EUR" type="text" class="form-control" id="currency" disabled>
-        </div>
-        </div>
-        </div>
-        <div class="form-group mb-3 text-start">
-        <label for="type">Type</label>
-        <select class="form-select" aria-label="Expense">
-        <option selected>Expense</option>
-        <option value="1">Income</option>
-        </select>
-        </div>
-        <div class="form-group mb-3 text-start">
-        <label for="date">Date</label>
-        <input type="date" class="form-control" id="date" placeholder="Select date">
-        </div>
-        </div>
-        *@
     </Authorized>
     <NotAuthorized>
-        <UnauthorizedAccessRedirect />
+        <Unauthorized />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -108,25 +82,29 @@
 @code {
     private AuthProvider authProvider;
     private IEnumerable<Transaction>? transactions;
-    private Transaction? transaction;
     private string orderByDate;
     private string orderByAmount;
     private User _user;
     private string _query;
-
+    private int _selectedId;
     protected override async Task OnInitializedAsync()
     {
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
-        transactions = await _transactions.GetTransactions(_user.Id);
+        //transactions = await transactionsService.GetTransactions(_user.Id);
+        await LoadTransactions();
         orderByDate = "fa-sort-down";
         orderByAmount = "fa-sort-down";
-
     }
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private async Task LoadTransactions()
     {
-        if (firstRender != null)
+        try
         {
+            transactions = await transactionsService.GetTransactions(_user.Id);
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
         }
     }
     private async Task OrderByDate()
@@ -160,84 +138,140 @@
             StateHasChanged();
         }
     }
-    private async Task AddTransaction()
+    private async Task AddTransaction() //Perdaryt su NewTransaction
     {
-        //var res = await _module.InvokeAsync<string>("AddTransactions");
-        var tr = new Transaction();
-        tr.Description = "before";
-        string defCurrency = "EUR";
-        var swalOptions = new
+        try
         {
-            title = "Modal Title",
-            html = @"<div class='container' style='width:100%'>
-                        <div class='form-group mb-3'>
-                            <label for='description'>Description</label>
-                            <textarea class='form-control' id='description'></textarea>
-                        </div>
-                        <div class='form-group mb-3'>
-                            <div class='row'>
-                                <div class='col-8 text-start'>
-                                    <label for='amount'>Amount</label>
-                                    <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
-                                </div>
-                                <div class='col-4 text-start'>
-                                    <label for='currency'>Currency</label>
-                                    <input value='EUR' type='text' class='form-control' id='currency' disabled>
-                                </div>
-                            </div>
-                        </div>
-                        <div class='form-group mb-3 text-start'>
-                            <label for='type'>Type</label>
-                            <select class='form-select' aria-label='Expense'>
-                                <option selected>Expense</option>
-                                <option value='1'>Income</option>
-                            </select>
-                        </div>
-                        <div class='form-group mb-3 text-start'>
-                            <label for='date'>Date</label>
-                            <input type='date' class='form-control' id='date' placeholder='Select date'>
-                        </div>
-                    </div>",
-            showCancelButton = true,
-            confirmButtonText = "Save",
-            cancelButtonText = "Cancel"
-        };
-
-        var swalResult = await JSRuntime.InvokeAsync<string>("Swal.fire", swalOptions);
-
-        if (swalResult != null && swalResult.Contains("confirm"))
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal");
+            var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
+            if (await ValidateTransaction(transaction))
+            {
+                if (await transactionsService.AddTransaction(transaction))
+                {
+                    await LoadTransactions();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Error",
+                            Text = "Transaction was not added!",
+                            Icon = SweetAlertIcon.Error,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
+            }
+        }
+        catch (Exception ex)
         {
-            var resultDict = new Dictionary<string, string>();
-            var resultValue = await JSRuntime.InvokeAsync<JsonElement>("JSON.parse", swalResult);
-
-            resultDict.Add("description", resultValue.GetProperty("value").GetProperty("description").GetString());
-            resultDict.Add("amount", resultValue.GetProperty("value").GetProperty("amount").GetString());
-            resultDict.Add("type", resultValue.GetProperty("value").GetProperty("type").GetString());
-            resultDict.Add("date", resultValue.GetProperty("value").GetProperty("date").GetString());
-
-            // Use the resultDict as needed
-            // ...
-            Console.WriteLine(swalResult);
+            await InvokeError();
         }
     }
-        
-    private async Task EditTransaction()
-    {
 
+    private async Task EditTransaction(int transactionId)
+    {
+        try
+        {
+            var tr = await transactionsService.GetTransaction(_user.Id, transactionId);
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, tr.CreatedAt);
+            if (swalResult != null)
+            {
+                var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
+                transaction.Id = transactionId;
+                if (await ValidateTransaction(transaction))
+                {
+                    if (await transactionsService.UpdateTransaction(transaction))
+                    {
+                        await LoadTransactions();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Error",
+                                Text = "Transaction data was not updated!",
+                                Icon = SweetAlertIcon.Error,
+                                ConfirmButtonText = "Ok",
+                            });
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+        }
     }
-    private async Task DeleteTransaction()
+    private async Task DeleteTransaction(int transactionId)
     {
-
+        try
+        {
+            var confirmation = await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Are you sure?",
+                    Text = "This action is irreversible! Are you sure you want to do this?",
+                    Icon = SweetAlertIcon.Warning,
+                    ShowCancelButton = true,
+                    ConfirmButtonText = "Yes",
+                    CancelButtonText = "No"
+                });
+            if (confirmation.IsConfirmed || confirmation.IsDismissed)
+            {
+                if (await transactionsService.DeleteTransaction(_user.Id, transactionId))
+                {
+                    await LoadTransactions();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Error",
+                            Text = "Transaction was not removed!",
+                            Icon = SweetAlertIcon.Error,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+        }
+    }
+    private async Task<Transaction> ToModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            return new Transaction
+                {
+                    Id = 0,
+                    UserId = _user.Id,
+                    CategoryId = 0,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    Type = data["type"],
+                    CreatedAt = DateTime.Parse(data["date"])
+                };
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+            return new Transaction();
+        }
     }
     private async Task Search()
     {
         if (String.IsNullOrEmpty(_query))
         {
-            transactions = await _transactions.GetTransactions(_user.Id);
+            transactions = await transactionsService.GetTransactions(_user.Id);
         }
         else
         {
-            transactions = await _transactions.Search(_user.Id, _query);
+            transactions = await transactionsService.Search(_user.Id, _query);
         }
         StateHasChanged();
     }
@@ -248,4 +282,72 @@
             await Search();
         }
     }
+    private async Task InvokeError()
+    {
+        await alertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = "Oops... An error occured, please try again.",
+                Icon = SweetAlertIcon.Error,
+                ConfirmButtonText = "Ok",
+            });
+    }
+    private async Task<bool> ValidateTransaction(Transaction transaction)
+    {
+        if (!String.IsNullOrEmpty(transaction.Description) && await validationService.ValidateText(transaction.Description))
+        {
+            if (!String.IsNullOrEmpty(transaction.Amount.ToString()) && await validationService.ValidateDecimal(transaction.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(transaction.Currency) && await validationService.ValidateText(transaction.Currency))
+                {
+                    if (!String.IsNullOrEmpty(transaction.CreatedAt.ToString()) && await validationService.ValidateDate(transaction.CreatedAt.ToString()))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Warning",
+                                Text = "Date's format is incorrect!",
+                                Icon = SweetAlertIcon.Warning,
+                                ConfirmButtonText = "Ok",
+                            });
+                    }
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Warning",
+                            Text = "Currency's format is incorrect!",
+                            Icon = SweetAlertIcon.Warning,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
+            }
+            else
+            {
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Warning",
+                        Text = "Ammount is incorrect!",
+                        Icon = SweetAlertIcon.Warning,
+                        ConfirmButtonText = "Ok",
+                    });
+            }
+        }
+        else
+        {
+            await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Warning",
+                    Text = "Description text contains illegal characters!",
+                    Icon = SweetAlertIcon.Warning,
+                    ConfirmButtonText = "Ok",
+                });
+        }
+        return false;
+    }
 }
+
