@@ -3,12 +3,10 @@
 @attribute [Authorize]
 <AuthorizeView>
     <Authorized>
-        <NavLink class="nav-link" href="/">
-            <button @onclick="Logout" type="button" class="btn btn-primary rounded-pill">Logout</button>
-        </NavLink>
+            <button @onclick="Logout" type="button" href="/" class="btn btn-primary rounded-pill">Logout</button>
     </Authorized>
     <NotAuthorized>
-        <NavLink class="nav-link" href="auth">
+        <NavLink href="/auth">
             <button type="button" class="btn btn-success rounded-pill">Login</button>
         </NavLink>
     </NotAuthorized>

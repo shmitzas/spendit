@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using REST_API.Data;
 
 namespace REST_API.Controllers
 {
     public class RTransactionsController : Controller
     {
-        public IActionResult Index()
+        private readonly ApiDbContext _DbContext;
+        public RTransactionsController(ApiDbContext DbContext)
         {
-            return View();
+            _DbContext = DbContext;
         }
     }
 }

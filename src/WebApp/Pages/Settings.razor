@@ -16,56 +16,58 @@
 
 <AuthorizeView>
     <Authorized>
-
         <div class="row justify-content-center">
-            <div class="col-8 mt-5 mb-5">
-                <h2 class="text-center mb-5">Account settings</h2>
-                @if (_user == null || _currentCurrency == null)
-                {
-                    <div class="text-center">Loading...</div>
-                }
-                else
-                {
-                    <div class="row mb-3">
-                        <label for="staticEmail" class="col-sm-3 col-form-label">Username</label>
-                        <div class="col-sm-8">
-                            <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
-                        </div>
+            <div class="col-8">
+                <h3 class="mb-2 text-start">Account settings</h3>
+                <div class="row justify-content-center bg-body">
+                    <div class="col-10 mt-4 mb-4">
+                        @if (_user == null || _currentCurrency == null)
+                        {
+                            <div class="text-center">Loading...</div>
+                        }
+                        else
+                        {
+                            <div class="row mb-3">
+                                <label for="staticEmail" class="col-sm-3 col-form-label">Username</label>
+                                <div class="col-sm-9">
+                                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="InputEmail" class="col-sm-3 col-form-label">Email address</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="CurrentPassword" class="col-sm-3 col-form-label">Current password</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="NewPassword" class="col-sm-3 col-form-label">New password</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
+                                </div>
+                            </div>
+                            <div class="row mb-5 form-group text-start">
+                                <label class="col-sm-3" for=" currency">Main currency</label>
+                                <div class="col-sm-2">
+                                    <select class="form-select col-sm-10" id="currency" aria-label="Currency">
+                                        <option selected>@_currentCurrency</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" @onclick="UpdateSettings">Save changes</button>
+                            <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
+                        }
                     </div>
-                    <div class="row mb-3">
-                        <label for="InputEmail" class="col-sm-3 col-form-label">Email address</label>
-                        <div class="col-sm-8">
-                            <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="CurrentPassword" class="col-sm-3 col-form-label">Current password</label>
-                        <div class="col-sm-8">
-                            <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <label for="NewPassword" class="col-sm-3 col-form-label">New password</label>
-                        <div class="col-sm-8">
-                            <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
-                        </div>
-                    </div>
-                    <div class="row mb-5 form-group text-start">
-                        <label class="col-sm-3" for=" currency">Main currency</label>
-                        <div class="col-sm-2">
-                            <select class="form-select col-sm-10" id="currency" aria-label="Currency">
-                                <option selected>@_currentCurrency</option>
-                            </select>
-                        </div>
-                    </div>
-                    <button class="btn btn-success" @onclick="UpdateSettings">Save changes</button>
-                    <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
-                }
+                </div>
             </div>
         </div>
     </Authorized>
     <NotAuthorized>
-        <Unauthorized />
     </NotAuthorized>
 </AuthorizeView>
 @code {
@@ -211,7 +213,7 @@
                     ConfirmButtonText = "Yes",
                     CancelButtonText = "No"
                 });
-            if (confirmation.IsConfirmed || confirmation.IsDismissed)
+            if (confirmation.IsConfirmed)
             {
                 bool res = await usersService.DeleteUser(_user.Id);
                 if (res)

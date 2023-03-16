@@ -13,17 +13,5 @@ namespace REST_API.Controllers
         {
             _DbContext = DbContext;
         }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllCategories()
-        {
-            return Ok(await _DbContext.Categories.ToListAsync());
-        }
-        [HttpGet]
-        [Route("{id:int}")]
-        public async Task<IActionResult> GetUserCategories()
-        {
-            return Ok(await _DbContext.Categories.ToListAsync());
-        }
     }
 }

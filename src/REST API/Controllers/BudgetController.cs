@@ -1,12 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using REST_API.Data;
 
 namespace REST_API.Controllers
 {
     public class BudgetController : Controller
     {
-        public IActionResult Index()
+        private readonly ApiDbContext _DbContext;
+        public BudgetController(ApiDbContext DbContext)
         {
-            return View();
+            _DbContext = DbContext;
         }
     }
 }

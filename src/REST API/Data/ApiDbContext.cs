@@ -17,5 +17,43 @@ namespace REST_API.Data
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<RTransaction> RTransactions { get; set; }
         public virtual DbSet<Budget> Budgets { get; set; }
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<User>()
+                .Property(u => u.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.UserId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.CategoryId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Category>()
+                .Property(c => c.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Category>()
+                .Property(c => c.UserId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+        }
     }
 }

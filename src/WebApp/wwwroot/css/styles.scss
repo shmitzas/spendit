@@ -1,18 +1,56 @@
 ﻿$yellow: #FFE401;
 $dark-gray: #272727;
-$gray: #EEE;
-$red: #F22424;
-$green: #0AB945;
+$gray: #eee;
+$blue: #0f89df;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #d63384;
+$red: #fb002e;
+$orange: #fd7e14;
+$yellow: #f0cc00;
+$green: #00b552;
+$teal: #20c997;
+$cyan: #0dcaf0;
+$white: #fff;
 
-body {
+@import "../bootstrap/scss/bootstrap.scss";
+
+.swal2-styled.swal2-confirm {
+    background-color: $green !important;
+    border-radius: 50rem !important;
+}
+.swal2-styled.swal2-cancel {
+    background-color: $red !important;
+    border-radius: 50rem !important;
+}
+.swal2-popup {
+    border-radius: 1rem !important;
+}
+.swal2-icon.swal2-warning {
+    color: $yellow !important;
+    border-color: $yellow !important;
+}
+.swal2-icon.swal2-error {
+    color: $red !important;
+    border-color: $red !important;
+}
+.swal2-icon.swal2-error [class^=swal2-x-mark-line] {
+    background-color: $red !important;
 }
 
+
+body {
+    background-color: #d5e1ea;
+}
+.bg-body {
+    border-radius: 0.5rem !important;
+}
 a {
     text-decoration: none !important;
 }
 
 .navbar {
-    background-color: $gray;
+    background-color: $white;
 
     .nav-link a {
         color: $dark-gray;
@@ -23,18 +61,11 @@ a {
     }
 }
 
-.login a {
-    color: $green;
-}
-
-.logout a {
-    color: $gray;
-}
-
 .createAccount {
     color: dodgerblue !important;
     vertical-align: middle;
 }
+
 .wrapper {
 
     .label {
@@ -76,4 +107,3 @@ a {
         cursor: pointer;
     }
 }
-

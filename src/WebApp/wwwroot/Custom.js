@@ -22,7 +22,7 @@
                 <label for='type'>Type</label>
                 <select class='form-select' id='type' aria-label='Expense'>
                     <option selected>Expense</option>
-                    <option value='1'>Income</option>
+                    <option value='Income'>Income</option>
                 </select>
             </div>
             <div class='form-group mb-3 text-start'>
@@ -84,7 +84,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trDate) 
                 <label for='type'>Type</label>
                 <select class='form-select' id='type' aria-label='Expense' value ='${trType}'>
                     <option selected>Expense</option>
-                    <option value='1'>Income</option>
+                    <option value='Income'>Income</option>
                 </select>
             </div>
             <div class='form-group mb-3 text-start'>

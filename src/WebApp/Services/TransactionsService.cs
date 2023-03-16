@@ -18,9 +18,10 @@ namespace WebApp.Services
         private async Task<StringContent> SerializeObj(object obj)
         {
             string json = JsonSerializer.Serialize(obj);
+            Console.WriteLine($"\n\nBEFORE TR {json}\n\n");
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
-        public async Task<IEnumerable<Transaction>> GetTransactions(int userId)
+        public async Task<IEnumerable<Transaction>> GetTransactions(Guid userId)
         {
             try
             {
@@ -31,7 +32,7 @@ namespace WebApp.Services
                 return new List<Transaction>();
             }
         }
-        public async Task<Transaction> GetTransaction(int userId, int transactionId)
+        public async Task<Transaction> GetTransaction(Guid userId, Guid transactionId)
         {
             try
             {
@@ -42,7 +43,18 @@ namespace WebApp.Services
                 return new Transaction();
             }
         }
-        public async Task<IEnumerable<Transaction>> Search(int userId, string query)
+        public async Task<IEnumerable<Transaction>> GetTransactionsByDate(Guid userId, DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> Search(Guid userId, string query)
         {
             try
             {
@@ -84,7 +96,7 @@ namespace WebApp.Services
             }
 
         }
-        public async Task<bool> DeleteTransaction(int userId, int transactionId)
+        public async Task<bool> DeleteTransaction(Guid userId, Guid transactionId)
         {
             try
             {

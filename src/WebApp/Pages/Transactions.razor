@@ -15,8 +15,9 @@
 <AuthorizeView>
     <Authorized>
         <div class="row">
-            <div class="col-12 mt-5 mb-5">
-                <div class="row justify-content-center">
+            <div class="col-12">
+                <h3>Filters</h3>
+                <div class="row justify-content-center bg-body pb-5">
                     <div class="col-6 mt-5 mb-5 justify-content-center rounded-pill">
                         <div class="wrapper">
                             <div class="searchBar">
@@ -27,25 +28,62 @@
                             </div>
                         </div>
                     </div>
+                    <div class="row justify-content-center align-items-center">
+                        <div class="col-10 align-items-center">
+                            <div class="row justify-content-center align-items-center text-center">
+                                <hr class="col-5 mb-0 border-primary border-1 opacity-100">
+                                <button @onclick="FilterStatus" class="col-1 btn btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters">
+                                    <span class="fw-semibold">Filters</span> <i class="fa-sharp fa-solid @_filterArrow"></i>
+                                </button>
+                                <hr class="col-5 mb-0 border-primary border-1 opacity-100">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row mt-5 justify-content-center collapse" id="filters">
+                        <div class="col-8">
+                            <div class="row justify-content-center align-items-center">
+                                <div class="col-2 text-end">
+                                    <span>Perdiod</span>
+                                </div>
+                                <div class="col-4">
+                                    <input @bind="@_startDate" type="date" class="form-control" id="dateFrom" placeholder="Start date">
+                                </div>
+                                <div class="col-4">
+                                    <input @bind="@_endDate" type="date" class="form-control" id="dateTo" placeholder="End date">
+                                </div>
+                                <div class="col-2">
+                                    <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-3">
+                                <div class="col-10">
+                                    <div class="form-check ps-3">
+                                        <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
+                                        <label class="form-check-label" for="showTime">Show transaction time</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="row mt-5 align-items-center">
+                <div class="row mt-5 align-items-center mb-2">
                     <div class="col">
-                        <h2 class="m-0">All transactions</h2>
+                        <h3 class="m-0">All transactions</h3>
                     </div>
                     <div class="col text-right">
-                        <button @onclick="AddTransaction" class="btn btn-success rounded-5 float-end">+</button>
+                        <button @onclick="AddTransaction" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
+                <div class="row bg-body shadow-sm">
+                    <div class="col-12 pt-2">
                         <table class="table table-hover">
-                            <thead>
+                            <thead class="border-bottom-1">
                                 <tr>
                                     <th scope="col" class="col-4">Description</th>
                                     <th scope="col" class="col-2">Type</th>
-                                    <th scope="col" class="col-3"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @orderByDate"></i></a></th>
-                                    <th scope="col" class="col-2"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @orderByAmount"></i></a></th>
-                                    <th scope="col" class="col-3"></th>
+                                    <th scope="col" class="col-3"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @_orderByDate"></i></a></th>
+                                    <th scope="col" class="col-2"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @_orderByAmount"></i></a></th>
+                                    <th scope="col" class="col-3">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -54,10 +92,17 @@
                                     foreach (var tr in transactions)
                                     {
                                         <tr>
-                                            <td>@tr.Description</td>
+                                            <td>@TransactionDescLenght(tr.Description).Result</td>
                                             <td>@tr.Type</td>
-                                            <td>@tr.CreatedAt.ToString("yyyy-MM-dd")</td>
-                                            <td>@tr.Amount @tr.Currency</td>
+                                            <td>@tr.CreatedAt.ToString(@_dateFormat)</td>
+                                            @if (tr.Type == "Expense")
+                                            {
+                                                <td class="text-danger">-@tr.Amount @tr.Currency</td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-success">+@tr.Amount @tr.Currency</td>
+                                            }
                                             <td>
                                                 <button @onclick="()=>EditTransaction(tr.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
                                                 <button @onclick="()=>DeleteTransaction(tr.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
@@ -73,7 +118,6 @@
         </div>
     </Authorized>
     <NotAuthorized>
-        <Unauthorized />
     </NotAuthorized>
 </AuthorizeView>
 
@@ -82,19 +126,22 @@
 @code {
     private AuthProvider authProvider;
     private IEnumerable<Transaction>? transactions;
-    private string orderByDate;
-    private string orderByAmount;
     private User _user;
+    private string _orderByDate = "fa-sort-down";
+    private string _orderByAmount = "fa-sort-down";
+    private string _filterArrow = "fa-chevron-down";
+    private bool _showTime = false;
     private string _query;
     private int _selectedId;
+    private string _dateFormat = "yyyy-MM-dd";
+    private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateTime _endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddSeconds(-1);
     protected override async Task OnInitializedAsync()
     {
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
         //transactions = await transactionsService.GetTransactions(_user.Id);
         await LoadTransactions();
-        orderByDate = "fa-sort-down";
-        orderByAmount = "fa-sort-down";
     }
     private async Task LoadTransactions()
     {
@@ -109,57 +156,61 @@
     }
     private async Task OrderByDate()
     {
-        if (this.orderByDate == "fa-sort-down")
+        if (_orderByDate == "fa-sort-down")
         {
             transactions = transactions.OrderBy(t => t.CreatedAt);
-            orderByDate = "fa-sort-up";
+            _orderByDate = "fa-sort-up";
             StateHasChanged();
         }
         else
         {
             transactions = transactions.OrderByDescending(t => t.CreatedAt);
-            orderByDate = "fa-sort-down";
+            _orderByDate = "fa-sort-down";
             StateHasChanged();
         }
 
     }
     private async Task OrderByAmount()
     {
-        if (this.orderByAmount == "fa-sort-down")
+        if (_orderByAmount == "fa-sort-down")
         {
             transactions = transactions.OrderBy(t => t.Amount);
-            orderByAmount = "fa-sort-up";
+            _orderByAmount = "fa-sort-up";
             StateHasChanged();
         }
         else
         {
             transactions = transactions.OrderByDescending(t => t.Amount);
-            orderByAmount = "fa-sort-down";
+            _orderByAmount = "fa-sort-down";
             StateHasChanged();
         }
     }
-    private async Task AddTransaction() //Perdaryt su NewTransaction
+    private async Task AddTransaction()
     {
         try
         {
             var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal");
-            var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
-            if (await ValidateTransaction(transaction))
+            Console.WriteLine(swalResult);
+            if (swalResult != null)
             {
-                if (await transactionsService.AddTransaction(transaction))
+                var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
+                if (await ValidateTransaction(transaction))
                 {
-                    await LoadTransactions();
-                    StateHasChanged();
-                }
-                else
-                {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Error",
-                            Text = "Transaction was not added!",
-                            Icon = SweetAlertIcon.Error,
-                            ConfirmButtonText = "Ok",
-                        });
+                    if (await transactionsService.AddTransaction(transaction))
+                    {
+                        await LoadTransactions();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertService.FireAsync(new SweetAlertOptions
+                            {
+                                Title = "Error",
+                                Text = "Transaction was not added!",
+                                Icon = SweetAlertIcon.Error,
+                                ConfirmButtonText = "Ok",
+                            });
+                    }
                 }
             }
         }
@@ -168,8 +219,7 @@
             await InvokeError();
         }
     }
-
-    private async Task EditTransaction(int transactionId)
+    private async Task EditTransaction(Guid transactionId)
     {
         try
         {
@@ -204,7 +254,7 @@
             await InvokeError();
         }
     }
-    private async Task DeleteTransaction(int transactionId)
+    private async Task DeleteTransaction(Guid transactionId)
     {
         try
         {
@@ -241,28 +291,6 @@
             await InvokeError();
         }
     }
-    private async Task<Transaction> ToModel(Dictionary<string, string> data)
-    {
-        try
-        {
-            return new Transaction
-                {
-                    Id = 0,
-                    UserId = _user.Id,
-                    CategoryId = 0,
-                    Description = data["description"],
-                    Amount = Decimal.Parse(data["amount"]),
-                    Currency = data["currency"],
-                    Type = data["type"],
-                    CreatedAt = DateTime.Parse(data["date"])
-                };
-        }
-        catch (Exception ex)
-        {
-            await InvokeError();
-            return new Transaction();
-        }
-    }
     private async Task Search()
     {
         if (String.IsNullOrEmpty(_query))
@@ -274,6 +302,53 @@
             transactions = await transactionsService.Search(_user.Id, _query);
         }
         StateHasChanged();
+    }
+    private async Task Filter()
+    {
+        if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
+        {
+            transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
+            StateHasChanged();
+        }
+    }
+    private async Task FilterStatus()
+    {
+        if (_filterArrow == "fa-chevron-down")
+        {
+            _filterArrow = "fa-chevron-up";
+            StateHasChanged();
+        }
+        else
+        {
+            _filterArrow = "fa-chevron-down";
+            StateHasChanged();
+        }
+    }
+    private async Task ShowTime()
+    {
+        if (!_showTime)
+        {
+            _dateFormat = "yyyy-MM-dd HH:MM";
+            StateHasChanged();
+        }
+        else
+        {
+            _dateFormat = "yyyy-MM-dd";
+            StateHasChanged();
+        }
+        
+    }
+    private async Task<string> TransactionDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 110;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
     }
     private async void SearchOnEnter(KeyboardEventArgs e)
     {
@@ -291,6 +366,28 @@
                 Icon = SweetAlertIcon.Error,
                 ConfirmButtonText = "Ok",
             });
+    }
+    private async Task<Transaction> ToModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            return new Transaction
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = _user.Id,
+                    CategoryId = Guid.Empty,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    Type = data["type"],
+                    CreatedAt = DateTime.Parse(data["date"])
+                };
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+            return new Transaction();
+        }
     }
     private async Task<bool> ValidateTransaction(Transaction transaction)
     {

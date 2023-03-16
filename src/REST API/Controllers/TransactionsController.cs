@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
 using REST_API.Models.Transactions;
+using System;
 
 namespace REST_API.Controllers
 {
@@ -17,8 +18,8 @@ namespace REST_API.Controllers
         }
 
         [HttpGet]
-        [Route("{userId:int}")]
-        public async Task<IActionResult> GetAllTransactions([FromRoute] int userId)
+        [Route("{userId:guid}")]
+        public async Task<IActionResult> GetAllTransactions([FromRoute] Guid userId)
         {
             try
             {
@@ -30,9 +31,28 @@ namespace REST_API.Controllers
                 return NotFound();
             }
         }
+
         [HttpGet]
-        [Route("{userId:int}/search={query}")]
-        public async Task<IActionResult> SearchTransactions([FromRoute] int userId, string query)
+        [Route("{userId:guid}/filter/start={startDate}&end={endDate}")]
+        public async Task<IActionResult> GetTransactionsByDate([FromRoute] Guid userId, string startDate, string endDate)
+        {
+            var sDate = DateTime.Parse(startDate);
+            var eDate = DateTime.Parse(endDate);
+            eDate = eDate.AddDays(1).AddTicks(-1);
+            try
+            {
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.CreatedAt <= eDate && t.CreatedAt >= sDate).OrderByDescending(t => t.CreatedAt).ToListAsync();
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
+        [Route("{userId:guid}/search={query}")]
+        public async Task<IActionResult> SearchTransactions([FromRoute] Guid userId, string query)
         {
             try
             {
@@ -45,8 +65,8 @@ namespace REST_API.Controllers
             }
         }
         [HttpGet]
-        [Route("{userId:int}/{id:int}")]
-        public async Task<IActionResult> GetTransaction([FromRoute] int userId, [FromRoute] int id)
+        [Route("{userId:guid}/{id:guid}")]
+        public async Task<IActionResult> GetTransaction([FromRoute] Guid userId, [FromRoute] Guid id)
         {
             try
             {
@@ -59,7 +79,6 @@ namespace REST_API.Controllers
             {
                 return NotFound();
             }
-
         }
 
         [HttpPost]
@@ -69,9 +88,9 @@ namespace REST_API.Controllers
             {
                 var transaction = new Transaction()
                 {
-                    Id = await _DbContext.Transactions.MaxAsync(t => (int)t.Id) + 1,
+                    Id = transactionInfo.Id,
                     UserId = transactionInfo.UserId,
-                    CategoryId = 0,
+                    CategoryId = await GetCategoryId(transactionInfo.UserId), //Laikinas fixas kol neveikia kategorijos
                     Type = transactionInfo.Type,
                     Amount = transactionInfo.Amount,
                     Currency = transactionInfo.Currency,
@@ -85,6 +104,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"\n\n{ex}\n\n");
                 return BadRequest();
             }
         }
@@ -95,7 +115,7 @@ namespace REST_API.Controllers
             try
             {
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == transactionInfo.UserId && t.Id == transactionInfo.Id).SingleAsync();
-                transaction.CategoryId = transactionInfo.CategoryId;
+                transaction.CategoryId = await GetCategoryId(transactionInfo.UserId);//Laikinas fixas kol neveikia kategorijos
                 transaction.Type = transactionInfo.Type;
                 transaction.Amount = transactionInfo.Amount;
                 transaction.Currency = transactionInfo.Currency;
@@ -114,8 +134,8 @@ namespace REST_API.Controllers
         }
 
         [HttpDelete]
-        [Route("{userId:int}/{id:int}")]
-        public async Task<IActionResult> DeleteTransaction([FromRoute] int userId, [FromRoute] int id)
+        [Route("{userId:guid}/{id:guid}")]
+        public async Task<IActionResult> DeleteTransaction([FromRoute] Guid userId, [FromRoute] Guid id)
         {
             try
             {
@@ -127,6 +147,19 @@ namespace REST_API.Controllers
             catch (Exception ex)
             {
                 return NotFound();
+            }
+        }
+        //Laikinas fixas kol neveikia kategorijos
+        private async Task<Guid> GetCategoryId(Guid userId)
+        {
+            try
+            {
+                var res = await _DbContext.Categories.Where(c => c.UserId == userId).SingleAsync();
+                return res.Id;
+            }
+            catch (Exception ex)
+            {
+                return Guid.Empty;
             }
         }
     }

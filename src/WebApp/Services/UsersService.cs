@@ -15,6 +15,7 @@ namespace WebApp.Services
         private async Task<StringContent> SerializeObj(object obj)
         {
             string json = JsonSerializer.Serialize(obj);
+            Console.WriteLine($"\n\nBEFORE SENDING '{Guid.Empty}'\n\n");
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
 
@@ -22,6 +23,9 @@ namespace WebApp.Services
         {
             try
             {
+                user.Id = Guid.Empty;
+                user.Settings = String.Empty;
+                user.Email = String.Empty;
                 var content = await SerializeObj(user);
                 var res = await _httpClient.PutAsync("/api/users/auth", content);
                 var userInfo = await res.Content.ReadFromJsonAsync<User>();
@@ -54,6 +58,8 @@ namespace WebApp.Services
         {
             try
             {
+                user.Id = Guid.Empty;
+                user.Settings = String.Empty;
                 var content = await SerializeObj(user);
                 var res = await _httpClient.PostAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
@@ -67,7 +73,7 @@ namespace WebApp.Services
                 return false;
             }
         }
-        public async Task<bool> DeleteUser(int userId)
+        public async Task<bool> DeleteUser(Guid userId)
         {
             try
             {

@@ -78,7 +78,7 @@ public class AuthProvider : AuthenticationStateProvider
             var authState = await GetAuthenticationStateAsync();
             return new User
             {
-                Id = int.Parse(authState.User.FindFirstValue(ClaimTypes.NameIdentifier)),
+                Id = Guid.Parse(authState.User.FindFirstValue(ClaimTypes.NameIdentifier)),
                 Username = authState.User.FindFirstValue(ClaimTypes.Name),
                 Password = authState.User.FindFirstValue("Password"),
                 Email = authState.User.FindFirstValue(ClaimTypes.Email),

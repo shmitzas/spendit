@@ -9,16 +9,16 @@ namespace WebApp.Services
         {
             _httpClient = httpClient;
         }
-        public async Task<int> GetUserId(string username)
+        public async Task<Guid> GetUserId(string username)
         {
             var res = await _httpClient.GetFromJsonAsync<Category>("/api/users/user/" + username);
             if (res == null)
             {
-                return 0;
+                return Guid.Empty;
             }
             else
             {
-                return (int)res.Id;
+                return res.Id;
             }
         }
     }

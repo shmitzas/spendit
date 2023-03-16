@@ -2,30 +2,105 @@
 @using WebApp.Services
 @using WebApp.Models
 @using WebApp.Auth
-@inject TransactionsService _transactions
+@inject TransactionsService transactionsService
+@inject AuthenticationStateProvider authStateProvider
+@inject SweetAlertService alertService
 @attribute [Authorize]
 
 <PageTitle>Spendit - Overview</PageTitle>
 <AuthorizeView>
     <Authorized>
         <div class="row">
-            <p>Authorized :)</p>
+            <div class="col-md-12">
+                <h3>Overview</h3>
+                <div class="row justify-content-center bg-body">
+                    <div class="col-md-11">
+                        <div class="row mt-5 mb-5">
+                            <h5>Recent transactions</h5>
+                            <div class="col-md-12 mt-3">
+                                <div class="row justify-content-center">
+                                    @if (transactions != null && transactions.Count() > 0)
+                                    {
+                                        foreach (var tr in transactions)
+                                        {
+                                            <div class="col-md-3 card mb-3 border-0">
+                                                <div class="row g-0">
+                                                    <div class="col-md-2 text-end pt-3">
+                                                        <i class="fa-solid fa-money-bill-transfer fa-2x"></i>
+                                                    </div>
+                                                    <div class="col-md-10">
+                                                        <div class="card-body">
+                                                            <p class="card-title">@TransactionDescLenght(tr.Description).Result</p>
+                                                            @if (tr.Type == "Expense")
+                                                            {
+                                                                <p class="card-text text-danger"><strong>@tr.Amount</strong> @tr.Currency</p>
+                                                            }
+                                                            else
+                                                            {
+                                                               <p class="card-text text-success"><strong>@tr.Amount</strong> @tr.Currency</p> 
+                                                            }
+                                                            <p class="card-text"><small class="text-muted">@tr.CreatedAt.ToString("yyyy-MM-dd HH:MM")</small></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </Authorized>
     <NotAuthorized>
-        <Unauthorized />
     </NotAuthorized>
 </AuthorizeView>
 
-
-
 @code {
-    [CascadingParameter]
-    private Task<AuthenticationState> authenticationState { get; set; }
+    private AuthProvider authProvider;
+    private IEnumerable<Transaction>? transactions;
+    private User _user;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await authenticationState;
-        var username = authState.User.Identity.Name;
+        authProvider = (AuthProvider)authStateProvider;
+        _user = await authProvider.GetCurrentUserAsync();
+        await LoadTransactions();
+    }
+    private async Task<string> TransactionDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 70;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task LoadTransactions()
+    {
+        try
+        {
+            var tr = await transactionsService.GetTransactions(_user.Id);
+            transactions = tr.Take(4);
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+        }
+    }
+    private async Task InvokeError()
+    {
+        await alertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = "Oops... An error occured, please try again.",
+                Icon = SweetAlertIcon.Error,
+                ConfirmButtonText = "Ok",
+            });
     }
 }

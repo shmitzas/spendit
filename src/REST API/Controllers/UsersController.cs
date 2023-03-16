@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
+using REST_API.Models.Categories;
 using REST_API.Models.Users;
 
 namespace REST_API.Controllers
@@ -22,8 +23,8 @@ namespace REST_API.Controllers
         }
 
         [HttpGet]
-        [Route("{id:int}")]
-        public async Task<IActionResult> GetUser([FromRoute] int id)
+        [Route("{id:guid}")]
+        public async Task<IActionResult> GetUser([FromRoute] Guid id)
         {
             try
             {
@@ -41,6 +42,7 @@ namespace REST_API.Controllers
             try
             {
                 var user = await _DbContext.Users.Where(u => u.Username == userInfo.Username && u.Password == userInfo.Password).SingleAsync();
+                Console.WriteLine(user.Username+ " " + userInfo.Password);
                 return Ok(user);
             }
             catch (Exception ex)
@@ -56,13 +58,22 @@ namespace REST_API.Controllers
             {
                 var user = new User()
                 {
-                    Id = await _DbContext.Users.MaxAsync(u => (int)u.Id)+1,
+                    Id = Guid.NewGuid(),
                     Username = userInfo.Username,
                     Password = userInfo.Password,
                     Email = userInfo.Email,
                     Settings = "{\"currency\": \"EUR\"}"
                 };
+
+                var defaultCategory = new Category()
+                {
+                    Id = Guid.Empty,
+                    UserId = user.Id,
+                    Name = "Uncategorized"
+                };
                 await _DbContext.Users.AddAsync(user);
+                await _DbContext.SaveChangesAsync();
+                await _DbContext.Categories.AddAsync(defaultCategory);
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
@@ -98,8 +109,8 @@ namespace REST_API.Controllers
         }
 
         [HttpDelete]
-        [Route("{id:int}")]
-        public async Task<IActionResult> DeleteUser([FromRoute] int id)
+        [Route("{id:guid}")]
+        public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
         {
             try
             {
