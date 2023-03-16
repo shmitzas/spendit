@@ -30,16 +30,16 @@
                                                     </div>
                                                     <div class="col-md-10">
                                                         <div class="card-body">
-                                                            <p class="card-title">@TransactionDescLenght(tr.Description).Result</p>
+                                                            <p class="card-title pb-0 mb-0">@TransactionDescLenght(tr.Description).Result</p>
                                                             @if (tr.Type == "Expense")
                                                             {
-                                                                <p class="card-text text-danger"><strong>@tr.Amount</strong> @tr.Currency</p>
+                                                                <p class="card-text text-danger pb-0 mb-0"><strong>@tr.Amount</strong> @tr.Currency</p>
                                                             }
                                                             else
                                                             {
-                                                               <p class="card-text text-success"><strong>@tr.Amount</strong> @tr.Currency</p> 
+                                                                <p class="card-text text-success pb-0 mb-0"><strong>@tr.Amount</strong> @tr.Currency</p>
                                                             }
-                                                            <p class="card-text"><small class="text-muted">@tr.CreatedAt.ToString("yyyy-MM-dd HH:MM")</small></p>
+                                                            <p class="card-text pt-0 mt-0"><small class="text-muted">@tr.CreatedAt.ToString("yyyy-MM-dd HH:MM")</small></p>
                                                         </div>
                                                     </div>
                                                 </div>

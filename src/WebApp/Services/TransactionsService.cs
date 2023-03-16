@@ -18,7 +18,6 @@ namespace WebApp.Services
         private async Task<StringContent> SerializeObj(object obj)
         {
             string json = JsonSerializer.Serialize(obj);
-            Console.WriteLine($"\n\nBEFORE TR {json}\n\n");
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
         public async Task<IEnumerable<Transaction>> GetTransactions(Guid userId)

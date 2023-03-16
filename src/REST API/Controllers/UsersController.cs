@@ -42,7 +42,6 @@ namespace REST_API.Controllers
             try
             {
                 var user = await _DbContext.Users.Where(u => u.Username == userInfo.Username && u.Password == userInfo.Password).SingleAsync();
-                Console.WriteLine(user.Username+ " " + userInfo.Password);
                 return Ok(user);
             }
             catch (Exception ex)

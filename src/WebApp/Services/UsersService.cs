@@ -15,7 +15,6 @@ namespace WebApp.Services
         private async Task<StringContent> SerializeObj(object obj)
         {
             string json = JsonSerializer.Serialize(obj);
-            Console.WriteLine($"\n\nBEFORE SENDING '{Guid.Empty}'\n\n");
             return new StringContent(json, Encoding.UTF8, "application/json");
         }
 

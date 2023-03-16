@@ -58,7 +58,7 @@
         });
 }
 
-function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trDate) {
+function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherType, trDate) {
     var trDateObj = new Date(trDate);
     var trDateString = trDateObj.toISOString().substring(0, 16);
     var swalOptions = {
@@ -83,8 +83,8 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trDate) 
             <div class='form-group mb-3 text-start'>
                 <label for='type'>Type</label>
                 <select class='form-select' id='type' aria-label='Expense' value ='${trType}'>
-                    <option selected>Expense</option>
-                    <option value='Income'>Income</option>
+                    <option selected>${trType}</option>
+                    <option value='${trOtherType}'>${trOtherType}</option>
                 </select>
             </div>
             <div class='form-group mb-3 text-start'>

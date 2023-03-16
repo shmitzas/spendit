@@ -18,9 +18,9 @@
             <div class="col-12">
                 <h3>Filters</h3>
                 <div class="row justify-content-center bg-body pb-5">
-                    <div class="col-6 mt-5 mb-5 justify-content-center rounded-pill">
+                    <div class="col-6 mt-5 mb-5 justify-content-center ">
                         <div class="wrapper">
-                            <div class="searchBar">
+                            <div class="searchBar rounded-pill shadow-sm">
                                 <input @onkeyup="SearchOnEnter" @bind="_query" id="searchQueryInput" type="text" name="searchQueryInput" placeholder="Search" />
                                 <button @onclick="Search" id="searchQuerySubmit" type="submit" name="searchQuerySubmit">
                                     <i class="fa fa-search"></i>
@@ -140,7 +140,6 @@
     {
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
-        //transactions = await transactionsService.GetTransactions(_user.Id);
         await LoadTransactions();
     }
     private async Task LoadTransactions()
@@ -190,7 +189,6 @@
         try
         {
             var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal");
-            Console.WriteLine(swalResult);
             if (swalResult != null)
             {
                 var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
@@ -223,8 +221,10 @@
     {
         try
         {
+            var trOtherType = "";
             var tr = await transactionsService.GetTransaction(_user.Id, transactionId);
-            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, tr.CreatedAt);
+            trOtherType = tr.Type == "Expense" ? "Income" : "Expense";
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.CreatedAt);
             if (swalResult != null)
             {
                 var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
@@ -251,6 +251,7 @@
         }
         catch (Exception ex)
         {
+            Console.WriteLine($"\n\n\n{ex}\n\n");
             await InvokeError();
         }
     }

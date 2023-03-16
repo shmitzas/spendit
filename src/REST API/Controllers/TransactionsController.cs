@@ -104,7 +104,6 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"\n\n{ex}\n\n");
                 return BadRequest();
             }
         }
