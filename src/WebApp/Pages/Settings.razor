@@ -1,0 +1,252 @@
+﻿@page "/settings"
+@using WebApp.Services
+@using WebApp.Models
+@using WebApp.Auth
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@inject IJSRuntime js
+@inject UsersService usersService
+@inject NavigationManager navManager
+@inject AuthenticationStateProvider authStateProvider
+@inject InputValidationService validationService
+@inject SweetAlertService alertService
+@attribute [Authorize]
+
+<PageTitle>Spendit - Settings</PageTitle>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="row justify-content-center">
+            <div class="col-8">
+                <h3 class="mb-2 text-start">Account settings</h3>
+                <div class="row justify-content-center bg-body">
+                    <div class="col-10 mt-4 mb-4">
+                        @if (_user == null || _currentCurrency == null)
+                        {
+                            <div class="text-center">Loading...</div>
+                        }
+                        else
+                        {
+                            <div class="row mb-3">
+                                <label for="staticEmail" class="col-sm-3 col-form-label">Username</label>
+                                <div class="col-sm-9">
+                                    <input type="text" readonly class="form-control-plaintext" id="staticEmail" value="@_user.Username">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="InputEmail" class="col-sm-3 col-form-label">Email address</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_user.Email" type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="CurrentPassword" class="col-sm-3 col-form-label">Current password</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_oldPassword" type="password" class="form-control" id="CurrentPassword" placeholder="Enter current password">
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <label for="NewPassword" class="col-sm-3 col-form-label">New password</label>
+                                <div class="col-sm-9">
+                                    <input @bind="_newPassword" type="password" class="form-control" id="NewPassword" placeholder="Enter new password">
+                                </div>
+                            </div>
+                            <div class="row mb-5 form-group text-start">
+                                <label class="col-sm-3" for=" currency">Main currency</label>
+                                <div class="col-sm-2">
+                                    <select class="form-select col-sm-10" id="currency" aria-label="Currency">
+                                        <option selected>@_currentCurrency</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button class="btn btn-success" @onclick="UpdateSettings">Save changes</button>
+                            <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    private string _oldPassword;
+    private string _newPassword;
+    private User _user;
+    private string _currentCurrency;
+    private AuthProvider authProvider;
+    private List<string> _Currencies = new List<string> { "EUR" };
+    private Dictionary<string, string> _settings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        authProvider = (AuthProvider)authStateProvider;
+        _user = await authProvider.GetCurrentUserAsync();
+
+        await GetCurrency(_user.Settings);
+    }
+
+    protected async Task GetCurrency(string settings)
+    {
+        try
+        {
+            _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
+
+            if (_settings["currency"] == "" || _settings["currency"] == null)
+            {
+                _currentCurrency = "EUR";
+            }
+            else
+            {
+                _currentCurrency = _settings["currency"];
+            }
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+        }
+    }
+
+    private async Task UpdateSettings()
+    {
+        try
+        {
+            if (_user.Password == _oldPassword)
+            {
+                if (!String.IsNullOrEmpty(_user.Email) && await validationService.ValidateEmail(_user.Email))
+                {
+                    if (!String.IsNullOrEmpty(_newPassword))
+                    {
+                        if (await validationService.ValidatePassword(_newPassword))
+                        {
+                            if (await validationService.CheckPasswordRequirements(_newPassword))
+                            {
+                                _user.Password = _newPassword;
+                            }
+                            else
+                            {
+                                await alertService.FireAsync(new SweetAlertOptions
+                                    {
+                                        Title = "Warning",
+                                        Text = "Password must be at least 8 characters long!",
+                                        Icon = SweetAlertIcon.Warning,
+                                        ConfirmButtonText = "Ok",
+                                    });
+                            }
+                        }
+                        else
+                        {
+                            await alertService.FireAsync(new SweetAlertOptions
+                                {
+                                    Title = "Warning",
+                                    Text = "Current password contains illegal characters!",
+                                    Icon = SweetAlertIcon.Warning,
+                                    ConfirmButtonText = "Ok",
+                                });
+                        }
+                    }
+                    else
+                    {
+                        _settings["currency"] = _currentCurrency;
+                        _user.Settings = JsonSerializer.Serialize(_settings);
+
+                        bool res = await usersService.UpdateUser(_user);
+                        if (res)
+                        {
+                            var confirmation = await alertService.FireAsync(new SweetAlertOptions
+                                {
+                                    Title = "Success",
+                                    Text = "Your information has been updated!",
+                                    Icon = SweetAlertIcon.Success,
+                                    ConfirmButtonText = "Ok",
+                                });
+                            if (confirmation.IsConfirmed || confirmation.IsDismissed)
+                            {
+                                await authProvider.UpdateAuthState(_user);
+                                navManager.NavigateTo("/settings", true);
+                            }
+                        }
+                        else
+                        {
+                            await InvokeError();
+                        }
+                    }
+                }
+                else
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Warning",
+                            Text = "Email address contains illegal characters or is incorrect!",
+                            Icon = SweetAlertIcon.Warning,
+                            ConfirmButtonText = "Ok",
+                        });
+                }
+            }
+            else
+            {
+                await alertService.FireAsync(new SweetAlertOptions
+                    {
+                        Title = "Warning",
+                        Text = "Current password is incorrect!",
+                        Icon = SweetAlertIcon.Warning,
+                        ConfirmButtonText = "Ok",
+                    });
+            }
+        }
+        catch (Exception)
+        {
+            await InvokeError();
+        }
+    }
+    private async Task DeleteAccount()
+    {
+        try
+        {
+            var confirmation = await alertService.FireAsync(new SweetAlertOptions
+                {
+                    Title = "Are you sure?",
+                    Text = "This action is irreversible! Are you sure you want to do this?",
+                    Icon = SweetAlertIcon.Warning,
+                    ShowCancelButton = true,
+                    ConfirmButtonText = "Yes",
+                    CancelButtonText = "No"
+                });
+            if (confirmation.IsConfirmed)
+            {
+                bool res = await usersService.DeleteUser(_user.Id);
+                if (res)
+                {
+                    await alertService.FireAsync(new SweetAlertOptions
+                        {
+                            Title = "Success",
+                            Text = "Account deleted successfuly!",
+                            Icon = SweetAlertIcon.Success,
+                            Timer = 2000
+                        });
+                    await authProvider.UpdateAuthState(null);
+                    navManager.NavigateTo("/", true);
+                }
+                else
+                {
+                    await InvokeError();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await InvokeError();
+        }
+    }
+    private async Task InvokeError()
+    {
+        await alertService.FireAsync(new SweetAlertOptions
+            {
+                Title = "Error",
+                Text = "Oops... An error occured, please try again.",
+                Icon = SweetAlertIcon.Error,
+                ConfirmButtonText = "Ok",
+            });
+    }
+}

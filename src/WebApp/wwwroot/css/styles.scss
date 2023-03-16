@@ -1,0 +1,109 @@
+﻿$yellow: #FFE401;
+$dark-gray: #272727;
+$gray: #eee;
+$blue: #0f89df;
+$indigo: #6610f2;
+$purple: #6f42c1;
+$pink: #d63384;
+$red: #fb002e;
+$orange: #fd7e14;
+$yellow: #f0cc00;
+$green: #00b552;
+$teal: #20c997;
+$cyan: #0dcaf0;
+$white: #fff;
+
+@import "../bootstrap/scss/bootstrap.scss";
+
+.swal2-styled.swal2-confirm {
+    background-color: $green !important;
+    border-radius: 50rem !important;
+}
+.swal2-styled.swal2-cancel {
+    background-color: $red !important;
+    border-radius: 50rem !important;
+}
+.swal2-popup {
+    border-radius: 1rem !important;
+}
+.swal2-icon.swal2-warning {
+    color: $yellow !important;
+    border-color: $yellow !important;
+}
+.swal2-icon.swal2-error {
+    color: $red !important;
+    border-color: $red !important;
+}
+.swal2-icon.swal2-error [class^=swal2-x-mark-line] {
+    background-color: $red !important;
+}
+
+
+body {
+    background-color: #d5e1ea;
+}
+.bg-body {
+    border-radius: 0.5rem !important;
+}
+a {
+    text-decoration: none !important;
+}
+
+.navbar {
+    background-color: $white;
+
+    .nav-link a {
+        color: $dark-gray;
+    }
+
+    .navbar-brand {
+        color: $dark-gray;
+    }
+}
+
+.createAccount {
+    color: dodgerblue !important;
+    vertical-align: middle;
+}
+
+.wrapper {
+
+    .label {
+        font-size: .625rem;
+        font-weight: 400;
+        text-transform: uppercase;
+        letter-spacing: +1.3px;
+        margin-bottom: 1rem;
+    }
+
+    .searchBar {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    #searchQueryInput {
+        width: 100%;
+        height: 2.8rem;
+        background: $gray-200;
+        outline: none;
+        border: none;
+        border-radius: 1.625rem;
+        padding: 0 3.5rem 0 1.5rem;
+        font-size: 1rem;
+    }
+
+    #searchQuerySubmit {
+        width: 3.5rem;
+        height: 2.8rem;
+        margin-left: -3.5rem;
+        background: none;
+        border: none;
+        outline: none;
+    }
+
+    #searchQuerySubmit:hover {
+        cursor: pointer;
+    }
+}
