@@ -90,7 +90,6 @@
         try
         {
             _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
-
             _currentCurrency = string.IsNullOrEmpty(_settings["currency"]) ? "EUR" : _settings["currency"];
         }
         catch (Exception ex)
