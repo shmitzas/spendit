@@ -19,6 +19,7 @@ namespace WebApp
             builder.Services.AddHttpClient<TransactionsService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
             builder.Services.AddHttpClient<UsersService>(client => client.BaseAddress = new Uri(builder.Configuration.GetSection("RestApiUrl").Value));
             builder.Services.AddScoped<InputValidationService>();
+            builder.Services.AddScoped<AlertsService>();
             builder.Services.AddSweetAlert2();
             var app = builder.Build();
 

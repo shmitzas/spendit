@@ -1,5 +1,4 @@
 # Spendit - Personal Budget Tracking Web Application
-
 > **NOTE:** This project is being created as part of Software Architecture course at Vilnius University and is made for **learning purposes only!**
 
 ## Table of Contents

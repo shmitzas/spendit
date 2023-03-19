@@ -1,7 +1,7 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
-using WebApp.Models;
+using WebApp.Models.Users;
 
 public class AuthProvider : AuthenticationStateProvider
 {

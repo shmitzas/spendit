@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Text.Json;
-using WebApp.Models;
-using System.Text.RegularExpressions;
+using WebApp.Models.Users;
 
 namespace WebApp.Services
 {
@@ -36,7 +35,7 @@ namespace WebApp.Services
                 return new User();
             }
         }
-        public async Task<bool> UpdateUser(User user)
+        public async Task<bool> UpdateUser(UpdateUser user)
         {
             try
             {
@@ -53,12 +52,10 @@ namespace WebApp.Services
                 return false;
             }
         }
-        public async Task<bool> AddUser(User user)
+        public async Task<bool> AddUser(NewUser user)
         {
             try
             {
-                user.Id = Guid.Empty;
-                user.Settings = String.Empty;
                 var content = await SerializeObj(user);
                 var res = await _httpClient.PostAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)

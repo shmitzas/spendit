@@ -38,7 +38,6 @@ namespace REST_API.Controllers
         {
             var sDate = DateTime.Parse(startDate);
             var eDate = DateTime.Parse(endDate);
-            eDate = eDate.AddDays(1).AddTicks(-1);
             try
             {
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.CreatedAt <= eDate && t.CreatedAt >= sDate).OrderByDescending(t => t.CreatedAt).ToListAsync();
@@ -82,15 +81,15 @@ namespace REST_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddTransaction(Transaction transactionInfo)
+        public async Task<IActionResult> AddTransaction(NewTransaction transactionInfo)
         {
             try
             {
                 var transaction = new Transaction()
                 {
-                    Id = transactionInfo.Id,
+                    Id = Guid.NewGuid(),
                     UserId = transactionInfo.UserId,
-                    CategoryId = await GetCategoryId(transactionInfo.UserId), //Laikinas fixas kol neveikia kategorijos
+                    CategoryId = await GetCategoryId(transactionInfo.UserId), //Temporary fix until categories are implemented
                     Type = transactionInfo.Type,
                     Amount = transactionInfo.Amount,
                     Currency = transactionInfo.Currency,
@@ -114,7 +113,7 @@ namespace REST_API.Controllers
             try
             {
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == transactionInfo.UserId && t.Id == transactionInfo.Id).SingleAsync();
-                transaction.CategoryId = await GetCategoryId(transactionInfo.UserId);//Laikinas fixas kol neveikia kategorijos
+                transaction.CategoryId = await GetCategoryId(transactionInfo.UserId); //Temporary fix until categories are implemented
                 transaction.Type = transactionInfo.Type;
                 transaction.Amount = transactionInfo.Amount;
                 transaction.Currency = transactionInfo.Currency;
@@ -148,7 +147,7 @@ namespace REST_API.Controllers
                 return NotFound();
             }
         }
-        //Laikinas fixas kol neveikia kategorijos
+        //Temporary fix until categories are implemented
         private async Task<Guid> GetCategoryId(Guid userId)
         {
             try

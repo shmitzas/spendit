@@ -1,12 +1,13 @@
 ﻿@page "/transactions"
 @using System.Text.Json;
 @using WebApp.Services
-@using WebApp.Models
+@using WebApp.Models.Transactions
+@using WebApp.Models.Users
 @using WebApp.Auth
 @using System.Text.RegularExpressions
 @inject TransactionsService transactionsService
 @inject AuthenticationStateProvider authStateProvider
-@inject SweetAlertService alertService
+@inject AlertsService alertsService
 @inject InputValidationService validationService
 @inject IJSRuntime JSRuntime
 @attribute [Authorize]
@@ -87,9 +88,9 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @if (transactions != null && transactions.Count() > 0)
+                                @if (_transactions != null && _transactions.Count() > 0)
                                 {
-                                    foreach (var tr in transactions)
+                                    foreach (var tr in _transactions)
                                     {
                                         <tr>
                                             <td>@TransactionDescLenght(tr.Description).Result</td>
@@ -124,8 +125,8 @@
 
 
 @code {
-    private AuthProvider authProvider;
-    private IEnumerable<Transaction>? transactions;
+    private AuthProvider _authProvider;
+    private IEnumerable<Transaction>? _transactions;
     private User _user;
     private string _orderByDate = "fa-sort-down";
     private string _orderByAmount = "fa-sort-down";
@@ -136,34 +137,35 @@
     private string _dateFormat = "yyyy-MM-dd";
     private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
     private DateTime _endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddSeconds(-1);
+
     protected override async Task OnInitializedAsync()
     {
-        authProvider = (AuthProvider)authStateProvider;
-        _user = await authProvider.GetCurrentUserAsync();
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
         await LoadTransactions();
     }
     private async Task LoadTransactions()
     {
         try
         {
-            transactions = await transactionsService.GetTransactions(_user.Id);
+            _transactions = await transactionsService.GetTransactions(_user.Id);
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
     private async Task OrderByDate()
     {
         if (_orderByDate == "fa-sort-down")
         {
-            transactions = transactions.OrderBy(t => t.CreatedAt);
+            _transactions = _transactions.OrderBy(t => t.CreatedAt);
             _orderByDate = "fa-sort-up";
             StateHasChanged();
         }
         else
         {
-            transactions = transactions.OrderByDescending(t => t.CreatedAt);
+            _transactions = _transactions.OrderByDescending(t => t.CreatedAt);
             _orderByDate = "fa-sort-down";
             StateHasChanged();
         }
@@ -173,13 +175,13 @@
     {
         if (_orderByAmount == "fa-sort-down")
         {
-            transactions = transactions.OrderBy(t => t.Amount);
+            _transactions = _transactions.OrderBy(t => t.Amount);
             _orderByAmount = "fa-sort-up";
             StateHasChanged();
         }
         else
         {
-            transactions = transactions.OrderByDescending(t => t.Amount);
+            _transactions = _transactions.OrderByDescending(t => t.Amount);
             _orderByAmount = "fa-sort-down";
             StateHasChanged();
         }
@@ -189,47 +191,46 @@
         try
         {
             var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal");
-            if (swalResult != null)
+            if (swalResult == null)
             {
-                var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
-                if (await ValidateTransaction(transaction))
-                {
-                    if (await transactionsService.AddTransaction(transaction))
-                    {
-                        await LoadTransactions();
-                        StateHasChanged();
-                    }
-                    else
-                    {
-                        await alertService.FireAsync(new SweetAlertOptions
-                            {
-                                Title = "Error",
-                                Text = "Transaction was not added!",
-                                Icon = SweetAlertIcon.Error,
-                                ConfirmButtonText = "Ok",
-                            });
-                    }
-                }
+                return;
+            }
+
+            var transactionDict = JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult);
+            var transactionToAdd = await ToAddModel(transactionDict);
+            if (!await ValidateNewTransaction(transactionToAdd))
+            {
+                return;
+            }
+
+            var success = await transactionsService.AddTransaction(transactionToAdd);
+            if (success)
+            {
+                await LoadTransactions();
+                StateHasChanged();
+            }
+            else
+            {
+                await alertsService.InvokeCustomError("Transaction was not added!");
             }
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
     private async Task EditTransaction(Guid transactionId)
     {
         try
         {
-            var trOtherType = "";
             var tr = await transactionsService.GetTransaction(_user.Id, transactionId);
-            trOtherType = tr.Type == "Expense" ? "Income" : "Expense";
+            var trOtherType = tr.Type == "Expense" ? "Income" : "Expense";
             var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.CreatedAt);
             if (swalResult != null)
             {
-                var transaction = await ToModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
+                var transaction = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult));
                 transaction.Id = transactionId;
-                if (await ValidateTransaction(transaction))
+                if (await ValidateExistingTransaction(transaction))
                 {
                     if (await transactionsService.UpdateTransaction(transaction))
                     {
@@ -238,37 +239,21 @@
                     }
                     else
                     {
-                        await alertService.FireAsync(new SweetAlertOptions
-                            {
-                                Title = "Error",
-                                Text = "Transaction data was not updated!",
-                                Icon = SweetAlertIcon.Error,
-                                ConfirmButtonText = "Ok",
-                            });
+                        await alertsService.InvokeCustomError("Transaction data was not updated!");
                     }
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"\n\n\n{ex}\n\n");
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
     private async Task DeleteTransaction(Guid transactionId)
     {
         try
         {
-            var confirmation = await alertService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Are you sure?",
-                    Text = "This action is irreversible! Are you sure you want to do this?",
-                    Icon = SweetAlertIcon.Warning,
-                    ShowCancelButton = true,
-                    ConfirmButtonText = "Yes",
-                    CancelButtonText = "No"
-                });
-            if (confirmation.IsConfirmed || confirmation.IsDismissed)
+            if (await alertsService.InvokeConfirmation())
             {
                 if (await transactionsService.DeleteTransaction(_user.Id, transactionId))
                 {
@@ -277,30 +262,24 @@
                 }
                 else
                 {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Error",
-                            Text = "Transaction was not removed!",
-                            Icon = SweetAlertIcon.Error,
-                            ConfirmButtonText = "Ok",
-                        });
+                    await alertsService.InvokeCustomError("Transaction was not removed!");
                 }
             }
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
     private async Task Search()
     {
         if (String.IsNullOrEmpty(_query))
         {
-            transactions = await transactionsService.GetTransactions(_user.Id);
+            _transactions = await transactionsService.GetTransactions(_user.Id);
         }
         else
         {
-            transactions = await transactionsService.Search(_user.Id, _query);
+            _transactions = await transactionsService.Search(_user.Id, _query);
         }
         StateHasChanged();
     }
@@ -308,7 +287,8 @@
     {
         if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
         {
-            transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
+            _endDate = _endDate.AddDays(1).AddTicks(-1);
+            _transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
             StateHasChanged();
         }
     }
@@ -337,7 +317,6 @@
             _dateFormat = "yyyy-MM-dd";
             StateHasChanged();
         }
-        
     }
     private async Task<string> TransactionDescLenght(string input)
     {
@@ -358,21 +337,11 @@
             await Search();
         }
     }
-    private async Task InvokeError()
-    {
-        await alertService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Error",
-                Text = "Oops... An error occured, please try again.",
-                Icon = SweetAlertIcon.Error,
-                ConfirmButtonText = "Ok",
-            });
-    }
-    private async Task<Transaction> ToModel(Dictionary<string, string> data)
+    private async Task<UpdateTransaction> ToUpdateModel(Dictionary<string, string> data)
     {
         try
         {
-            return new Transaction
+            return new UpdateTransaction
                 {
                     Id = Guid.NewGuid(),
                     UserId = _user.Id,
@@ -386,11 +355,31 @@
         }
         catch (Exception ex)
         {
-            await InvokeError();
-            return new Transaction();
+            await alertsService.InvokeError();
+            return new UpdateTransaction();
         }
     }
-    private async Task<bool> ValidateTransaction(Transaction transaction)
+    private async Task<NewTransaction> ToAddModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            return new NewTransaction
+                {
+                    UserId = _user.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    Type = data["type"],
+                    CreatedAt = DateTime.Parse(data["date"])
+                };
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+            return new NewTransaction();
+        }
+    }
+    private async Task<bool> ValidateNewTransaction(NewTransaction transaction)
     {
         if (!String.IsNullOrEmpty(transaction.Description) && await validationService.ValidateText(transaction.Description))
         {
@@ -404,48 +393,56 @@
                     }
                     else
                     {
-                        await alertService.FireAsync(new SweetAlertOptions
-                            {
-                                Title = "Warning",
-                                Text = "Date's format is incorrect!",
-                                Icon = SweetAlertIcon.Warning,
-                                ConfirmButtonText = "Ok",
-                            });
+                        await alertsService.InvokeWarning("Date's format is incorrect!");
                     }
                 }
                 else
                 {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Warning",
-                            Text = "Currency's format is incorrect!",
-                            Icon = SweetAlertIcon.Warning,
-                            ConfirmButtonText = "Ok",
-                        });
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
                 }
             }
             else
             {
-                await alertService.FireAsync(new SweetAlertOptions
-                    {
-                        Title = "Warning",
-                        Text = "Ammount is incorrect!",
-                        Icon = SweetAlertIcon.Warning,
-                        ConfirmButtonText = "Ok",
-                    });
+                await alertsService.InvokeWarning("Ammount is incorrect!");
             }
         }
         else
         {
-            await alertService.FireAsync(new SweetAlertOptions
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+    private async Task<bool> ValidateExistingTransaction(UpdateTransaction transaction)
+    {
+        if (!String.IsNullOrEmpty(transaction.Description) && await validationService.ValidateText(transaction.Description))
+        {
+            if (!String.IsNullOrEmpty(transaction.Amount.ToString()) && await validationService.ValidateDecimal(transaction.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(transaction.Currency) && await validationService.ValidateText(transaction.Currency))
                 {
-                    Title = "Warning",
-                    Text = "Description text contains illegal characters!",
-                    Icon = SweetAlertIcon.Warning,
-                    ConfirmButtonText = "Ok",
-                });
+                    if (!String.IsNullOrEmpty(transaction.CreatedAt.ToString()) && await validationService.ValidateDate(transaction.CreatedAt.ToString()))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
         }
         return false;
     }
 }
-

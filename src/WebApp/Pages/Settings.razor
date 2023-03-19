@@ -1,6 +1,6 @@
 ﻿@page "/settings"
 @using WebApp.Services
-@using WebApp.Models
+@using WebApp.Models.Users
 @using WebApp.Auth
 @using System.Text.Json
 @using System.Text.RegularExpressions
@@ -9,7 +9,7 @@
 @inject NavigationManager navManager
 @inject AuthenticationStateProvider authStateProvider
 @inject InputValidationService validationService
-@inject SweetAlertService alertService
+@inject AlertsService alertsService
 @attribute [Authorize]
 
 <PageTitle>Spendit - Settings</PageTitle>
@@ -83,170 +83,105 @@
     {
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
-
         await GetCurrency(_user.Settings);
     }
-
-    protected async Task GetCurrency(string settings)
+    private async Task GetCurrency(string settings)
     {
         try
         {
             _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
-
-            if (_settings["currency"] == "" || _settings["currency"] == null)
-            {
-                _currentCurrency = "EUR";
-            }
-            else
-            {
-                _currentCurrency = _settings["currency"];
-            }
+            _currentCurrency = string.IsNullOrEmpty(_settings["currency"]) ? "EUR" : _settings["currency"];
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
-
     private async Task UpdateSettings()
     {
         try
         {
-            if (_user.Password == _oldPassword)
+            if (_user.Password != _oldPassword)
             {
-                if (!String.IsNullOrEmpty(_user.Email) && await validationService.ValidateEmail(_user.Email))
-                {
-                    if (!String.IsNullOrEmpty(_newPassword))
-                    {
-                        if (await validationService.ValidatePassword(_newPassword))
-                        {
-                            if (await validationService.CheckPasswordRequirements(_newPassword))
-                            {
-                                _user.Password = _newPassword;
-                            }
-                            else
-                            {
-                                await alertService.FireAsync(new SweetAlertOptions
-                                    {
-                                        Title = "Warning",
-                                        Text = "Password must be at least 8 characters long!",
-                                        Icon = SweetAlertIcon.Warning,
-                                        ConfirmButtonText = "Ok",
-                                    });
-                            }
-                        }
-                        else
-                        {
-                            await alertService.FireAsync(new SweetAlertOptions
-                                {
-                                    Title = "Warning",
-                                    Text = "Current password contains illegal characters!",
-                                    Icon = SweetAlertIcon.Warning,
-                                    ConfirmButtonText = "Ok",
-                                });
-                        }
-                    }
-                    else
-                    {
-                        _settings["currency"] = _currentCurrency;
-                        _user.Settings = JsonSerializer.Serialize(_settings);
+                await alertsService.InvokeWarning("Current password is incorrect!");
+                return;
+            }
 
-                        bool res = await usersService.UpdateUser(_user);
-                        if (res)
-                        {
-                            var confirmation = await alertService.FireAsync(new SweetAlertOptions
-                                {
-                                    Title = "Success",
-                                    Text = "Your information has been updated!",
-                                    Icon = SweetAlertIcon.Success,
-                                    ConfirmButtonText = "Ok",
-                                });
-                            if (confirmation.IsConfirmed || confirmation.IsDismissed)
-                            {
-                                await authProvider.UpdateAuthState(_user);
-                                navManager.NavigateTo("/settings", true);
-                            }
-                        }
-                        else
-                        {
-                            await InvokeError();
-                        }
-                    }
-                }
-                else
+            if (!string.IsNullOrEmpty(_user.Email) && !await validationService.ValidateEmail(_user.Email))
+            {
+                await alertsService.InvokeWarning("Email address contains illegal characters or is incorrect!");
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(_newPassword))
+            {
+                if (!await validationService.CheckPasswordRequirements(_newPassword))
                 {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Warning",
-                            Text = "Email address contains illegal characters or is incorrect!",
-                            Icon = SweetAlertIcon.Warning,
-                            ConfirmButtonText = "Ok",
-                        });
+                    await alertsService.InvokeWarning("Password must be at least 8 characters long!");
+                    return;
                 }
+                if (!await validationService.ValidatePassword(_newPassword))
+                {
+                    await alertsService.InvokeWarning("Current password contains illegal characters!");
+                    return;
+                }
+                _user.Password = _newPassword;
+            }
+
+            _settings["currency"] = _currentCurrency;
+            _user.Settings = JsonSerializer.Serialize(_settings);
+
+            UpdateUser updateUser = await ToUpdateModel();
+            bool res = await usersService.UpdateUser(updateUser);
+
+            if (res)
+            {
+                await alertsService.InvokeSuccess("Your information has been updated!");
+                await authProvider.UpdateAuthState(_user);
+                navManager.NavigateTo("/settings", true);
             }
             else
             {
-                await alertService.FireAsync(new SweetAlertOptions
-                    {
-                        Title = "Warning",
-                        Text = "Current password is incorrect!",
-                        Icon = SweetAlertIcon.Warning,
-                        ConfirmButtonText = "Ok",
-                    });
+                await alertsService.InvokeError();
             }
         }
         catch (Exception)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
     private async Task DeleteAccount()
     {
         try
         {
-            var confirmation = await alertService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Are you sure?",
-                    Text = "This action is irreversible! Are you sure you want to do this?",
-                    Icon = SweetAlertIcon.Warning,
-                    ShowCancelButton = true,
-                    ConfirmButtonText = "Yes",
-                    CancelButtonText = "No"
-                });
-            if (confirmation.IsConfirmed)
+            if (await alertsService.InvokeConfirmation())
             {
                 bool res = await usersService.DeleteUser(_user.Id);
                 if (res)
                 {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Success",
-                            Text = "Account deleted successfuly!",
-                            Icon = SweetAlertIcon.Success,
-                            Timer = 2000
-                        });
+                    await alertsService.InvokeSuccessTimer("Account deleted successfuly!", 2000);
                     await authProvider.UpdateAuthState(null);
                     navManager.NavigateTo("/", true);
                 }
                 else
                 {
-                    await InvokeError();
+                    await alertsService.InvokeError();
                 }
             }
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
     }
-    private async Task InvokeError()
+    private async Task<UpdateUser> ToUpdateModel()
     {
-        await alertService.FireAsync(new SweetAlertOptions
+        return new UpdateUser
             {
-                Title = "Error",
-                Text = "Oops... An error occured, please try again.",
-                Icon = SweetAlertIcon.Error,
-                ConfirmButtonText = "Ok",
-            });
+                Id = _user.Id,
+                Password = _user.Password,
+                Email = _user.Email,
+                Settings = _user.Settings
+            };
     }
 }
