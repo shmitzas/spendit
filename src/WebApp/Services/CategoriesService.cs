@@ -9,17 +9,5 @@ namespace WebApp.Services
         {
             _httpClient = httpClient;
         }
-        public async Task<Guid> GetUserId(string username)
-        {
-            var res = await _httpClient.GetFromJsonAsync<Category>("/api/users/user/" + username);
-            if (res == null)
-            {
-                return Guid.Empty;
-            }
-            else
-            {
-                return res.Id;
-            }
-        }
     }
 }

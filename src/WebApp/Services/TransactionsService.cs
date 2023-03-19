@@ -1,8 +1,6 @@
-﻿using REST_API.Models.Users;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text;
-using WebApp.Models;
-using System.Collections.Generic;
+using WebApp.Models.Transactions;
 
 namespace WebApp.Services
 {
@@ -64,7 +62,7 @@ namespace WebApp.Services
                 return new List<Transaction>();
             }
         }
-        public async Task<bool> AddTransaction(Transaction transaction)
+        public async Task<bool> AddTransaction(NewTransaction transaction)
         {
             try
             {
@@ -79,7 +77,7 @@ namespace WebApp.Services
                 return false;
             }
         }
-        public async Task<bool> UpdateTransaction(Transaction transaction)
+        public async Task<bool> UpdateTransaction(UpdateTransaction transaction)
         {
             try
             {

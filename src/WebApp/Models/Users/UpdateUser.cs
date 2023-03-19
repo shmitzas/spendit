@@ -1,4 +1,4 @@
-﻿namespace REST_API.Models.Users
+﻿namespace WebApp.Models.Users
 {
     public class UpdateUser
     {

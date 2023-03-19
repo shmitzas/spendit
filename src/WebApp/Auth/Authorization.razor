@@ -1,16 +1,16 @@
 ﻿@page "/auth"
 @using System.Text.RegularExpressions;
 @using WebApp.Services
-@using WebApp.Models
+@using WebApp.Models.Users
 @using WebApp.Shared
 @inject IJSRuntime js
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject UsersService usersService
 @inject InputValidationService validationService
-@inject SweetAlertService alertService
+@inject AlertsService alertsService
 
-@if (showLogin)
+@if (_showLogin)
 {
     <div class="row justify-content-center align-items-center mb-5">
         <div class="col-4 card bg-white shadow-lg mt-5 rounded-5">
@@ -71,7 +71,7 @@ else
     private string _username;
     private string _email;
     private string _password;
-    private bool showLogin = true;
+    private bool _showLogin = true;
     protected override async Task OnInitializedAsync()
     {
         _user = new User();
@@ -100,160 +100,101 @@ else
                 }
                 else
                 {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Warning",
-                            Text = "Username or Password you entered is incorrect!",
-                            Icon = SweetAlertIcon.Warning,
-                            ConfirmButtonText = "Ok",
-                        });
+                    await alertsService.InvokeCustomError("Username or Password you entered is incorrect!");
                 }
             }
         }
         catch (Exception ex)
         {
-            await alertService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Error",
-                    Text = "Oops.. An error occured, please try again.",
-                    Icon = SweetAlertIcon.Error,
-                    ConfirmButtonText = "Ok",
-                });
+            await alertsService.InvokeError();
         }
     }
-
     private async Task Register()
     {
-        if (!String.IsNullOrEmpty(_username))
+        try
         {
-            if (await validationService.ValidateUsername(_username))
+            if (string.IsNullOrEmpty(_username))
             {
-                _user.Username = _username;
+                await alertsService.InvokeWarning("You have to enter a username!");
+                return;
+            }
 
-                if (!String.IsNullOrEmpty(_email))
-                {
-                    if (await validationService.ValidateEmail(_email))
-                    {
-                        _user.Email = _email;
-                        if (!String.IsNullOrEmpty(_password))
-                        {
-                            if (await validationService.ValidatePassword(_password))
-                            {
-                                if (await validationService.CheckPasswordRequirements(_password))
-                                {
-                                    _user.Password = _password;
+            if (!await validationService.ValidateUsername(_username))
+            {
+                await alertsService.InvokeWarning("Username contains illegal characters!");
+                return;
+            }
 
-                                    bool res = await usersService.AddUser(_user);
-                                    if (res)
-                                    {
-                                        var confirmation = await alertService.FireAsync(new SweetAlertOptions
-                                            {
-                                                Title = "Success",
-                                                Text = "Your account has been created!",
-                                                Icon = SweetAlertIcon.Success,
-                                                ConfirmButtonText = "Ok",
-                                            });
-                                        if (confirmation.IsConfirmed || confirmation.IsDismissed)
-                                        {
-                                            await Authenticate();
-                                        }
-                                    }
-                                    else
-                                    {
-                                        await alertService.FireAsync(new SweetAlertOptions
-                                            {
-                                                Title = "Error",
-                                                Text = "Oops... An error occured, please try again.",
-                                                Icon = SweetAlertIcon.Error,
-                                                ConfirmButtonText = "Ok",
-                                            });
-                                    }
-                                }
-                                else
-                                {
-                                    await alertService.FireAsync(new SweetAlertOptions
-                                        {
-                                            Title = "Warning",
-                                            Text = "Password must be at least 8 characters long!",
-                                            Icon = SweetAlertIcon.Warning,
-                                            ConfirmButtonText = "Ok",
-                                        });
-                                }
-                            }
-                            else
-                            {
-                                await alertService.FireAsync(new SweetAlertOptions
-                                    {
-                                        Title = "Warning",
-                                        Text = "Current password contains illegal characters!",
-                                        Icon = SweetAlertIcon.Warning,
-                                        ConfirmButtonText = "Ok",
-                                    });
-                            }
-                        }
-                        else
-                        {
-                            await alertService.FireAsync(new SweetAlertOptions
-                                {
-                                    Title = "Warning",
-                                    Text = "You have to enter a password!",
-                                    Icon = SweetAlertIcon.Warning,
-                                    ConfirmButtonText = "Ok",
-                                });
-                        }
-                    }
-                    else
-                    {
-                        await alertService.FireAsync(new SweetAlertOptions
-                            {
-                                Title = "Warning",
-                                Text = "Email address contains illegal characters or is incorrect!",
-                                Icon = SweetAlertIcon.Warning,
-                                ConfirmButtonText = "Ok",
-                            });
-                    }
-                }
-                else
-                {
-                    await alertService.FireAsync(new SweetAlertOptions
-                        {
-                            Title = "Warning",
-                            Text = "You have to enter an email address!",
-                            Icon = SweetAlertIcon.Warning,
-                            ConfirmButtonText = "Ok",
-                        });
-                }
+            _user.Username = _username;
+
+            if (string.IsNullOrEmpty(_email))
+            {
+                await alertsService.InvokeWarning("You have to enter an email address!");
+                return;
+            }
+
+            if (!await validationService.ValidateEmail(_email))
+            {
+                await alertsService.InvokeWarning("Email address contains illegal characters or is incorrect!");
+                return;
+            }
+
+            _user.Email = _email;
+
+            if (string.IsNullOrEmpty(_password))
+            {
+                await alertsService.InvokeWarning("You have to enter a password!");
+                return;
+            }
+
+            if (!await validationService.ValidatePassword(_password))
+            {
+                await alertsService.InvokeWarning("Current password contains illegal characters!");
+                return;
+            }
+
+            if (!await validationService.CheckPasswordRequirements(_password))
+            {
+                await alertsService.InvokeWarning("Password must be at least 8 characters long!");
+                return;
+            }
+
+            _user.Password = _password;
+
+            NewUser newUser = await ToAddModel();
+            bool res = await usersService.AddUser(newUser);
+
+            if (res)
+            {
+                await Authenticate();
             }
             else
             {
-                await alertService.FireAsync(new SweetAlertOptions
-                    {
-                        Title = "Warning",
-                        Text = "Username contains illegal characters!",
-                        Icon = SweetAlertIcon.Warning,
-                        ConfirmButtonText = "Ok",
-                    });
+                await alertsService.InvokeError();
             }
         }
-        else
+        catch (Exception ex)
         {
-            await alertService.FireAsync(new SweetAlertOptions
-                {
-                    Title = "Warning",
-                    Text = "You have to enter a username!",
-                    Icon = SweetAlertIcon.Warning,
-                    ConfirmButtonText = "Ok",
-                });
+            await alertsService.InvokeError();
         }
+    }
+    private async Task<NewUser> ToAddModel()
+    {
+        return new NewUser
+            {
+                Username = _user.Username,
+                Password = _user.Password,
+                Email = _user.Email
+            };
     }
     private async Task ShowRegister()
     {
-        showLogin = false;
+        _showLogin = false;
         StateHasChanged();
     }
     private async Task ShowLogin()
     {
-        showLogin = true;
+        _showLogin = true;
         StateHasChanged();
     }
 }

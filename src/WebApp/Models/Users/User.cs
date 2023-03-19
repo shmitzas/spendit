@@ -1,4 +1,4 @@
-﻿namespace WebApp.Models
+﻿namespace WebApp.Models.Users
 {
     public class User
     {

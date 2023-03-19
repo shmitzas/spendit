@@ -37,7 +37,7 @@ namespace REST_API.Controllers
             }
         }
         [HttpPut("auth")]
-        public async Task<IActionResult> SignUserIn(User userInfo)
+        public async Task<IActionResult> SignUserIn(NewUser userInfo)
         {
             try
             {
@@ -51,7 +51,7 @@ namespace REST_API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(User userInfo)
+        public async Task<IActionResult> AddUser(NewUser userInfo)
         {
             try
             {
@@ -83,7 +83,7 @@ namespace REST_API.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> UpdateUser(User userInfo)
+        public async Task<IActionResult> UpdateUser(UpdateUser userInfo)
         {
             try
             {

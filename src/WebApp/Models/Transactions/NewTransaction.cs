@@ -1,10 +1,8 @@
-﻿namespace WebApp.Models
+﻿namespace WebApp.Models.Transactions
 {
-    public class Transaction
+    public class NewTransaction
     {
-        public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public Guid CategoryId { get; set; }
         public string Type { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; }

@@ -1,10 +1,11 @@
 ﻿@page "/overview"
 @using WebApp.Services
-@using WebApp.Models
+@using WebApp.Models.Transactions
+@using WebApp.Models.Users
 @using WebApp.Auth
 @inject TransactionsService transactionsService
 @inject AuthenticationStateProvider authStateProvider
-@inject SweetAlertService alertService
+@inject AlertsService alertsService
 @attribute [Authorize]
 
 <PageTitle>Spendit - Overview</PageTitle>
@@ -19,9 +20,9 @@
                             <h5>Recent transactions</h5>
                             <div class="col-md-12 mt-3">
                                 <div class="row justify-content-center">
-                                    @if (transactions != null && transactions.Count() > 0)
+                                    @if (_recentTransactions != null && _recentTransactions.Count() > 0)
                                     {
-                                        foreach (var tr in transactions)
+                                        foreach (var tr in _recentTransactions)
                                         {
                                             <div class="col-md-3 card mb-3 border-0">
                                                 <div class="row g-0">
@@ -59,15 +60,15 @@
 </AuthorizeView>
 
 @code {
-    private AuthProvider authProvider;
-    private IEnumerable<Transaction>? transactions;
+    private AuthProvider _authProvider;
+    private IEnumerable<Transaction>? _recentTransactions;
     private User _user;
 
     protected override async Task OnInitializedAsync()
     {
-        authProvider = (AuthProvider)authStateProvider;
-        _user = await authProvider.GetCurrentUserAsync();
-        await LoadTransactions();
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadRecentTransactions();
     }
     private async Task<string> TransactionDescLenght(string input)
     {
@@ -81,26 +82,16 @@
             return String.Empty;
         }
     }
-    private async Task LoadTransactions()
+    private async Task LoadRecentTransactions()
     {
         try
         {
             var tr = await transactionsService.GetTransactions(_user.Id);
-            transactions = tr.Take(4);
+            _recentTransactions = tr.Take(4);
         }
         catch (Exception ex)
         {
-            await InvokeError();
+            await alertsService.InvokeError();
         }
-    }
-    private async Task InvokeError()
-    {
-        await alertService.FireAsync(new SweetAlertOptions
-            {
-                Title = "Error",
-                Text = "Oops... An error occured, please try again.",
-                Icon = SweetAlertIcon.Error,
-                ConfirmButtonText = "Ok",
-            });
     }
 }
