@@ -32,11 +32,11 @@
                     <div class="row justify-content-center align-items-center">
                         <div class="col-10 align-items-center">
                             <div class="row justify-content-center align-items-center text-center">
-                                <hr class="col-5 mb-0 border-primary border-1 opacity-100">
-                                <button @onclick="FilterStatus" class="col-1 btn btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters">
+                                <hr class="col-5 mb-0 border-primary border-1 opacity-100 me-2">
+                                <button @onclick="FilterStatus" class="col btn btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters">
                                     <span class="fw-semibold">Filters</span> <i class="fa-sharp fa-solid @_filterArrow"></i>
                                 </button>
-                                <hr class="col-5 mb-0 border-primary border-1 opacity-100">
+                                <hr class="col-5 mb-0 border-primary border-1 opacity-100 ms-2">
                             </div>
                         </div>
                     </div>
@@ -82,8 +82,8 @@
                                 <tr>
                                     <th scope="col" class="col-4">Description</th>
                                     <th scope="col" class="col-2">Type</th>
-                                    <th scope="col" class="col-3"><a @onclick="OrderByDate" href="/transactions">Date <i class="fa-sharp fa-solid @_orderByDate"></i></a></th>
-                                    <th scope="col" class="col-2"><a @onclick="OrderByAmount" href="/transactions">Ammount <i class="fa-sharp fa-solid @_orderByAmount"></i></a></th>
+                                    <th scope="col" class="col-3 text-primary"><span @onclick="OrderByDate" role="button">Date <i class="fa-sharp fa-solid @_orderByDate"></i></span></th>
+                                    <th scope="col" class="col-2 text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-sharp fa-solid @_orderByAmount"></i></span></th>
                                     <th scope="col" class="col-3">Actions</th>
                                 </tr>
                             </thead>
