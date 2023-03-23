@@ -55,6 +55,16 @@ namespace REST_API.Controllers
         {
             try
             {
+                var usernameExists = await _DbContext.Users.AnyAsync(u => u.Username.ToLower() == userInfo.Username.ToLower());
+                if (usernameExists)
+                {
+                    return BadRequest();
+                }
+                var emailExists = await _DbContext.Users.AnyAsync(u => u.Email.ToLower() == userInfo.Email.ToLower());
+                if (emailExists)
+                {
+                    return BadRequest();
+                }
                 var user = new User()
                 {
                     Id = Guid.NewGuid(),
@@ -63,16 +73,7 @@ namespace REST_API.Controllers
                     Email = userInfo.Email,
                     Settings = "{\"currency\": \"EUR\"}"
                 };
-
-                var defaultCategory = new Category()
-                {
-                    Id = Guid.Empty,
-                    UserId = user.Id,
-                    Name = "Uncategorized"
-                };
                 await _DbContext.Users.AddAsync(user);
-                await _DbContext.SaveChangesAsync();
-                await _DbContext.Categories.AddAsync(defaultCategory);
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
@@ -87,11 +88,16 @@ namespace REST_API.Controllers
         {
             try
             {
-                var user = await _DbContext.Users.Where(u => u.Id == userInfo.Id).SingleAsync();
                 if (userInfo.Password == null || userInfo.Email == null || userInfo.Settings == null)
                 {
-                    return NotFound();
+                    return BadRequest();
                 }
+                var emailExists = await _DbContext.Users.AnyAsync(u => u.Email.ToLower() == userInfo.Email.ToLower());
+                if (emailExists)
+                {
+                    return BadRequest();
+                }
+                var user = await _DbContext.Users.Where(u => u.Id == userInfo.Id).SingleAsync();
                 user.Password = userInfo.Password;
                 user.Email = userInfo.Email;
                 user.Settings = userInfo.Settings;

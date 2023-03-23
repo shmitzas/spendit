@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using REST_API.Models.Budgets;
 using REST_API.Models.Categories;
+using REST_API.Models.RecurringTransactions;
 using REST_API.Models.Transactions;
 using REST_API.Models.Users;
+using REST_API.Models.Goals;
 
 namespace REST_API.Data
 {
@@ -16,6 +18,7 @@ namespace REST_API.Data
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
         public virtual DbSet<RTransaction> RTransactions { get; set; }
+        public virtual DbSet<Goal> Goals { get; set; }
         public virtual DbSet<Budget> Budgets { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,20 +40,14 @@ namespace REST_API.Data
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));
 
-            modelBuilder.Entity<Transaction>()
-                .Property(t => t.CategoryId)
+            modelBuilder.Entity<Goal>()
+                .Property(g => g.Id)
                 .HasConversion(
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));
 
-            modelBuilder.Entity<Category>()
-                .Property(c => c.Id)
-                .HasConversion(
-                    id => id.ToByteArray(),
-                    bytes => new Guid(bytes));
-
-            modelBuilder.Entity<Category>()
-                .Property(c => c.UserId)
+            modelBuilder.Entity<Goal>()
+                .Property(g => g.UserId)
                 .HasConversion(
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));

@@ -1,13 +1,13 @@
-﻿@page "/transactions"
+﻿@page "/recurring-transactions"
 @using System.Text.Json
 @using System.Linq
 @using WebApp.Services
-@using WebApp.Models.Transactions
+@using WebApp.Models.RecurringTransactions
 @using WebApp.Models.Categories
 @using WebApp.Models.Users
 @using WebApp.Auth
 @using System.Text.RegularExpressions
-@inject TransactionsService transactionsService
+@inject RecurringTransactionsService recurringTransactionsService
 @inject CategoriesService categoriesService
 @inject AuthenticationStateProvider authStateProvider
 @inject AlertsService alertsService
@@ -16,7 +16,7 @@
 @inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
-<PageTitle>Spendit - Transactions</PageTitle>
+<PageTitle>Spendit - Recurring transactions</PageTitle>
 <AuthorizeView>
     <Authorized>
         <div class="row">
@@ -59,14 +59,6 @@
                                     <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
                                 </div>
                             </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-10">
-                                    <div class="form-check ps-3">
-                                        <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
-                                        <label class="form-check-label" for="showTime">Show goal time</label>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -84,10 +76,12 @@
                             <thead class="border-bottom-1">
                                 <tr>
                                     <th scope="col" class="col-1 text-center">Category</th>
-                                    <th scope="col" class="col-4 text-center">Description</th>
-                                    <th scope="col" class="col-2 text-center">Type</th>
-                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByDate" role="button">Date <i class="fa-solid @_orderByDate"></i></span></th>
-                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                    <th scope="col" class="col-2 text-center">Description</th>
+                                    <th scope="col" class="col-1 text-center">Type</th>
+                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByStartDate" role="button">Start date <i class="fa-solid @_orderByStartDate"></i></span></th>
+                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByEndDate" role="button">End date <i class="fa-solid @_orderByEndDate"></i></span></th>
+                                    <th scope="col" class="col-1 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                    <th scope="col" class="col-2 text-center">Frequency</th>
                                     <th scope="col" class="col-1 text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -100,9 +94,10 @@
                                         string categoryIcon = GetCategoryIcon(tr.CategoryId).Result;
                                         <tr class="align-middle">
                                             <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button></td>
-                                            <td class="">@TransactionDescLenght(tr.Description).Result</td>
-                                            <td class=" text-center">@tr.Type</td>
-                                            <td class=" text-center">@tr.CreatedAt.ToString(@_dateFormat)</td>
+                                            <td>@TransactionDescLenght(tr.Description).Result</td>
+                                            <td class="text-center">@tr.Type</td>
+                                            <td class="text-center">@tr.StartDate.ToString(@_dateFormat)</td>
+                                            <td class="text-center">@tr.EndDate.ToString(@_dateFormat)</td>
                                             @if (tr.Type == "Expense")
                                             {
                                                 <td class="text-center text-danger">-@tr.Amount @tr.Currency</td>
@@ -111,20 +106,13 @@
                                             {
                                                 <td class="text-center text-success">+@tr.Amount @tr.Currency</td>
                                             }
+                                            <td class="text-center">@tr.Frequency</td>
                                             <td class="text-center">
                                                 <button @onclick="()=>EditTransaction(tr.Id)" class="btn btn-info rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
                                                 <button @onclick="()=>DeleteTransaction(tr.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
                                             </td>
                                         </tr>
                                     }
-                                }
-                                else
-                                {
-                                    <div class="row justify-content-center mt-5">
-                                        <div class="spinner-border text-info" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </div>
                                 }
                             </tbody>
                         </table>
@@ -140,13 +128,14 @@
 
 @code {
     private AuthProvider _authProvider;
-    private IEnumerable<Transaction>? _transactions;
+    private IEnumerable<RecurringTransaction>? _transactions;
     private IEnumerable<Category>? _categories;
     private User _user;
-    private string _orderByDate = "fa-sort-down";
+    private string _orderByStartDate = "fa-sort-down";
+    private string _orderByEndDate = "fa-sort-down";
     private string _orderByAmount = "fa-sort-down";
     private string _filterArrow = "fa-chevron-down";
-    private bool _showTime = false;
+    private List<string> _frequencies = new List<string> { "Daily", "Weekly", "Monthly", "Quarterly", "Annually" };
     private string _query;
     private int _selectedId;
     private string _dateFormat = "yyyy-MM-dd";
@@ -164,7 +153,7 @@
     {
         try
         {
-            _transactions = await transactionsService.GetTransactions(_user.Id);
+            _transactions = await recurringTransactionsService.GetTransactions(_user.Id);
         }
         catch (Exception ex)
         {
@@ -195,18 +184,33 @@
             return await categoryIconsService.GetIconByName(String.Empty);
         }
     }
-    private async Task OrderByDate()
+    private async Task OrderByStartDate()
     {
-        if (_orderByDate == "fa-sort-down")
+        if (_orderByStartDate == "fa-sort-down")
         {
-            _transactions = _transactions.OrderBy(t => t.CreatedAt);
-            _orderByDate = "fa-sort-up";
+            _transactions = _transactions.OrderBy(t => t.StartDate);
+            _orderByStartDate = "fa-sort-up";
             StateHasChanged();
         }
         else
         {
-            _transactions = _transactions.OrderByDescending(t => t.CreatedAt);
-            _orderByDate = "fa-sort-down";
+            _transactions = _transactions.OrderByDescending(t => t.StartDate);
+            _orderByStartDate = "fa-sort-down";
+            StateHasChanged();
+        }
+    }
+    private async Task OrderByEndDate()
+    {
+        if (_orderByEndDate == "fa-sort-down")
+        {
+            _transactions = _transactions.OrderBy(t => t.EndDate);
+            _orderByEndDate = "fa-sort-up";
+            StateHasChanged();
+        }
+        else
+        {
+            _transactions = _transactions.OrderByDescending(t => t.EndDate);
+            _orderByEndDate = "fa-sort-down";
             StateHasChanged();
         }
     }
@@ -229,7 +233,7 @@
     {
         try
         {
-            var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal", _categories);
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddRecurringTransactionModal", _categories, _frequencies);
             if (swalResult == null)
             {
                 return;
@@ -242,7 +246,7 @@
                 return;
             }
 
-            var success = await transactionsService.AddTransaction(transactionToAdd);
+            var success = await recurringTransactionsService.AddTransaction(transactionToAdd);
             if (success)
             {
                 await LoadTransactions();
@@ -267,14 +271,18 @@
             var currentCategory = _categories.Where(c => c.Id == tr.CategoryId).Single().Name;
             var otherCategories = _categories.Where(c => c.Id != tr.CategoryId).ToList();
 
-            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.CreatedAt, currentCategory, otherCategories);
+            var currentFrequency = _frequencies.Where(f => f == tr.Frequency).Single();
+            var otherFrequencies = _frequencies.Where(f => f != tr.Frequency).ToList();
+
+
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditRecurringTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.StartDate, tr.EndDate, currentCategory, otherCategories, currentFrequency, otherFrequencies);
             if (swalResult != null)
             {
                 var transaction = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), tr.Id);
                 transaction.Id = transactionId;
                 if (await ValidateExistingTransaction(transaction))
                 {
-                    if (await transactionsService.UpdateTransaction(transaction))
+                    if (await recurringTransactionsService.UpdateTransaction(transaction))
                     {
                         await LoadTransactions();
                         StateHasChanged();
@@ -297,7 +305,7 @@
         {
             if (await alertsService.InvokeConfirmation())
             {
-                if (await transactionsService.DeleteTransaction(_user.Id, transactionId))
+                if (await recurringTransactionsService.DeleteTransaction(_user.Id, transactionId))
                 {
                     await LoadTransactions();
                     StateHasChanged();
@@ -317,11 +325,11 @@
     {
         if (String.IsNullOrEmpty(_query))
         {
-            _transactions = await transactionsService.GetTransactions(_user.Id);
+            _transactions = await recurringTransactionsService.GetTransactions(_user.Id);
         }
         else
         {
-            _transactions = await transactionsService.Search(_user.Id, _query);
+            _transactions = await recurringTransactionsService.Search(_user.Id, _query);
         }
         StateHasChanged();
     }
@@ -330,7 +338,7 @@
         if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
         {
             _endDate = _endDate.AddDays(1).AddTicks(-1);
-            _transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
+            _transactions = await recurringTransactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
             StateHasChanged();
         }
     }
@@ -344,19 +352,6 @@
         else
         {
             _filterArrow = "fa-chevron-down";
-            StateHasChanged();
-        }
-    }
-    private async Task ShowTime()
-    {
-        if (!_showTime)
-        {
-            _dateFormat = "yyyy-MM-dd HH:MM";
-            StateHasChanged();
-        }
-        else
-        {
-            _dateFormat = "yyyy-MM-dd";
             StateHasChanged();
         }
     }
@@ -379,12 +374,12 @@
             await Search();
         }
     }
-    private async Task<UpdateTransaction> ToUpdateModel(Dictionary<string, string> data, Guid id)
+    private async Task<RecurringTransaction> ToUpdateModel(Dictionary<string, string> data, Guid id)
     {
         try
         {
             var category = _categories.Where(c => c.Name == data["category"]).Single();
-            return new UpdateTransaction
+            return new RecurringTransaction
                 {
                     Id = id,
                     UserId = _user.Id,
@@ -393,21 +388,23 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
-                    CreatedAt = DateTime.Parse(data["date"])
+                    StartDate = DateTime.Parse(data["startDate"]),
+                    EndDate = DateTime.Parse(data["endDate"]),
+                    Frequency = data["frequency"]
                 };
         }
         catch (Exception ex)
         {
             await alertsService.InvokeError();
-            return new UpdateTransaction();
+            return new RecurringTransaction();
         }
     }
-    private async Task<NewTransaction> ToAddModel(Dictionary<string, string> data)
+    private async Task<NewRecurringTransaction> ToAddModel(Dictionary<string, string> data)
     {
         try
         {
             var category = _categories.Where(c => c.Name == data["category"]).Single();
-            return new NewTransaction
+            return new NewRecurringTransaction
                 {
                     UserId = _user.Id,
                     CategoryId = category.Id,
@@ -415,16 +412,18 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
-                    CreatedAt = DateTime.Parse(data["date"])
+                    StartDate = DateTime.Parse(data["startDate"]),
+                    EndDate = DateTime.Parse(data["endDate"]),
+                    Frequency = data["frequency"]
                 };
         }
         catch (Exception ex)
         {
             await alertsService.InvokeError();
-            return new NewTransaction();
+            return new NewRecurringTransaction();
         }
     }
-    private async Task<bool> ValidateNewTransaction(NewTransaction transaction)
+    private async Task<bool> ValidateNewTransaction(NewRecurringTransaction transaction)
     {
         if (!String.IsNullOrEmpty(transaction.Description) && await validationService.ValidateText(transaction.Description))
         {
@@ -432,13 +431,30 @@
             {
                 if (!String.IsNullOrEmpty(transaction.Currency) && await validationService.ValidateText(transaction.Currency))
                 {
-                    if (!String.IsNullOrEmpty(transaction.CreatedAt.ToString()) && await validationService.ValidateDate(transaction.CreatedAt.ToString()))
+                    if (!String.IsNullOrEmpty(transaction.StartDate.ToString()) && await validationService.ValidateDate(transaction.StartDate.ToString()))
                     {
-                        return true;
+                        if (!String.IsNullOrEmpty(transaction.EndDate.ToString()) && await validationService.ValidateDate(transaction.EndDate.ToString()))
+                        {
+                            if (transaction.EndDate > transaction.StartDate)
+                            {
+                                if (!String.IsNullOrEmpty(transaction.Frequency) && await validationService.ValidateText(transaction.Frequency.ToString()))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    await alertsService.InvokeWarning("Frequency is incorrect!");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            await alertsService.InvokeWarning("End date's format is incorrect!");
+                        }
                     }
                     else
                     {
-                        await alertsService.InvokeWarning("Date's format is incorrect!");
+                        await alertsService.InvokeWarning("Start date's format is incorrect!");
                     }
                 }
                 else
@@ -457,7 +473,7 @@
         }
         return false;
     }
-    private async Task<bool> ValidateExistingTransaction(UpdateTransaction transaction)
+    private async Task<bool> ValidateExistingTransaction(RecurringTransaction transaction)
     {
         if (!String.IsNullOrEmpty(transaction.Description) && await validationService.ValidateText(transaction.Description))
         {
@@ -465,13 +481,30 @@
             {
                 if (!String.IsNullOrEmpty(transaction.Currency) && await validationService.ValidateText(transaction.Currency))
                 {
-                    if (!String.IsNullOrEmpty(transaction.CreatedAt.ToString()) && await validationService.ValidateDate(transaction.CreatedAt.ToString()))
+                    if (!String.IsNullOrEmpty(transaction.StartDate.ToString()) && await validationService.ValidateDate(transaction.StartDate.ToString()))
                     {
-                        return true;
+                        if (!String.IsNullOrEmpty(transaction.EndDate.ToString()) && await validationService.ValidateDate(transaction.EndDate.ToString()))
+                        {
+                            if (transaction.EndDate > transaction.StartDate)
+                            {
+                                if (!String.IsNullOrEmpty(transaction.Frequency) && await validationService.ValidateText(transaction.Frequency))
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    await alertsService.InvokeWarning("Frequency is incorrect!");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            await alertsService.InvokeWarning("End date can't be earlier than Start date!");
+                        }
                     }
                     else
                     {
-                        await alertsService.InvokeWarning("Date's format is incorrect!");
+                        await alertsService.InvokeWarning("Start date's format is incorrect!");
                     }
                 }
                 else

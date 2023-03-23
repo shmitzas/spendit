@@ -7,6 +7,7 @@
 @inject AuthenticationStateProvider authStateProvider
 @inject NavigationManager navManager
 @inject UsersService usersService
+@inject DueRecurringTransactions dueRecurringTransactions
 @inject InputValidationService validationService
 @inject AlertsService alertsService
 
@@ -96,6 +97,7 @@ else
                                 Email = userInfo.Email,
                                 Settings = userInfo.Settings
                             });
+                    await dueRecurringTransactions.CycleTransactions(userInfo.Id);
                     navManager.NavigateTo("/overview", true);
                 }
                 else

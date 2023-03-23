@@ -55,7 +55,7 @@ namespace REST_API.Controllers
         {
             try
             {
-                var transactions = await _DbContext.Transactions.Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId).ToListAsync();
+                var transactions = await _DbContext.Transactions.Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId).OrderByDescending(t => t.CreatedAt).ToListAsync();
                 return Ok(transactions);
             }
             catch (Exception ex)
@@ -69,9 +69,7 @@ namespace REST_API.Controllers
         {
             try
             {
-                var transaction = await _DbContext.Transactions
-                    .Where(t => t.UserId == userId && t.Id == id)
-                    .SingleAsync();
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
                 return Ok(transaction);
             }
             catch (Exception ex)
@@ -89,7 +87,7 @@ namespace REST_API.Controllers
                 {
                     Id = Guid.NewGuid(),
                     UserId = transactionInfo.UserId,
-                    CategoryId = await GetCategoryId(transactionInfo.UserId), //Temporary fix until categories are implemented
+                    CategoryId = transactionInfo.CategoryId,
                     Type = transactionInfo.Type,
                     Amount = transactionInfo.Amount,
                     Currency = transactionInfo.Currency,
@@ -113,7 +111,7 @@ namespace REST_API.Controllers
             try
             {
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == transactionInfo.UserId && t.Id == transactionInfo.Id).SingleAsync();
-                transaction.CategoryId = await GetCategoryId(transactionInfo.UserId); //Temporary fix until categories are implemented
+                transaction.CategoryId = transactionInfo.CategoryId;
                 transaction.Type = transactionInfo.Type;
                 transaction.Amount = transactionInfo.Amount;
                 transaction.Currency = transactionInfo.Currency;
@@ -145,19 +143,6 @@ namespace REST_API.Controllers
             catch (Exception ex)
             {
                 return NotFound();
-            }
-        }
-        //Temporary fix until categories are implemented
-        private async Task<Guid> GetCategoryId(Guid userId)
-        {
-            try
-            {
-                var res = await _DbContext.Categories.Where(c => c.UserId == userId).SingleAsync();
-                return res.Id;
-            }
-            catch (Exception ex)
-            {
-                return Guid.Empty;
             }
         }
     }

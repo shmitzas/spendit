@@ -1,4 +1,4 @@
-﻿namespace REST_API.Models.Categories
+﻿namespace WebApp.Models.Categories
 {
     public class Category
     {

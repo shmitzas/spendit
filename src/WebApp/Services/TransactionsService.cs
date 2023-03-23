@@ -7,11 +7,9 @@ namespace WebApp.Services
     public class TransactionsService
     {
         private readonly HttpClient _httpClient;
-        private readonly UsersService _usersService;
-        public TransactionsService(HttpClient httpClient, UsersService usersService)
+        public TransactionsService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _usersService = usersService;
         }
         private async Task<StringContent> SerializeObj(object obj)
         {

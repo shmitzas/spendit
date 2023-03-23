@@ -5,29 +5,25 @@ CREATE TABLE spendit.Users (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserName VARCHAR(255) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
-    Email VARCHAR(255) NOT NULL,
+    Email VARCHAR(255) NOT NULL UNIQUE,
     Settings VARCHAR(255) NOT NULL DEFAULT "{\"currency\": \"EUR\"}",
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE TABLE spendit.Categories (
-    Id BINARY(16) PRIMARY KEY,
-    UserId BINARY(16) NOT NULL,
-    Name VARCHAR(255) NOT NULL,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id)
+    Id INT AUTO_INCREMENT PRIMARY KEY NOT NULL UNIQUE,
+    Name VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE spendit.Transactions (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserId BINARY(16) NOT NULL,
-    CategoryId BINARY(16) NOT NULL,
+    c
+    Description VARCHAR(255),
     Type ENUM('Income', 'Expense') NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
     Currency VARCHAR(3) NOT NULL,
-    Description VARCHAR(255),
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES users(Id),
@@ -37,11 +33,11 @@ CREATE TABLE spendit.Transactions (
 CREATE TABLE spendit.RecurringTransactions (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserId BINARY(16) NOT NULL,
-    CategoryId BINARY(16) NOT NULL,
+    CategoryId INT NOT NULL,
+    Description VARCHAR(255),
     Type ENUM('income', 'expense') NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
     Currency VARCHAR(3) NOT NULL,
-    Description VARCHAR(255),
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
     Frequency ENUM('daily', 'weekly', 'monthly', 'quarterly', 'annually') NOT NULL,
@@ -54,15 +50,32 @@ CREATE TABLE spendit.RecurringTransactions (
 CREATE TABLE spendit.Budgets (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserId BINARY(16) NOT NULL,
-    Name VARCHAR(255) NOT NULL,
+    Description VARCHAR(255) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
     Currency VARCHAR(3) NOT NULL,
+    CurrentAmount DECIMAL(10, 2) NOT NULL,
     IsActive TINYINT(1) NOT NULL DEFAULT 0,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES users(Id)
+);
+
+CREATE TABLE spendit.Goals (
+    Id BINARY(16) PRIMARY KEY UNIQUE,
+    UserId BINARY(16) NOT NULL,
+    public Guid CategoryId { get; set; }
+    Description VARCHAR(255) NOT NULL,
+    StartDate DATE NOT NULL,
+    EndDate DATE NOT NULL,
+    Amount DECIMAL(10, 2) NOT NULL,
+    CurrentAmount DECIMAL(10, 2) NOT NULL,
+    Currency VARCHAR(3) NOT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserId) REFERENCES users(Id),
+    FOREIGN KEY (CategoryId) REFERENCES categories(Id)
 );
 
 DROP USER IF EXISTS 'api';

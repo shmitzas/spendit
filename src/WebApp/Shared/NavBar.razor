@@ -16,13 +16,30 @@
                 <div class="collapse navbar-collapse" id="navbarText">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <NavLink class="nav-link"  href="overview" ActiveClass="active">
+                            <NavLink class="nav-link" href="overview" ActiveClass="active">
                                 <i class="fa-solid fa-house"></i> Overview
                             </NavLink>
                         </li>
-                        <li class="nav-item">
-                            <NavLink class="nav-link" href="transactions" ActiveClass="active">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fa-solid fa-file-invoice-dollar"></i> Transactions
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li class="dropdown-item">
+                                    <NavLink class="nav-link" href="transactions" ActiveClass="active">
+                                        <i class="fa-solid fa-file-invoice-dollar"></i> Transactions
+                                    </NavLink>
+                                </li>
+                                <li class="dropdown-item">
+                                    <NavLink class="nav-link" href="recurring-transactions" ActiveClass="active">
+                                        <i class="fa-solid fa-repeat"></i> Recurring transactions
+                                    </NavLink>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item">
+                            <NavLink class="nav-link" href="goals" ActiveClass="active">
+                                <i class="fa-solid fa-piggy-bank"></i> Goals
                             </NavLink>
                         </li>
                     </ul>
@@ -37,7 +54,7 @@
             <NotAuthorized>
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 </ul>
-                <li class="navbar-nav nav-item me-5 mb-2 mb-lg-0">
+                <li class="navbar-nav nav-item mb-2 mb-lg-0">
                     <AuthBtn />
                 </li>
             </NotAuthorized>

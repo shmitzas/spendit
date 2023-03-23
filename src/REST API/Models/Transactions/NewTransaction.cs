@@ -3,6 +3,7 @@
     public class NewTransaction
     {
         public Guid UserId { get; set; }
+        public int CategoryId { get; set; }
         public string Type { get; set; }
         public decimal Amount { get; set; }
         public string Currency { get; set; }

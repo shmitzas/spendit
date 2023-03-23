@@ -49,7 +49,7 @@ namespace WebApp.Services
         }
         public async Task<bool> ValidateText(string input)
         {
-            if (Regex.IsMatch(input, @"^[a-zA-Z0-9\s\.,\-_()$€£¥₽?!]+$"))
+            if (Regex.IsMatch(input, @"^[\p{L}\p{N}\s\.,\-_()$€£¥₽?!]+$"))
             {
                 return true;
             }
