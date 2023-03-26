@@ -49,6 +49,28 @@ namespace WebApp.Services
                 return new List<Transaction>();
             }
         }
+        public async Task<IEnumerable<Transaction>> GetTransactionsByDateAndCategory(Guid userId, DateTime startDate, DateTime endDate, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}/category={categoryName}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> GetTransactionsByCategory(Guid userId, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/category={categoryName}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
+            }
+        }
         public async Task<IEnumerable<Transaction>> Search(Guid userId, string query)
         {
             try

@@ -29,7 +29,7 @@
                         <button @onclick="AddGoal" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
                     </div>
                 </div>
-                @if (_goals != null && _goals.Count() > 0 && _categories != null && _categories.Count() > 0)
+                @if (_goals != null && _categories != null && _categories.Count() > 0)
                 {
                     @foreach (var goal in _goals)
                     {
@@ -285,7 +285,6 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex);
             await alertsService.InvokeError();
             return new NewGoal();
         }

@@ -59,12 +59,26 @@
                                     <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
                                 </div>
                             </div>
-                            <div class="row justify-content-center mt-3">
-                                <div class="col-10">
-                                    <div class="form-check ps-3">
-                                        <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
-                                        <label class="form-check-label" for="showTime">Show goal time</label>
-                                    </div>
+                            <div class="row justify-content-center align-items-center mt-3">
+                                <div class="col-3 text-end">
+                                    <span>Select category</span>
+                                </div>
+                                <div class="col-4 text-start">
+                                    <select class='form-select' id='category' aria-label='Category' @onchange="FilterByCategory">
+                                        @if (_categories != null && _categories.Count() > 0)
+                                        {
+                                            @foreach (var category in _categories)
+                                            {
+                                                <option value="@category.Name">@category.Name</option>
+                                            }
+
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-5">
+                                <div class="col-4 text-center">
+                                    <button @onclick="RemoveFilters" class="btn btn-primary rounded-pill">Remove filters</button>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +100,12 @@
                                     <th scope="col" class="col-1 text-center">Category</th>
                                     <th scope="col" class="col-4 text-center">Description</th>
                                     <th scope="col" class="col-2 text-center">Type</th>
-                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByDate" role="button">Date <i class="fa-solid @_orderByDate"></i></span></th>
+                                    <th scope="col" class="col-2 text-center text-primary">
+                                        <span @onclick="OrderByDate" role="button">Date <i class="fa-solid @_orderByDate"></i></span>
+                                        <label class="form-check-label  ms-2" for="showTime">Time</label>
+                                        <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
+
+                                    </th>
                                     <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
                                     <th scope="col" class="col-1 text-center">Actions</th>
                                 </tr>
@@ -118,14 +137,6 @@
                                         </tr>
                                     }
                                 }
-                                else
-                                {
-                                    <div class="row justify-content-center mt-5">
-                                        <div class="spinner-border text-info" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </div>
-                                }
                             </tbody>
                         </table>
                     </div>
@@ -148,6 +159,7 @@
     private string _filterArrow = "fa-chevron-down";
     private bool _showTime = false;
     private string _query;
+    private bool _dateSelected = false;
     private int _selectedId;
     private string _dateFormat = "yyyy-MM-dd";
     private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -182,11 +194,15 @@
             await alertsService.InvokeError();
         }
     }
+    private async Task<string> GetCategoryName(int id)
+    {
+        return _categories.Where(c => c.Id == id).Single().Name;
+    }
     private async Task<string> GetCategoryIcon(int id)
     {
         try
         {
-            string categoryName = _categories.Where(c => c.Id == id).Single().Name;
+            string categoryName = await GetCategoryName(id);
             string icon = await categoryIconsService.GetIconByName(categoryName);
             return icon;
         }
@@ -329,9 +345,40 @@
     {
         if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
         {
-            _endDate = _endDate.AddDays(1).AddTicks(-1);
-            _transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
+            var endDate = _endDate.AddDays(1);
+            _transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, endDate);
+            _dateSelected = true;
             StateHasChanged();
+        }
+    }
+    private async Task RemoveFilters()
+    {
+        await LoadTransactions();
+        _dateSelected = false;
+        StateHasChanged();
+    }
+    private async Task FilterByCategory(ChangeEventArgs e)
+    {
+        try
+        {
+            if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
+            {
+                if (_dateSelected)
+                {
+                    var endDate = _endDate.AddDays(1);
+                    _transactions = await transactionsService.GetTransactionsByDateAndCategory(_user.Id, _startDate, endDate, e.Value.ToString());
+                    StateHasChanged();
+                }
+                else
+                {
+                    _transactions = await transactionsService.GetTransactionsByCategory(_user.Id, e.Value.ToString());
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
         }
     }
     private async Task FilterStatus()

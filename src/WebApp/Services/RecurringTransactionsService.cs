@@ -49,6 +49,28 @@ namespace WebApp.Services
                 return new List<RecurringTransaction>();
             }
         }
+        public async Task<IEnumerable<RecurringTransaction>> GetTransactionsByDateAndCategory(Guid userId, DateTime startDate, DateTime endDate, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}/category={categoryName}");
+            }
+            catch (Exception ex)
+            {
+                return new List<RecurringTransaction>();
+            }
+        }
+        public async Task<IEnumerable<RecurringTransaction>> GetTransactionsByCategory(Guid userId, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}/filter/category={categoryName}");
+            }
+            catch (Exception ex)
+            {
+                return new List<RecurringTransaction>();
+            }
+        }
         public async Task<IEnumerable<RecurringTransaction>> Search(Guid userId, string query)
         {
             try

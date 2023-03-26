@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
+using REST_API.Models.Categories;
 using REST_API.Models.Transactions;
 using System;
 
@@ -36,11 +37,43 @@ namespace REST_API.Controllers
         [Route("{userId:guid}/filter/start={startDate}&end={endDate}")]
         public async Task<IActionResult> GetTransactionsByDate([FromRoute] Guid userId, string startDate, string endDate)
         {
-            var sDate = DateTime.Parse(startDate);
-            var eDate = DateTime.Parse(endDate);
             try
             {
+                var sDate = DateTime.Parse(startDate);
+                var eDate = DateTime.Parse(endDate);
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.CreatedAt <= eDate && t.CreatedAt >= sDate).OrderByDescending(t => t.CreatedAt).ToListAsync();
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet]
+        [Route("{userId:guid}/filter/category={category}")]
+        public async Task<IActionResult> GetTransactionsByCategory([FromRoute] Guid userId, string category)
+        {
+            try
+            {
+                var categoryId = await _DbContext.Categories.Where(c => c.Name.ToLower() == category.ToLower()).SingleAsync();
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.CategoryId == categoryId.Id).OrderByDescending(t => t.CreatedAt).ToListAsync();
+                return Ok(transaction);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet]
+        [Route("{userId:guid}/filter/start={startDate}&end={endDate}/category={category}")]
+        public async Task<IActionResult> GetTransactionsByDateAndCategory([FromRoute] Guid userId, string startDate, string endDate, string category)
+        {
+            try
+            {
+                var sDate = DateTime.Parse(startDate);
+                var eDate = DateTime.Parse(endDate);
+                var categoryId = await _DbContext.Categories.Where(c => c.Name.ToLower() == category.ToLower()).SingleAsync();
+                var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.CreatedAt <= eDate && t.CreatedAt >= sDate && t.CategoryId == categoryId.Id).OrderByDescending(t => t.CreatedAt).ToListAsync();
                 return Ok(transaction);
             }
             catch (Exception ex)

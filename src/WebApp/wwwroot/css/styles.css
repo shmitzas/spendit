@@ -11644,6 +11644,10 @@ body {
   border-radius: 0.5rem !important;
 }
 
+.bg-light {
+  border-radius: 0.5rem !important;
+}
+
 a {
   text-decoration: none !important;
 }

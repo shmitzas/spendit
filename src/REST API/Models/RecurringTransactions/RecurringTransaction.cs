@@ -1,7 +1,8 @@
 ﻿namespace REST_API.Models.RecurringTransactions
 {
-    public class NewRTransaction
+    public class RecurringTransaction
     {
+        public Guid Id { get; set; }
         public Guid UserId { get; set; }
         public int CategoryId { get; set; }
         public string Type { get; set; }

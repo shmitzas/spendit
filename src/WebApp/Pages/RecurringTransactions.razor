@@ -59,6 +59,28 @@
                                     <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
                                 </div>
                             </div>
+                            <div class="row justify-content-center align-items-center mt-3">
+                                <div class="col-3 text-end">
+                                    <span>Select category</span>
+                                </div>
+                                <div class="col-4 text-start">
+                                    <select class='form-select' id='category' aria-label='Category' @onchange="FilterByCategory">
+                                        @if (_categories != null && _categories.Count() > 0)
+                                        {
+                                            @foreach (var category in _categories)
+                                            {
+                                                <option value="@category.Name">@category.Name</option>
+                                            }
+
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row justify-content-center mt-5">
+                                <div class="col-4 text-center">
+                                    <button @onclick="RemoveFilters" class="btn btn-primary rounded-pill">Remove filters</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -80,7 +102,7 @@
                                     <th scope="col" class="col-1 text-center">Type</th>
                                     <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByStartDate" role="button">Start date <i class="fa-solid @_orderByStartDate"></i></span></th>
                                     <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByEndDate" role="button">End date <i class="fa-solid @_orderByEndDate"></i></span></th>
-                                    <th scope="col" class="col-1 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                    <th scope="col" class="col-1 ps-0 pe-0 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
                                     <th scope="col" class="col-2 text-center">Frequency</th>
                                     <th scope="col" class="col-1 text-center">Actions</th>
                                 </tr>
@@ -137,6 +159,7 @@
     private string _filterArrow = "fa-chevron-down";
     private List<string> _frequencies = new List<string> { "Daily", "Weekly", "Monthly", "Quarterly", "Annually" };
     private string _query;
+    private bool _dateSelected = false;
     private int _selectedId;
     private string _dateFormat = "yyyy-MM-dd";
     private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
@@ -182,6 +205,36 @@
         catch (Exception ex)
         {
             return await categoryIconsService.GetIconByName(String.Empty);
+        }
+    }
+    private async Task RemoveFilters()
+    {
+        await LoadTransactions();
+        _dateSelected = false;
+        StateHasChanged();
+    }
+    private async Task FilterByCategory(ChangeEventArgs e)
+    {
+        try
+        {
+            if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
+            {
+                if (_dateSelected)
+                {
+                    var endDate = _endDate.AddDays(1);
+                    _transactions = await recurringTransactionsService.GetTransactionsByDateAndCategory(_user.Id, _startDate, endDate, e.Value.ToString());
+                    StateHasChanged();
+                }
+                else
+                {
+                    _transactions = await recurringTransactionsService.GetTransactionsByCategory(_user.Id, e.Value.ToString());
+                    StateHasChanged();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+
         }
     }
     private async Task OrderByStartDate()
@@ -337,8 +390,9 @@
     {
         if (await validationService.ValidateDate(_startDate.ToString()) && await validationService.ValidateDate(_endDate.ToString()))
         {
-            _endDate = _endDate.AddDays(1).AddTicks(-1);
-            _transactions = await recurringTransactionsService.GetTransactionsByDate(_user.Id, _startDate, _endDate);
+            var endDate = _endDate.AddDays(1);
+            _transactions = await recurringTransactionsService.GetTransactionsByDate(_user.Id, _startDate, endDate);
+            _dateSelected = true;
             StateHasChanged();
         }
     }

@@ -17,7 +17,7 @@ namespace REST_API.Data
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<Category> Categories { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
-        public virtual DbSet<RTransaction> RTransactions { get; set; }
+        public virtual DbSet<RecurringTransaction> RecurringTransactions { get; set; }
         public virtual DbSet<Goal> Goals { get; set; }
         public virtual DbSet<Budget> Budgets { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -35,6 +35,18 @@ namespace REST_API.Data
                     bytes => new Guid(bytes));
 
             modelBuilder.Entity<Transaction>()
+                .Property(t => t.UserId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<RecurringTransaction>()
+                .Property(t => t.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<RecurringTransaction>()
                 .Property(t => t.UserId)
                 .HasConversion(
                     id => id.ToByteArray(),

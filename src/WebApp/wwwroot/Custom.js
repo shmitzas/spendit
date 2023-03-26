@@ -1,5 +1,4 @@
 ﻿// --- Transactions ---
-
 function showAddTransactionModal(trCategories) {
     var categoriesList = "";
     trCategories.forEach((category) => {
@@ -30,13 +29,13 @@ function showAddTransactionModal(trCategories) {
                             <div class="col-5 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense'>
-                                    <option selected>Expense</option>
+                                    <option value='Expense' selected>Expense</option>
                                     <option value='Income'>Income</option>
                                 </select>
                             </div>
                             <div class="col-7 text-start">
                                 <label for='category'>Category</label>
-                                <select class='form-select' id='category' aria-label='Category'>
+                                <select class='form-select' id='categories' aria-label='Category'>
                                     ${categoriesList}
                                 </select>
                             </div>
@@ -60,7 +59,7 @@ function showAddTransactionModal(trCategories) {
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
                 var date = document.getElementById("date").value;
-                var category = document.getElementById("category").value;
+                var category = document.getElementById("categories").value;
 
                 var transactionData = {
                     description: description,
@@ -115,7 +114,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                             </div>
                             <div class="col-7 text-start">
                                 <label for='category'>Category</label>
-                                <select class='form-select' id='category' aria-label='Category'>
+                                <select class='form-select' id='categories' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
                                     ${categoriesList}
                                 </select>
@@ -140,7 +139,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
                 var date = document.getElementById("date").value;
-                var category = document.getElementById("category").value;
+                var category = document.getElementById("categories").value;
 
                 var transactionData = {
                     description: description,
@@ -148,7 +147,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     currency: currency,
                     type: type,
                     date: date,
-                    category : category
+                    category : category,
                 };
                 return JSON.stringify(transactionData);
             } else {
@@ -200,7 +199,7 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                             </div>
                             <div class="col-7 text-start">
                                 <label for='category'>Category</label>
-                                <select class='form-select' id='category' aria-label='Category'>
+                                <select class='form-select' id='categoryy' aria-label='Category'>
                                     ${categoriesList}
                                 </select>
                             </div>
@@ -243,7 +242,7 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                 var type = document.getElementById("type").value;
                 var startDate = document.getElementById("startDate").value;
                 var endDate = document.getElementById("endDate").value;
-                var category = document.getElementById("category").value;
+                var category = document.getElementById("categoryy").value;
                 var frequency = document.getElementById("frequency").value;
 
                 var transactionData = {
@@ -310,7 +309,7 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                             </div>
                             <div class="col-7 text-start">
                                 <label for='category'>Category</label>
-                                <select class='form-select' id='category' aria-label='Category'>
+                                <select class='form-select' id='ecategory' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
                                     ${categoriesList}
                                 </select>
@@ -355,7 +354,7 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                 var type = document.getElementById("type").value;
                 var startDate = document.getElementById("startDate").value;
                 var endDate = document.getElementById("endDate").value;
-                var category = document.getElementById("category").value;
+                var category = document.getElementById("ecategory").value;
                 var frequency = document.getElementById("frequency").value;
 
                 var transactionData = {
@@ -375,7 +374,7 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
         });
 }
 
-// --- GOALS ---
+// --- Goals ---
 
 function showAddGoalModal(trCategories) {
     var categoriesList = "";

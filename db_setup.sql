@@ -19,7 +19,7 @@ CREATE TABLE spendit.Categories (
 CREATE TABLE spendit.Transactions (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserId BINARY(16) NOT NULL,
-    c
+    CategoryId INT NOT NULL,
     Description VARCHAR(255),
     Type ENUM('Income', 'Expense') NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
@@ -35,12 +35,12 @@ CREATE TABLE spendit.RecurringTransactions (
     UserId BINARY(16) NOT NULL,
     CategoryId INT NOT NULL,
     Description VARCHAR(255),
-    Type ENUM('income', 'expense') NOT NULL,
+    Type ENUM('Income', 'Expense') NOT NULL,
     Amount DECIMAL(10, 2) NOT NULL,
     Currency VARCHAR(3) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    Frequency ENUM('daily', 'weekly', 'monthly', 'quarterly', 'annually') NOT NULL,
+    Frequency ENUM('Daily', 'Weekly', 'Monthly', 'Quarterly', 'annually') NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES users(Id),
@@ -65,7 +65,7 @@ CREATE TABLE spendit.Budgets (
 CREATE TABLE spendit.Goals (
     Id BINARY(16) PRIMARY KEY UNIQUE,
     UserId BINARY(16) NOT NULL,
-    public Guid CategoryId { get; set; }
+    CategoryId INT NOT NULL,
     Description VARCHAR(255) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
