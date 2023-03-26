@@ -21,11 +21,7 @@
                 <h3 class="mb-2 text-start">Account settings</h3>
                 <div class="row justify-content-center bg-body">
                     <div class="col-10 mt-4 mb-4">
-                        @if (_user == null || _currentCurrency == null)
-                        {
-                            <div class="text-center">Loading...</div>
-                        }
-                        else
+                        @if (_user != null && _currentCurrency != null)
                         {
                             <div class="row mb-3">
                                 <label for="staticEmail" class="col-sm-3 col-form-label">Username</label>
@@ -61,6 +57,14 @@
                             </div>
                             <button class="btn btn-success" @onclick="UpdateSettings">Save changes</button>
                             <button class="btn btn-danger" @onclick="DeleteAccount">Delete account</button>
+                        }
+                        else
+                        {
+                            <div class="row justify-content-center mt-5">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
                         }
                     </div>
                 </div>

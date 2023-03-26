@@ -1,0 +1,368 @@
+﻿@page "/goals"
+@using System.Text.Json
+@using System.Linq
+@using WebApp.Services
+@using WebApp.Models.Goals
+@using WebApp.Models.Categories
+@using WebApp.Models.Users
+@using WebApp.Auth
+@using System.Text.RegularExpressions
+@inject GoalsService goalsService
+@inject CategoriesService categoriesService
+@inject AuthenticationStateProvider authStateProvider
+@inject AlertsService alertsService
+@inject CategoryIconsService categoryIconsService
+@inject InputValidationService validationService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Spendit - Goals</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-12">
+                <div class="row align-items-center mb-2">
+                    <div class="col">
+                        <h3 class="m-0">All goals</h3>
+                    </div>
+                    <div class="col text-right">
+                        <button @onclick="AddGoal" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
+                    </div>
+                </div>
+                @if (_goals != null && _categories != null && _categories.Count() > 0)
+                {
+                    @foreach (var goal in _goals)
+                    {
+                        string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
+                        string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
+
+                        <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
+                            <div class="col-1 text-center">
+                                <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
+                            </div>
+                            <div class="col-10">
+                                <div class="row align-items-center">
+                                    <div class="col-8 ps-0">
+                                        @GoalDescLenght(goal.Description).Result
+                                    </div>
+                                    <div class="col-2 text-center"><span>@goal.EndDate.ToString(_dateFormat)</span></div>
+                                    <div class="col-2 text-end pe-0">@goal.Amount @goal.Currency</div>
+                                </div>
+                                <div class="row align-items-center justify-content-between">
+                                    <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
+                                        <div class="progress-bar rounded-pill" style="width: @progress">@goal.CurrentAmount</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-1 text-center">
+                                <button @onclick="()=>EditGoal(goal.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
+                            @if(goal.CurrentAmount >= goal.Amount)
+                            {
+                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-check"></i></button>
+                            }
+                            else
+                            {
+                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                            }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="row justify-content-center mt-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private AuthProvider _authProvider;
+    private IEnumerable<Goal>? _goals;
+    private IEnumerable<Category>? _categories;
+    private User _user;
+    private int _selectedId;
+    private string _dateFormat = "yyyy-MM-dd";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadGoals();
+        await LoadCategories();
+    }
+    private async Task LoadGoals()
+    {
+        try
+        {
+            _goals = await goalsService.GetGoals(_user.Id);
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task LoadCategories()
+    {
+        try
+        {
+            _categories = await categoriesService.GetCategories();
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GetCategoryIcon(int id)
+    {
+        try
+        {
+            string categoryName = _categories.Where(c => c.Id == id).Single().Name;
+            string icon = await categoryIconsService.GetIconByName(categoryName);
+            return icon;
+        }
+        catch (Exception ex)
+        {
+            return await categoryIconsService.GetIconByName(String.Empty);
+        }
+    }
+    private async Task<string> CalculateProgress(decimal maxAmount, decimal currentAmount)
+    {
+        try
+        {
+            var res = (currentAmount / maxAmount) * 100;
+            return $"{res.ToString()}%";
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task AddGoal()
+    {
+        try
+        {
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddGoalModal", _categories);
+            if (swalResult == null)
+            {
+                return;
+            }
+
+            var goalDict = JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult);
+            var goalToAdd = await ToAddModel(goalDict);
+            if (!await ValidateNewGoal(goalToAdd))
+            {
+                return;
+            }
+
+            var success = await goalsService.AddGoal(goalToAdd);
+            if (success)
+            {
+                await LoadGoals();
+                StateHasChanged();
+            }
+            else
+            {
+                await alertsService.InvokeCustomError("Goal was not added!");
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task EditGoal(Guid goalId)
+    {
+        try
+        {
+            var goal = _goals.Where(g => g.Id == goalId).Single();
+            var currentCategory = _categories.Where(c => c.Id == goal.CategoryId).Single().Name;
+            var otherCategories = _categories.Where(c => c.Id != goal.CategoryId).ToList();
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditGoalModal", goal.Description, goal.Amount, goal.CurrentAmount, goal.Currency, goal.StartDate, goal.EndDate, currentCategory, otherCategories);
+            if (swalResult != null)
+            {
+                var updatedGoal = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), goalId);
+                updatedGoal.Id = goalId;
+                if (await ValidateExistingGoal(updatedGoal))
+                {
+                    if (await goalsService.UpdateGoal(updatedGoal))
+                    {
+                        await LoadGoals();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertsService.InvokeCustomError("Goal data was not updated!");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task DeleteGoal(Guid goalId)
+    {
+        try
+        {
+            if (await alertsService.InvokeConfirmation())
+            {
+                if (await goalsService.DeleteGoal(_user.Id, goalId))
+                {
+                    await LoadGoals();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertsService.InvokeCustomError("Goal was not removed!");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GoalDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 80;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task<Goal> ToUpdateModel(Dictionary<string, string> data, Guid id)
+    {
+        try
+        {
+            var category = _categories.Where(c => c.Name == data["category"]).Single();
+            return new Goal
+                {
+                    Id = id,
+                    UserId = _user.Id,
+                    CategoryId = category.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    CurrentAmount = Decimal.Parse(data["currentAmount"]),
+                    Currency = data["currency"],
+                    StartDate = DateTime.Parse(data["startDate"]),
+                    EndDate = DateTime.Parse(data["endDate"])
+                };
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+            return new Goal();
+        }
+    }
+    private async Task<NewGoal> ToAddModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            var category = _categories.Where(c => c.Name == data["category"]).Single();
+            return new NewGoal
+                {
+                    UserId = _user.Id,
+                    CategoryId = category.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    EndDate = DateTime.Parse(data["date"])
+                };
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+            return new NewGoal();
+        }
+    }
+    private async Task<bool> ValidateNewGoal(NewGoal goal)
+    {
+        if (!String.IsNullOrEmpty(goal.Description) && await validationService.ValidateText(goal.Description))
+        {
+            if (!String.IsNullOrEmpty(goal.Amount.ToString()) && await validationService.ValidateDecimal(goal.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(goal.Currency) && await validationService.ValidateText(goal.Currency))
+                {
+                    if (!String.IsNullOrEmpty(goal.EndDate.ToString()) && await validationService.ValidateDate(goal.EndDate.ToString()))
+                    {
+                        if (goal.EndDate > DateTime.Now.Date) return true;
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("End date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+    private async Task<bool> ValidateExistingGoal(Goal goal)
+    {
+        if (!String.IsNullOrEmpty(goal.Description) && await validationService.ValidateText(goal.Description))
+        {
+            if (!String.IsNullOrEmpty(goal.Amount.ToString()) && await validationService.ValidateDecimal(goal.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(goal.Currency) && await validationService.ValidateText(goal.Currency))
+                {
+                    if (!String.IsNullOrEmpty(goal.StartDate.ToString()) && await validationService.ValidateDate(goal.StartDate.ToString()))
+                    {
+                        if (!String.IsNullOrEmpty(goal.EndDate.ToString()) && await validationService.ValidateDate(goal.EndDate.ToString()))
+                        {
+                            if (goal.EndDate > goal.StartDate)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            await alertsService.InvokeWarning("End date can't be earlier than Start date!");
+                        }
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Start date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+}

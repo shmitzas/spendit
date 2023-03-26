@@ -1,11 +1,17 @@
 ﻿@page "/overview"
 @using WebApp.Services
 @using WebApp.Models.Transactions
+@using WebApp.Models.Goals
+@using WebApp.Models.Categories
 @using WebApp.Models.Users
 @using WebApp.Auth
+@inject GoalsService goalsService
+@inject CategoriesService categoriesService
+@inject CategoryIconsService categoryIconsService
 @inject TransactionsService transactionsService
 @inject AuthenticationStateProvider authStateProvider
 @inject AlertsService alertsService
+@inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
 <PageTitle>Spendit - Overview</PageTitle>
@@ -14,12 +20,12 @@
         <div class="row">
             <div class="col-md-12">
                 <h3>Overview</h3>
-                <div class="row justify-content-center bg-body">
+                <div class="row justify-content-center bg-body pb-5">
                     <div class="col-md-11">
-                        <div class="row mt-5 mb-5">
+                        <div class="row pt-5 pb-5">
                             <h5>Recent transactions</h5>
                             <div class="col-md-12 mt-3">
-                                <div class="row justify-content-center">
+                                <div class="row">
                                     @if (_recentTransactions != null && _recentTransactions.Count() > 0)
                                     {
                                         foreach (var tr in _recentTransactions)
@@ -40,13 +46,49 @@
                                                             {
                                                                 <p class="card-text text-success pb-0 mb-0"><strong>@tr.Amount</strong> @tr.Currency</p>
                                                             }
-                                                            <p class="card-text pt-0 mt-0"><small class="text-muted">@tr.CreatedAt.ToString("yyyy-MM-dd HH:MM")</small></p>
+                                                            <p class="card-text pt-0 mt-0"><small class="text-muted">@tr.CreatedAt.ToString(_dateTimeFormat)</small></p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         }
                                     }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row pb-5">
+                            <h5>Upcoming goals</h5>
+                            <div class="col-md-12 mt-3">
+                                <div class="row">
+                                    @if (_goals != null && _goals.Count() > 0 && _categories != null && _categories.Count() > 0)
+                                    {
+                                        @foreach (var goal in _goals)
+                                        {
+                                            string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
+                                            string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
+
+                                            <div class="col-4">
+                                                <div class="row">
+                                                    <div class="col-2 text-center">
+                                                        <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
+                                                    </div>
+                                                    <div class="col-8">
+                                                        <div class="row align-items-center">
+                                                            <div class="col-12 ps-0 ms-2 pe-0 me-2">
+                                                                @GoalDescLenght(goal.Description).Result
+                                                            </div>
+                                                        </div>
+                                                        <div class="row align-items-center justify-content-between">
+                                                            <div class="progress rounded-pill ps-0 ms-2 pe-0 me-2" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
+                                                                <div class="progress-bar rounded-pill" style="width: @progress">@goal.CurrentAmount</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    }
+                                    
                                 </div>
                             </div>
                         </div>
@@ -61,14 +103,26 @@
 
 @code {
     private AuthProvider _authProvider;
-    private IEnumerable<Transaction>? _recentTransactions;
+    private IEnumerable<Transaction> _recentTransactions;
+    private IEnumerable<Category> _categories;
+    private IEnumerable<Goal> _goals;
     private User _user;
+    private string _expenses;
+    private string _expensesArrow = "fa-chevron-up";
+    private string _currentDay = DateTime.Now.Day.ToString();
+    private string _currentMonthName = DateTime.Now.ToString("MMMM");
+    private string _currentYear = DateTime.Now.Year.ToString();
+    private string _dateFormat = "yyyy-MM-dd";
+    private string _dateTimeFormat = "yyyy-MM-dd HH:MM";
 
     protected override async Task OnInitializedAsync()
     {
         _authProvider = (AuthProvider)authStateProvider;
         _user = await _authProvider.GetCurrentUserAsync();
         await LoadRecentTransactions();
+        await LoadGoals();
+        await LoadCategories();
+        await CalculateExpenses();
     }
     private async Task<string> TransactionDescLenght(string input)
     {
@@ -92,6 +146,103 @@
         catch (Exception ex)
         {
             await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> CalculateProgress(decimal maxAmount, decimal currentAmount)
+    {
+        try
+        {
+            var res = (currentAmount / maxAmount) * 100;
+            return $"{res.ToString()}%";
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task CalculateExpenses()
+    {
+        try
+        {
+            var startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddSeconds(-1);
+            var expensesSum = 0m;
+
+            var transactions = await transactionsService.GetTransactionsByDate(_user.Id, startDate, endDate);
+
+            if(transactions.Count() > 0)
+            {
+                foreach (var tr in transactions)
+                {
+                    expensesSum += tr.Type == "Expense" ? tr.Amount : 0m;
+                }
+            }
+            _expenses = expensesSum.ToString();
+        }
+        catch (Exception ex)
+        {
+            _expenses = "0";
+        }
+    }
+    private async Task ExpensesStatus()
+    {
+        if (_expensesArrow == "fa-chevron-down")
+        {
+            _expensesArrow = "fa-chevron-up";
+            StateHasChanged();
+        }
+        else
+        {
+            _expensesArrow = "fa-chevron-down";
+            StateHasChanged();
+        }
+    }
+    private async Task LoadGoals()
+    {
+        try
+        {
+            var goals = await goalsService.GetGoals(_user.Id);
+            _goals = goals.Take(3);
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GoalDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 50;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task LoadCategories()
+    {
+        try
+        {
+            _categories = await categoriesService.GetCategories();
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GetCategoryIcon(int id)
+    {
+        try
+        {
+            string categoryName = _categories.Where(c => c.Id == id).Single().Name;
+            string icon = await categoryIconsService.GetIconByName(categoryName);
+            return icon;
+        }
+        catch (Exception ex)
+        {
+            return await categoryIconsService.GetIconByName(String.Empty);
         }
     }
 }

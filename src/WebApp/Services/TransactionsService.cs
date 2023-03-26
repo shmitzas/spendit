@@ -7,11 +7,9 @@ namespace WebApp.Services
     public class TransactionsService
     {
         private readonly HttpClient _httpClient;
-        private readonly UsersService _usersService;
-        public TransactionsService(HttpClient httpClient, UsersService usersService)
+        public TransactionsService(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _usersService = usersService;
         }
         private async Task<StringContent> SerializeObj(object obj)
         {
@@ -45,6 +43,28 @@ namespace WebApp.Services
             try
             {
                 return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> GetTransactionsByDateAndCategory(Guid userId, DateTime startDate, DateTime endDate, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}/category={categoryName}");
+            }
+            catch (Exception ex)
+            {
+                return new List<Transaction>();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> GetTransactionsByCategory(Guid userId, string categoryName)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/category={categoryName}");
             }
             catch (Exception ex)
             {

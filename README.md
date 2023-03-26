@@ -69,9 +69,9 @@ their financial well-being.
 - [x] User account management
 - [x] Transactions management
 ### II Iteration
-- [ ] Recurring transactions
-- [ ] Categories management
-- [ ] Goal setting
+- [x] Recurring transactions
+- [x] Categories management
+- [x] Goal setting
 ### III Iteration
 - [ ] Budget tracking
 - [ ] Multi-currency support

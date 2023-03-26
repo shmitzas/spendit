@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
+using REST_API.Models.Categories;
 
 namespace REST_API.Controllers
 {
@@ -12,6 +13,33 @@ namespace REST_API.Controllers
         public CategoriesController(ApiDbContext DbContext)
         {
             _DbContext = DbContext;
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllCategories()
+        {
+            try
+            {
+                var categories = await _DbContext.Categories.ToListAsync();
+                return Ok(categories);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
+        }
+        [HttpGet]
+        [Route("{id:int}")]
+        public async Task<IActionResult> GetCategory([FromRoute] int id)
+        {
+            try
+            {
+                var category = await _DbContext.Categories.Where(t => t.Id == id).SingleAsync();
+                return Ok(category);
+            }
+            catch (Exception ex)
+            {
+                return NotFound();
+            }
         }
     }
 }
