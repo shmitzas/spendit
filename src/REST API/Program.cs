@@ -106,11 +106,11 @@ namespace REST_API
             }
             List<RecurringTransaction> RecurringTransactions = new List<RecurringTransaction>
             {
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", StartDate = DateTime.Now, EndDate = DateTime.Now, Frequency="Daily"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", StartDate = DateTime.Now, EndDate = DateTime.Now, Frequency="Daily"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", StartDate = DateTime.Now, EndDate = DateTime.Now, Frequency="Weekly"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", StartDate = DateTime.Now, EndDate = DateTime.Now, Frequency = "Weekly"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", StartDate = DateTime.Now, EndDate = DateTime.Now, Frequency = "Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(5), Frequency="Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(6), Frequency="Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(4), Frequency="Weekly"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(8), Frequency = "Weekly"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(1), Frequency = "Daily"},
                 };
             foreach (RecurringTransaction recurringTransaction in RecurringTransactions)
             {

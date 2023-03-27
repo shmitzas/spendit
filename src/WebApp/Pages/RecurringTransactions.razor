@@ -442,8 +442,8 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
-                    StartDate = DateTime.Parse(data["startDate"]),
-                    EndDate = DateTime.Parse(data["endDate"]),
+                    StartDate = DateTime.Parse(data["startDate"]).ToLocalTime(),
+                    EndDate = DateTime.Parse(data["endDate"]).ToLocalTime(),
                     Frequency = data["frequency"]
                 };
         }
@@ -466,8 +466,8 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
-                    StartDate = DateTime.Parse(data["startDate"]),
-                    EndDate = DateTime.Parse(data["endDate"]),
+                    StartDate = DateTime.Parse(data["startDate"]).ToLocalTime(),
+                    EndDate = DateTime.Parse(data["endDate"]).ToLocalTime(),
                     Frequency = data["frequency"]
                 };
         }
