@@ -17,7 +17,7 @@ namespace REST_API
             //////////////////////////////////////////////
             //-     Enable/Disable Developer mode     -//
             ////////////////////////////////////////////
-            bool DevMode = true;
+            bool DevMode = false;
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
