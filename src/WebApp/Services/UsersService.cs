@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using WebApp.Models.Users;
+using WebApp.Models;
 
 namespace WebApp.Services
 {
@@ -60,6 +61,7 @@ namespace WebApp.Services
                 var res = await _httpClient.PostAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
                 {
+
                     return true;
                 }
                 return false;

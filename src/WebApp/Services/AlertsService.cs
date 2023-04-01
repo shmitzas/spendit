@@ -59,6 +59,16 @@ namespace WebApp.Services
                 ConfirmButtonText = "Ok",
             });
         }
+        public async Task InvokeCustomWarning(string message)
+        {
+            await _alerts.FireAsync(new SweetAlertOptions
+            {
+                Title = "Warning",
+                Text = message,
+                Icon = SweetAlertIcon.Warning,
+                ConfirmButtonText = "Ok",
+            });
+        }
         public async Task<bool> InvokeConfirmation()
         {
             var res = await _alerts.FireAsync(new SweetAlertOptions

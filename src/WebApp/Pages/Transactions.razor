@@ -338,6 +338,7 @@
         else
         {
             _transactions = await transactionsService.Search(_user.Id, _query);
+            if (_transactions.Count() < 1) alertsService.InvokeCustomWarning("No transactions found");
         }
         StateHasChanged();
     }
@@ -347,6 +348,7 @@
         {
             var endDate = _endDate.AddDays(1);
             _transactions = await transactionsService.GetTransactionsByDate(_user.Id, _startDate, endDate);
+            if (_transactions.Count() < 1) alertsService.InvokeCustomWarning("No transactions found");
             _dateSelected = true;
             StateHasChanged();
         }
@@ -367,11 +369,13 @@
                 {
                     var endDate = _endDate.AddDays(1);
                     _transactions = await transactionsService.GetTransactionsByDateAndCategory(_user.Id, _startDate, endDate, e.Value.ToString());
+                    if (_transactions.Count() < 1) alertsService.InvokeCustomWarning("No transactions found");
                     StateHasChanged();
                 }
                 else
                 {
                     _transactions = await transactionsService.GetTransactionsByCategory(_user.Id, e.Value.ToString());
+                    if (_transactions.Count() < 1) alertsService.InvokeCustomWarning("No transactions found");
                     StateHasChanged();
                 }
             }
