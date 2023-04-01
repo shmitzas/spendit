@@ -26,7 +26,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -42,7 +42,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -57,7 +57,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -74,7 +74,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -88,7 +88,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -104,7 +104,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Transaction not found");
             }
         }
         [HttpPost]
@@ -131,7 +131,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Wrong transaction details");
             }
         }
         [HttpPut]
@@ -155,7 +155,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong transaction details");
             }
         }
         [HttpDelete]
@@ -171,7 +171,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Transaction does not exist");
             }
         }
     }

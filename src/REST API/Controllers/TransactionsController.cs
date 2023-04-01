@@ -29,7 +29,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
 
@@ -46,7 +46,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -61,7 +61,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -78,7 +78,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
 
@@ -93,7 +93,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
         [HttpGet]
@@ -107,7 +107,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No transactions found");
             }
         }
 
@@ -134,7 +134,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Wrong transaction details");
             }
         }
 
@@ -158,7 +158,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong transaction details");
             }
         }
 
@@ -175,7 +175,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Transaction does not exist");
             }
         }
     }

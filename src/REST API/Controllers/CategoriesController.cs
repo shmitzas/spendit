@@ -24,7 +24,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No categories found");
             }
         }
         [HttpGet]
@@ -38,7 +38,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Category not found");
             }
         }
     }

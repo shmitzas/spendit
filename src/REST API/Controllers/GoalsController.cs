@@ -29,7 +29,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("No goals found");
             }
         }
         [HttpGet]
@@ -43,7 +43,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Goal not found");
             }
         }
 
@@ -70,7 +70,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Wrong goal details");
             }
         }
 
@@ -93,7 +93,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong goal details");
             }
         }
 
@@ -110,7 +110,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Goal does not exist");
             }
         }
     }

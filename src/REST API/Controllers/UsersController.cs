@@ -17,12 +17,6 @@ namespace REST_API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            return Ok(await _DbContext.Users.ToListAsync());
-        }
-
-        [HttpGet]
         [Route("{id:guid}")]
         public async Task<IActionResult> GetUser([FromRoute] Guid id)
         {
@@ -33,7 +27,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong user ID");
             }
         }
         [HttpPut("auth")]
@@ -46,7 +40,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong user credentials");
             }
         }
 
@@ -79,7 +73,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest();
+                return BadRequest("Wrong user details");
             }
         }
 
@@ -109,7 +103,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong user details");
             }
         }
 
@@ -127,7 +121,7 @@ namespace REST_API.Controllers
             }
             catch (Exception ex)
             {
-                return NotFound();
+                return NotFound("Wrong user ID");
             }
         }
 

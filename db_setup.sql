@@ -40,7 +40,7 @@ CREATE TABLE spendit.RecurringTransactions (
     Currency VARCHAR(3) NOT NULL,
     StartDate DATE NOT NULL,
     EndDate DATE NOT NULL,
-    Frequency ENUM('Daily', 'Weekly', 'Monthly', 'Quarterly', 'annually') NOT NULL,
+    Frequency ENUM('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually') NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES users(Id),
