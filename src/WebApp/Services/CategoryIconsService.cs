@@ -17,7 +17,7 @@
                 case "Entertainment":
                     return "fa-solid fa-masks-theater";
                 case "Savings":
-                    return "fa-solid fa-solid fa-piggy-bank";
+                    return "fa-solid fa-piggy-bank";
                 case "Investments":
                     return "fa-solid fa-sack-dollar";
                 case "Debt Repayment":

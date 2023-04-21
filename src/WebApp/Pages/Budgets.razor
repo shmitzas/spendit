@@ -1,0 +1,345 @@
+﻿@page "/recurring-budgets"
+@using System.Text.Json
+@using System.Linq
+@using WebApp.Services
+@using WebApp.Models.Budgets
+@using WebApp.Models.Categories
+@using WebApp.Models.Users
+@using WebApp.Auth
+@using System.Text.RegularExpressions
+@inject BudgetsService budgetsService
+@inject CategoriesService categoriesService
+@inject AuthenticationStateProvider authStateProvider
+@inject AlertsService alertsService
+@inject CategoryIconsService categoryIconsService
+@inject InputValidationService validationService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Spendit - Budgets</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-12">
+                <div class="row align-items-center mb-2">
+                    <div class="col">
+                        <h3 class="m-0">All budgets</h3>
+                    </div>
+                    <div class="col text-right">
+                        <button @onclick="AddBudget" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
+                    </div>
+                </div>
+                <div class="row bg-body shadow-sm">
+                    <div class="col-12 pt-2">
+                        <table class="table table-hover">
+                            <thead class="border-bottom-1">
+                                <tr>
+                                    <th scope="col" class="col-1 text-center">Category</th>
+                                    <th scope="col" class="col-2 text-center">Description</th>
+                                    <th scope="col" class="col-1 text-center">Type</th>
+                                    <th scope="col" class="col-2 text-center text-primary">Start date</th>
+                                    <th scope="col" class="col-2 text-center text-primary">End date</th>
+                                    <th scope="col" class="col-2 ps-0 pe-0 text-center text-primary">Ammount</th>
+                                    <th scope="col" class="col-1 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (_budgets != null && _budgets.Count() > 0)
+                                {
+                                    for (int i = 0; i < _budgets.Count(); i++)
+                                    {
+                                        var budget = _budgets.ElementAt(i);
+                                        <tr class="align-middle">
+                                            <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="fa-solid fa-piggy-bank"></i></button></td>
+                                            <td>@BudgetDescLenght(budget.Description).Result</td>
+                                            <td class="text-center">@budget.Type</td>
+                                            <td class="text-center">@budget.StartDate.ToString(@_dateFormat)</td>
+                                            <td class="text-center">@budget.EndDate.ToString(@_dateFormat)</td>
+                                            @if (budget.Type == "Expense")
+                                            {
+                                                <td class="text-center text-danger">-@budget.Amount @budget.Currency</td>
+                                            }
+                                            else
+                                            {
+                                                <td class="text-center text-success">+@budget.Amount @budget.Currency</td>
+                                            }
+                                            <td class="text-center">@budget.Type</td>
+                                            <td class="text-center">
+                                                <button @onclick="()=>EditBudget(budget.Id)" class="btn btn-info rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
+                                                <button @onclick="()=>DeleteBudget(budget.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private AuthProvider _authProvider;
+    private IEnumerable<Budget>? _budgets;
+    private User _user;
+    private string _orderByStartDate = "fa-sort-down";
+    private string _orderByEndDate = "fa-sort-down";
+    private string _orderByAmount = "fa-sort-down";
+    private string _filterArrow = "fa-chevron-down";
+    private List<string> _types = new List<string> { "Daily", "Weekly", "Monthly", "Quarterly", "Annually" };
+
+    private string _query;
+    private bool _dateSelected = false;
+    private int _selectedId;
+    private string _dateFormat = "yyyy-MM-dd";
+    private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+    private DateTime _endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddSeconds(-1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadBudgets();
+    }
+    private async Task LoadBudgets()
+    {
+        try
+        {
+            _budgets = await budgetsService.GetBudgets(_user.Id);
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task AddBudget()
+    {
+        try
+        {
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddBudgetModal");
+            if (swalResult == null)
+            {
+                return;
+            }
+
+            var budgetDict = JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult);
+            var budgetToAdd = await ToAddModel(budgetDict);
+            if (!await ValidateNewBudget(budgetToAdd))
+            {
+                return;
+            }
+
+            var success = await budgetsService.AddBudget(budgetToAdd);
+            if (success)
+            {
+                await LoadBudgets();
+                StateHasChanged();
+            }
+            else
+            {
+                await alertsService.InvokeCustomError("Budget was not added!");
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task EditBudget(Guid budgetId)
+    {
+        try
+        {
+            var budget = _budgets.Where(t => t.Id == budgetId).Single();
+            var budgetOtherType = budget.Type == "Expense" ? "Income" : "Expense";
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditBudgetModal", budget.Description, budget.Amount, budget.Currency, budget.Type, budget.StartDate, budget.EndDate);
+            if (swalResult != null)
+            {
+                var budgetToUpdate = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), budget.Id);
+                budget.Id = budgetId;
+                if (await ValidateExistingBudget(budgetToUpdate))
+                {
+                    if (await budgetsService.UpdateBudget(budgetToUpdate))
+                    {
+                        await LoadBudgets();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertsService.InvokeCustomError("Budget data was not updated!");
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task DeleteBudget(Guid budgetId)
+    {
+        try
+        {
+            if (await alertsService.InvokeConfirmation())
+            {
+                if (await budgetsService.DeleteBudget(_user.Id, budgetId))
+                {
+                    await LoadBudgets();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertsService.InvokeCustomError("Budget was not removed!");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> BudgetDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 110;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch (Exception ex)
+        {
+            return String.Empty;
+        }
+    }
+    private async Task<Budget> ToUpdateModel(Dictionary<string, string> data, Guid id)
+    {
+        try
+        {
+            return new Budget
+                {
+                    Id = id,
+                    UserId = _user.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    Type = data["type"],
+                    StartDate = DateTime.Parse(data["startDate"]).ToLocalTime(),
+                    EndDate = DateTime.Parse(data["endDate"]).ToLocalTime(),
+                };
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+            return new Budget();
+        }
+    }
+    private async Task<NewBudget> ToAddModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            return new NewBudget
+                {
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    Type = data["type"],
+                    StartDate = DateTime.Parse(data["startDate"]).ToLocalTime(),
+                    EndDate = DateTime.Parse(data["endDate"]).ToLocalTime(),
+                };
+        }
+        catch (Exception ex)
+        {
+            await alertsService.InvokeError();
+            return new NewBudget();
+        }
+    }
+    private async Task<bool> ValidateNewBudget(NewBudget budget)
+    {
+        if (!String.IsNullOrEmpty(budget.Description) && await validationService.ValidateText(budget.Description))
+        {
+            if (!String.IsNullOrEmpty(budget.Amount.ToString()) && await validationService.ValidateDecimal(budget.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(budget.Currency) && await validationService.ValidateText(budget.Currency))
+                {
+                    if (!String.IsNullOrEmpty(budget.StartDate.ToString()) && await validationService.ValidateDate(budget.StartDate.ToString()))
+                    {
+                        if (!String.IsNullOrEmpty(budget.EndDate.ToString()) && await validationService.ValidateDate(budget.EndDate.ToString()))
+                        {
+                            if (budget.EndDate > budget.StartDate)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            await alertsService.InvokeWarning("End date's format is incorrect!");
+                        }
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Start date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+    private async Task<bool> ValidateExistingBudget(Budget budget)
+    {
+        if (!String.IsNullOrEmpty(budget.Description) && await validationService.ValidateText(budget.Description))
+        {
+            if (!String.IsNullOrEmpty(budget.Amount.ToString()) && await validationService.ValidateDecimal(budget.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(budget.Currency) && await validationService.ValidateText(budget.Currency))
+                {
+                    if (!String.IsNullOrEmpty(budget.StartDate.ToString()) && await validationService.ValidateDate(budget.StartDate.ToString()))
+                    {
+                        if (!String.IsNullOrEmpty(budget.EndDate.ToString()) && await validationService.ValidateDate(budget.EndDate.ToString()))
+                        {
+                            if (budget.EndDate > budget.StartDate)
+                            {
+                                return true;
+                            }
+                        }
+                        else
+                        {
+                            await alertsService.InvokeWarning("End date can't be earlier than Start date!");
+                        }
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Start date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+}
