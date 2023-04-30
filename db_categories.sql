@@ -1,0 +1,18 @@
+INSERT INTO spendit.Categories (Name) VALUES 
+("Housing"), 
+("Groceries"), 
+("Transportation"), 
+("Health"), 
+("Entertainment"), 
+("Savings"), 
+("Investments"), 
+("Debt Repayment"), 
+("Clothing"), 
+("Gifts"), 
+("Donations"), 
+("Travel"), 
+("Education"), 
+("Subscriptions"), 
+("Childcare"), 
+("Pets"), 
+("Other");

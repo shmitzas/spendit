@@ -15,7 +15,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Category[]>("/api/categories");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Category>();
             }
@@ -26,7 +26,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Category>($"/api/categories/{id}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new Category();
             }

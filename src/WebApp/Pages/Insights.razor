@@ -1,0 +1,396 @@
+﻿@page "/insights"
+@using System.Text.Json
+@using System.Linq
+@using WebApp.Models.Budgets;
+@using WebApp.Models.Transactions;
+@using WebApp.Services
+@using WebApp.Models.Categories
+@using WebApp.Models.Users
+@using WebApp.Models.Insights
+@using WebApp.Auth
+@using System.Text.RegularExpressions
+@inject TransactionsService transactionsService
+@inject CategoriesService categoriesService
+@inject BudgetsService budgetsService
+@inject AuthenticationStateProvider authStateProvider
+@inject AlertsService alertsService
+@inject CategoryIconsService categoryIconsService
+@inject InputValidationService validationService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Spendit - Insights</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>Report and insights</h3>
+                <div class="row justify-content-center bg-body mb-3 pt-5 pb-5">
+                    <div class="col-md-11">
+                        <div class="row mb-5">
+                            <div class="col">
+                                @{
+                                    var startMonth = new DateTime(_selectedDate.Year, _selectedDate.Month, 1);
+                                    var firstDay = startMonth.Day;
+                                    var lastDay = startMonth.AddMonths(1).AddDays(-1).Day;
+                                
+                                    <h4><strong>@firstDay-@lastDay</strong> @_selectedDate.ToString("MMMM") @_selectedDate.Year</h4>
+                                    <div class="col-4 mt-3">
+                                        <label for="date">Select a month</label>
+                                        <input @onchange="DateChanged" type="month" class="form-control" id="date" placeholder="Select month">
+                                    </div>
+                                }
+                            </div>
+                            <div class="col">
+                                <div class="row align-items-center justify-content-end">
+                                    <div class="col-auto">
+                                        <span class="d-inline-block">Use budget limit</span>
+                                    </div>
+                                    <div class="col-auto mt-2">
+                                        <div class="form-check form-switch d-inline-block">
+                                            <input @onclick="SetBaseForCalculations" class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckChecked" checked>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <span class="d-inline-block">Use income</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*Main stuff*@
+                        @if (_init)
+                        {
+                            var progress = CalculateProgress(_budgetUsed, _budgetLimit).Result;
+                            var summaryColor = GetProgressColorLeft(_budgetUsed, _budgetLimit).Result;
+                            <h5>Budget summary</h5>
+
+                            <div class="row @summaryColor bg-body justify-content-center shadow-sm pt-3 pb-3 mb-5 mt-3">
+                                <div class="col-11">
+                                    <div class="row align-items-center justify-content-between">
+                                        <div class="row align-items-center">
+                                            <div class="col-6 text-start">
+                                                0
+                                            </div>
+                                            <div class="col-6 text-end">@_budgetLimit</div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12 progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
+                                                <div class="progress-bar rounded-pill" style="width: @progress%">@_budgetUsed</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <h5 class="mt-5">Detailed report</h5>
+                            <div class="row justify-content-center mt-3">
+                                @if (_categories != null && _categories.Count() > 0)
+                                {
+                                    @foreach (var insight in _insights)
+                                    {
+                                        var categoryLimit = RecommendedAmountPerCategory(insight.categoryName).Result;
+                                        string categoryIcon = GetCategoryIcon(insight.categoryId).Result;
+                                        var cardColor = GetProgressColorLeft(insight.amount, categoryLimit).Result;
+                                        var categoryProgress = CalculateProgress(insight.amount, categoryLimit).Result;
+                                        <div class="col-12 shadow-sm border-0 @cardColor mb-3">
+                                            <div class="row align-items-center pt-3 pb-3">
+                                                <div class="col-3">
+                                                    <h5 class="m-auto"><i class="@categoryIcon pe-2 text-info"></i>@insight.categoryName</h5>
+                                                </div>
+                                                <div class="col-7">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-6 text-start">
+                                                            0
+                                                        </div>
+                                                        <div class="col-6 text-end">@categoryLimit</div>
+                                                    </div>
+                                                    <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
+                                                        <div class="progress-bar rounded-pill" style="width: @categoryProgress%">@insight.amount</div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-2 text-center">
+                                                    <button @onclick="()=>InvokeInsightDetails(insight.categoryId)" class="btn btn-primary rounded-pill">Details</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="row justify-content-center mt-5">
+                                <div class="spinner-border text-info" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private AuthProvider _authProvider;
+    private IEnumerable<Transaction>? _transactions;
+    private IEnumerable<Category>? _categories;
+    private IEnumerable<Insight>? _insights;
+    private Budget? _activeBudget;
+    private decimal _budgetLimit;
+    private decimal _budgetUsed;
+    private User _user;
+    private DateTime _selectedDate = DateTime.Now;
+    private bool _incomeAsBase = true;
+    private bool _init = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadCategories();
+        _activeBudget = await budgetsService.GetActiveBudget(_user.Id);
+        await CalculateInsights();
+        _init = true;
+    }
+
+    private async Task LoadTransactions()
+    {
+        try
+        {
+            var startDate = new DateTime(_selectedDate.Year, _selectedDate.Month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+            _transactions = await transactionsService.GetTransactionsByDate(_user.Id, startDate, endDate);
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task LoadCategories()
+    {
+        try
+        {
+            _categories = await categoriesService.GetCategories();
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GetCategoryName(int id)
+    {
+        return _categories.Where(c => c.Id == id).Single().Name;
+    }
+    private async Task<string> GetCategoryIcon(int id)
+    {
+        try
+        {
+            string categoryName = await GetCategoryName(id);
+            string icon = await categoryIconsService.GetIconByName(categoryName);
+            return icon;
+        }
+        catch
+        {
+            return await categoryIconsService.GetIconByName(String.Empty);
+        }
+    }
+    private async Task CalculateInsights()
+    {
+        await LoadTransactions();
+        _budgetLimit = await GetBudgetLimit();
+        _budgetUsed = await GetBudgetUsed();
+        _insights = await SpentAmountPerCategory();
+    }
+    private async Task<decimal> GetBudgetLimit()
+    {
+        try
+        {
+            if (_incomeAsBase)
+            {
+                return _transactions.Where(t => t.Type == "Income").Sum(t => t.Amount);
+            }
+            else
+            {
+                return _activeBudget.Amount;
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return 0;
+        }
+    }
+    private async Task<decimal> GetBudgetUsed()
+    {
+        try
+        {
+            if (_incomeAsBase)
+            {
+                return _transactions.Where(t => t.Type == "Expense").Sum(t => t.Amount);
+            }
+            else
+            {
+                return _activeBudget.CurrentAmount;
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return 0;
+        }
+    }
+    private async Task<IEnumerable<Insight>> SpentAmountPerCategory()
+    {
+        var res = new List<Insight>();
+        var sum = 0m;
+        try
+        {
+            if (_incomeAsBase)
+            {
+                foreach (var category in _categories)
+                {
+                    sum = _transactions.Where(t =>
+                        t.Type == "Expense"
+                        && t.CategoryId == category.Id).Sum(t => t.Amount);
+                    res.Add(new Insight
+                        {
+                            categoryId = category.Id,
+                            categoryName = category.Name,
+                            amount = sum
+                        });
+                }
+            }
+            else
+            {
+                foreach (var category in _categories)
+                {
+                    sum = _transactions.Where(t =>
+                        t.BudgetId == _activeBudget.Id
+                        && t.CategoryId == category.Id
+                        && t.Type == "Expense").Sum(t => t.Amount);
+                    res.Add(new Insight
+                        {
+                            categoryId = category.Id,
+                            categoryName = category.Name,
+                            amount = sum
+                        });
+                }
+            }
+            return res.OrderByDescending(r => r.amount);
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return res;
+        }
+    }
+    private async Task<decimal> RecommendedAmountPerCategory(string categoryName)
+    {
+        switch (categoryName)
+        {
+            case "Housing":
+                return Math.Round(_budgetLimit * 0.3m, 2);
+            case "Groceries":
+                return Math.Round(_budgetLimit * 0.1m, 2);
+            case "Transportation":
+                return Math.Round(_budgetLimit * 0.08m, 2);
+            case "Health":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            case "Entertainment":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            case "Savings":
+                return Math.Round(_budgetLimit * 0.1m, 2);
+            case "Investments":
+                return Math.Round(_budgetLimit * 0.08m, 2);
+            case "Debt Repayment":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            case "Clothing":
+                return Math.Round(_budgetLimit * 0.03m, 2);
+            case "Gifts":
+                return Math.Round(_budgetLimit * 0.02m, 2);
+            case "Donations":
+                return Math.Round(_budgetLimit * 0.02m, 2);
+            case "Travel":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            case "Education":
+                return Math.Round(_budgetLimit * 0.04m, 2);
+            case "Subscriptions":
+                return Math.Round(_budgetLimit * 0.02m, 2);
+            case "Childcare":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            case "Pets":
+                return Math.Round(_budgetLimit * 0.02m, 2);
+            case "Other":
+                return Math.Round(_budgetLimit * 0.05m, 2);
+            default:
+                return 0;
+        }
+    }
+    private async Task SetBaseForCalculations()
+    {
+        _incomeAsBase = !_incomeAsBase;
+        await CalculateInsights();
+        StateHasChanged();
+    }
+    private async Task<int> CalculateProgress(decimal currentAmount, decimal maxAmount)
+    {
+        try
+        {
+            if(currentAmount > maxAmount)
+            {
+                return 100;
+            }
+            int res = (int)((currentAmount / maxAmount) * 100);
+            return res;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+    private async Task<string> GetProgressColorLeft(decimal currentAmount, decimal maxAmount)
+    {
+        if (currentAmount > maxAmount)
+        {
+            return "custom-border-start-warning";
+        }
+        return "custom-border-start-ok";
+    }
+    private async Task<string> GetProgressColorTop(decimal currentAmount, decimal maxAmount)
+    {
+        if (currentAmount > maxAmount)
+        {
+            return "custom-border-warning";
+        }
+        return "custom-border-ok";
+    }
+    private async Task InvokeInsightDetails(int categoryId)
+    {
+        var transactions = new List<Transaction>();
+        var categoryName = _categories.Where(c => c.Id == categoryId).Single().Name;
+        if (_incomeAsBase)
+        {
+            transactions = _transactions.Where(t =>
+                t.CategoryId == categoryId
+                && t.Type == "Expense").ToList();
+        }
+        else
+        {
+            transactions = _transactions.Where(t =>
+                t.CategoryId == categoryId
+                && t.BudgetId == _activeBudget.Id
+                && t.Type == "Expense").ToList();
+        }
+        var swalResult = await JSRuntime.InvokeAsync<string>("showInsightsModal", transactions, categoryName);
+    }
+    private async Task DateChanged(ChangeEventArgs e)
+    {
+        _selectedDate = DateTime.Parse(e.Value.ToString());
+        await CalculateInsights();
+        StateHasChanged();
+    }
+}

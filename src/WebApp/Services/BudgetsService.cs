@@ -22,7 +22,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Budget[]>($"/api/budgets/{userId}");
             }
-            catch (Exception ex)
+            catch 
             {
                 return new List<Budget>();
             }
@@ -33,7 +33,18 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Budget>($"/api/budgets/{userId}/{BudgetId}");
             }
-            catch (Exception ex)
+            catch
+            {
+                return new Budget();
+            }
+        }
+        public async Task<Budget> GetActiveBudget(Guid userId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Budget>($"/api/budgets/active/{userId}");
+            }
+            catch
             {
                 return new Budget();
             }
@@ -48,7 +59,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
@@ -63,11 +74,10 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
-
         }
         public async Task<bool> DeleteBudget(Guid userId, Guid BudgetId)
         {
@@ -78,7 +88,37 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<bool> SetActiveBudget(Budget budget)
+        {
+            try
+            {
+                var content = await SerializeObj(budget);
+                var res = await _httpClient.PutAsync($"/api/budgets/activate", content);
+                if (res.IsSuccessStatusCode)
+                    return true;
+                return false;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        public async Task<bool> SetInactiveBudget(Budget budget)
+        {
+            try
+            {
+                var content = await SerializeObj(budget);
+                var res = await _httpClient.PutAsync($"/api/budgets/deactivate", content);
+                if (res.IsSuccessStatusCode)
+                    return true;
+                return false;
+            }
+            catch
             {
                 return false;
             }

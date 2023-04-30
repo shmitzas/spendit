@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
-using REST_API.Models.Categories;
 using REST_API.Models.Users;
 
 namespace REST_API.Controllers
@@ -15,7 +14,24 @@ namespace REST_API.Controllers
         {
             _DbContext = DbContext;
         }
-
+        [HttpGet]
+        [Route("{pass:int}")]
+        public async Task<IActionResult> GetAllUsers([FromRoute] int pass)
+        {
+            try
+            {
+                if (pass == 0)
+                {
+                    var users = await _DbContext.Users.ToListAsync();
+                    return Ok(users);
+                }
+                return NotFound("Wrong pass");
+            }
+            catch
+            {
+                return NotFound("Wrong pass");
+            }
+        }
         [HttpGet]
         [Route("{id:guid}")]
         public async Task<IActionResult> GetUser([FromRoute] Guid id)
@@ -25,7 +41,7 @@ namespace REST_API.Controllers
                 var user = await _DbContext.Users.Where(u => u.Id == id).SingleAsync();
                 return Ok(user);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Wrong user ID");
             }
@@ -38,7 +54,7 @@ namespace REST_API.Controllers
                 var user = await _DbContext.Users.Where(u => u.Username == userInfo.Username && u.Password == userInfo.Password).SingleAsync();
                 return Ok(user);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Wrong user credentials");
             }
@@ -71,7 +87,7 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return BadRequest("Wrong user details");
             }
@@ -101,7 +117,7 @@ namespace REST_API.Controllers
 
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Wrong user details");
             }
@@ -119,7 +135,7 @@ namespace REST_API.Controllers
 
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Wrong user ID");
             }

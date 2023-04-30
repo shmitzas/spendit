@@ -89,7 +89,6 @@
     private IEnumerable<Goal>? _goals;
     private IEnumerable<Category>? _categories;
     private User _user;
-    private int _selectedId;
     private string _dateFormat = "yyyy-MM-dd";
 
     protected override async Task OnInitializedAsync()
@@ -105,7 +104,7 @@
         {
             _goals = await goalsService.GetGoals(_user.Id);
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -116,7 +115,7 @@
         {
             _categories = await categoriesService.GetCategories();
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -129,7 +128,7 @@
             string icon = await categoryIconsService.GetIconByName(categoryName);
             return icon;
         }
-        catch (Exception ex)
+        catch
         {
             return await categoryIconsService.GetIconByName(String.Empty);
         }
@@ -141,7 +140,7 @@
             var res = (currentAmount / maxAmount) * 100;
             return $"{res.ToString()}%";
         }
-        catch (Exception ex)
+        catch
         {
             return String.Empty;
         }
@@ -174,7 +173,7 @@
                 await alertsService.InvokeCustomError("Goal was not added!");
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -190,7 +189,6 @@
             if (swalResult != null)
             {
                 var updatedGoal = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), goalId);
-                updatedGoal.Id = goalId;
                 if (await ValidateExistingGoal(updatedGoal))
                 {
                     if (await goalsService.UpdateGoal(updatedGoal))
@@ -205,7 +203,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -227,7 +225,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -239,7 +237,7 @@
             int maxLength = 80;
             return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
         }
-        catch (Exception ex)
+        catch
         {
             return String.Empty;
         }
@@ -262,7 +260,7 @@
                     EndDate = DateTime.Parse(data["endDate"])
                 };
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
             return new Goal();
@@ -283,7 +281,7 @@
                     EndDate = DateTime.Parse(data["date"])
                 };
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
             return new NewGoal();

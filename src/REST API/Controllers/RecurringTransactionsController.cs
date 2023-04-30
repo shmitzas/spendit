@@ -24,7 +24,7 @@ namespace REST_API.Controllers
                 var transaction = await _DbContext.RecurringTransactions.Where(t => t.UserId == userId).OrderByDescending(t => t.StartDate).ToListAsync();
                 return Ok(transaction);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("No transactions found");
             }
@@ -40,7 +40,7 @@ namespace REST_API.Controllers
                 var transaction = await _DbContext.RecurringTransactions.Where(t => t.UserId == userId && t.StartDate <= eDate && t.EndDate >= sDate).OrderByDescending(t => t.StartDate).ToListAsync();
                 return Ok(transaction);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("No transactions found");
             }
@@ -55,7 +55,7 @@ namespace REST_API.Controllers
                 var transaction = await _DbContext.RecurringTransactions.Where(t => t.UserId == userId && t.CategoryId == categoryId.Id).OrderByDescending(t => t.StartDate).ToListAsync();
                 return Ok(transaction);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("No transactions found");
             }
@@ -72,7 +72,7 @@ namespace REST_API.Controllers
                 var transaction = await _DbContext.RecurringTransactions.Where(t => t.UserId == userId && t.StartDate <= eDate && t.EndDate >= sDate && t.CategoryId == categoryId.Id).OrderByDescending(t => t.StartDate).ToListAsync();
                 return Ok(transaction);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("No transactions found");
             }
@@ -86,7 +86,7 @@ namespace REST_API.Controllers
                 var transactions = await _DbContext.RecurringTransactions.Where(t => t.Description.ToLower().Contains(query.ToLower()) && t.UserId == userId).OrderByDescending(t => t.StartDate).ToListAsync();
                 return Ok(transactions);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("No transactions found");
             }
@@ -102,7 +102,7 @@ namespace REST_API.Controllers
                     .SingleAsync();
                 return Ok(transaction);
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Transaction not found");
             }
@@ -129,7 +129,7 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return BadRequest("Wrong transaction details");
             }
@@ -153,7 +153,7 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Wrong transaction details");
             }
@@ -169,7 +169,7 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
                 return NotFound("Transaction does not exist");
             }

@@ -85,7 +85,7 @@ public class AuthProvider : AuthenticationStateProvider
                 Settings = authState.User.FindFirstValue("Settings")
             };
         }
-        catch (Exception ex)
+        catch
         {
             return new User();
         }

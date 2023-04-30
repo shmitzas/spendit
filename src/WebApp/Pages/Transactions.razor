@@ -5,10 +5,12 @@
 @using WebApp.Models.Transactions
 @using WebApp.Models.Categories
 @using WebApp.Models.Users
+@using WebApp.Models.Budgets
 @using WebApp.Auth
 @using System.Text.RegularExpressions
 @inject TransactionsService transactionsService
 @inject CategoriesService categoriesService
+@inject BudgetsService budgetsService
 @inject AuthenticationStateProvider authStateProvider
 @inject AlertsService alertsService
 @inject CategoryIconsService categoryIconsService
@@ -21,126 +23,137 @@
     <Authorized>
         <div class="row">
             <div class="col-12">
-                <div class="row justify-content-center bg-body pb-3 pt-3">
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-10 align-items-center">
-                            <div class="row justify-content-center align-items-center text-center">
-                                <hr class="col-5 mb-0 border-primary border-1 opacity-100 me-2">
-                                <button @onclick="FilterStatus" class="col btn btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters">
-                                    <span class="fw-semibold">Filters</span> <i class="fa-sharp fa-solid @_filterArrow"></i>
-                                </button>
-                                <hr class="col-5 mb-0 border-primary border-1 opacity-100 ms-2">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row mt-5 collapse justify-content-center" id="filters">
-                        <div class="col-6 mb-5">
-                            <div class="wrapper">
-                                <div class="searchBar rounded-pill shadow-sm">
-                                    <input @onkeyup="SearchOnEnter" @bind="_query" id="searchQueryInput" type="text" name="searchQueryInput" placeholder="Search" />
-                                    <button @onclick="Search" id="searchQuerySubmit" type="submit" name="searchQuerySubmit">
-                                        <i class="fa fa-search"></i>
+                @if (_init)
+                {
+                    <div class="row justify-content-center bg-body pb-3 pt-3">
+                        <div class="row justify-content-center align-items-center">
+                            <div class="col-10 align-items-center">
+                                <div class="row justify-content-center align-items-center text-center">
+                                    <hr class="col-5 mb-0 border-primary border-1 opacity-100 me-2">
+                                    <button @onclick="FilterStatus" class="col btn btn-outline-primary rounded-pill" type="button" data-bs-toggle="collapse" data-bs-target="#filters" aria-expanded="false" aria-controls="filters">
+                                        <span class="fw-semibold">Filters</span> <i class="fa-sharp fa-solid @_filterArrow"></i>
                                     </button>
+                                    <hr class="col-5 mb-0 border-primary border-1 opacity-100 ms-2">
                                 </div>
                             </div>
                         </div>
-                        <div class="col-8">
-                            <div class="row justify-content-center align-items-center">
-                                <div class="col-2 text-end">
-                                    <span>Perdiod</span>
-                                </div>
-                                <div class="col-4">
-                                    <input @bind="@_startDate" type="date" class="form-control" id="dateFrom" placeholder="Start date">
-                                </div>
-                                <div class="col-4">
-                                    <input @bind="@_endDate" type="date" class="form-control" id="dateTo" placeholder="End date">
-                                </div>
-                                <div class="col-2">
-                                    <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
+                        <div class="row mt-5 collapse justify-content-center" id="filters">
+                            <div class="col-6 mb-5">
+                                <div class="wrapper">
+                                    <div class="searchBar rounded-pill shadow-sm">
+                                        <input @onkeyup="SearchOnEnter" @bind="_query" id="searchQueryInput" type="text" name="searchQueryInput" placeholder="Search" />
+                                        <button @onclick="Search" id="searchQuerySubmit" type="submit" name="searchQuerySubmit">
+                                            <i class="fa fa-search"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row justify-content-center align-items-center mt-3">
-                                <div class="col-3 text-end">
-                                    <span>Select category</span>
+                            <div class="col-8">
+                                <div class="row justify-content-center align-items-center">
+                                    <div class="col-2 text-end">
+                                        <span>Perdiod</span>
+                                    </div>
+                                    <div class="col-4">
+                                        <input @bind="@_startDate" type="date" class="form-control" id="dateFrom" placeholder="Start date">
+                                    </div>
+                                    <div class="col-4">
+                                        <input @bind="@_endDate" type="date" class="form-control" id="dateTo" placeholder="End date">
+                                    </div>
+                                    <div class="col-2">
+                                        <button @onclick="Filter" class="btn btn-success rounded-pill">Apply</button>
+                                    </div>
                                 </div>
-                                <div class="col-4 text-start">
-                                    <select class='form-select' id='category' aria-label='Category' @onchange="FilterByCategory">
-                                        @if (_categories != null && _categories.Count() > 0)
-                                        {
-                                            @foreach (var category in _categories)
+                                <div class="row justify-content-center align-items-center mt-3">
+                                    <div class="col-3 text-end">
+                                        <span>Select category</span>
+                                    </div>
+                                    <div class="col-4 text-start">
+                                        <select class='form-select' id='category' aria-label='Category' @onchange="FilterByCategory">
+                                            @if (_categories != null && _categories.Count() > 0)
                                             {
-                                                <option value="@category.Name">@category.Name</option>
-                                            }
+                                                @foreach (var category in _categories)
+                                                {
+                                                    <option value="@category.Name">@category.Name</option>
+                                                }
 
-                                        }
-                                    </select>
+                                            }
+                                        </select>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="row justify-content-center mt-5">
-                                <div class="col-4 text-center">
-                                    <button @onclick="RemoveFilters" class="btn btn-primary rounded-pill">Remove filters</button>
+                                <div class="row justify-content-center mt-5">
+                                    <div class="col-4 text-center">
+                                        <button @onclick="RemoveFilters" class="btn btn-primary rounded-pill">Remove filters</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="row mt-5 align-items-center mb-2">
-                    <div class="col">
-                        <h3 class="m-0">All transactions</h3>
+                    <div class="row mt-5 align-items-center mb-2">
+                        <div class="col">
+                            <h3 class="m-0">All transactions</h3>
+                        </div>
+                        <div class="col text-right">
+                            <button @onclick="AddTransaction" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
+                        </div>
                     </div>
-                    <div class="col text-right">
-                        <button @onclick="AddTransaction" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
-                    </div>
-                </div>
-                <div class="row bg-body shadow-sm">
-                    <div class="col-12 pt-2">
-                        <table class="table table-hover">
-                            <thead class="border-bottom-1">
-                                <tr>
-                                    <th scope="col" class="col-1 text-center">Category</th>
-                                    <th scope="col" class="col-4 text-center">Description</th>
-                                    <th scope="col" class="col-2 text-center">Type</th>
-                                    <th scope="col" class="col-2 text-center text-primary">
-                                        <span @onclick="OrderByDate" role="button">Date <i class="fa-solid @_orderByDate"></i></span>
-                                        <label class="form-check-label  ms-2" for="showTime">Time</label>
-                                        <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
+                    <div class="row bg-body shadow-sm">
+                        <div class="col-12 pt-2">
+                            <table class="table table-hover">
+                                <thead class="border-bottom-1">
+                                    <tr>
+                                        <th scope="col" class="col-1 text-center">Category</th>
+                                        <th scope="col" class="col-4 text-center">Description</th>
+                                        <th scope="col" class="col-2 text-center">Type</th>
+                                        <th scope="col" class="col-2 text-center text-primary">
+                                            <span @onclick="OrderByDate" role="button">Date <i class="fa-solid @_orderByDate"></i></span>
+                                            <label class="form-check-label  ms-2" for="showTime">Time</label>
+                                            <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
 
-                                    </th>
-                                    <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
-                                    <th scope="col" class="col-1 text-center">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (_transactions != null && _transactions.Count() > 0 && _categories != null && _categories.Count() > 0)
-                                {
-                                    for (int i = 0; i < _transactions.Count(); i++)
+                                        </th>
+                                        <th scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                        <th scope="col" class="col-1 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (_transactions != null && _transactions.Count() > 0 && _categories != null && _categories.Count() > 0)
                                     {
-                                        var tr = _transactions.ElementAt(i);
-                                        string categoryIcon = GetCategoryIcon(tr.CategoryId).Result;
-                                        <tr class="align-middle">
-                                            <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button></td>
-                                            <td class="">@TransactionDescLenght(tr.Description).Result</td>
-                                            <td class=" text-center">@tr.Type</td>
-                                            <td class=" text-center">@tr.CreatedAt.ToString(@_dateFormat)</td>
-                                            @if (tr.Type == "Expense")
-                                            {
-                                                <td class="text-center text-danger">-@tr.Amount @tr.Currency</td>
-                                            }
-                                            else
-                                            {
-                                                <td class="text-center text-success">+@tr.Amount @tr.Currency</td>
-                                            }
-                                            <td class="text-center">
-                                                <button @onclick="()=>EditTransaction(tr.Id)" class="btn btn-info rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
-                                                <button @onclick="()=>DeleteTransaction(tr.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
-                                            </td>
-                                        </tr>
+                                        for (int i = 0; i < _transactions.Count(); i++)
+                                        {
+                                            var tr = _transactions.ElementAt(i);
+                                            string categoryIcon = GetCategoryIcon(tr.CategoryId).Result;
+                                            <tr class="align-middle">
+                                                <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button></td>
+                                                <td class="">@TransactionDescLenght(tr.Description).Result</td>
+                                                <td class=" text-center">@tr.Type</td>
+                                                <td class=" text-center">@tr.CreatedAt.ToString(@_dateFormat)</td>
+                                                @if (tr.Type == "Expense")
+                                                {
+                                                    <td class="text-center text-danger">-@tr.Amount @tr.Currency</td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="text-center text-success">+@tr.Amount @tr.Currency</td>
+                                                }
+                                                <td class="text-center">
+                                                    <button @onclick="()=>EditTransaction(tr.Id)" class="btn btn-info rounded-5 btn-sm"><i class="fa-solid fa-pen"></i></button>
+                                                    <button @onclick="()=>DeleteTransaction(tr.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                                </td>
+                                            </tr>
+                                        }
                                     }
-                                }
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="row justify-content-center mt-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </Authorized>
@@ -153,14 +166,15 @@
     private AuthProvider _authProvider;
     private IEnumerable<Transaction>? _transactions;
     private IEnumerable<Category>? _categories;
+    private IEnumerable<Budget>? _budgets;
     private User _user;
+    private bool _init = false;
     private string _orderByDate = "fa-sort-down";
     private string _orderByAmount = "fa-sort-down";
     private string _filterArrow = "fa-chevron-down";
     private bool _showTime = false;
     private string _query;
     private bool _dateSelected = false;
-    private int _selectedId;
     private string _dateFormat = "yyyy-MM-dd";
     private DateTime _startDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
     private DateTime _endDate = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(1).AddSeconds(-1);
@@ -171,6 +185,8 @@
         _user = await _authProvider.GetCurrentUserAsync();
         await LoadTransactions();
         await LoadCategories();
+        await LoadBudgets();
+        _init = true;
     }
     private async Task LoadTransactions()
     {
@@ -178,7 +194,18 @@
         {
             _transactions = await transactionsService.GetTransactions(_user.Id);
         }
-        catch (Exception ex)
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task LoadBudgets()
+    {
+        try
+        {
+            _budgets = await budgetsService.GetBudgets(_user.Id);
+        }
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -189,7 +216,7 @@
         {
             _categories = await categoriesService.GetCategories();
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -206,7 +233,7 @@
             string icon = await categoryIconsService.GetIconByName(categoryName);
             return icon;
         }
-        catch (Exception ex)
+        catch
         {
             return await categoryIconsService.GetIconByName(String.Empty);
         }
@@ -245,7 +272,7 @@
     {
         try
         {
-            var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal", _categories);
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddTransactionModal", _categories, _budgets);
             if (swalResult == null)
             {
                 return;
@@ -258,8 +285,7 @@
                 return;
             }
 
-            var success = await transactionsService.AddTransaction(transactionToAdd);
-            if (success)
+            if (await transactionsService.AddTransaction(transactionToAdd))
             {
                 await LoadTransactions();
                 StateHasChanged();
@@ -269,7 +295,7 @@
                 await alertsService.InvokeCustomError("Transaction was not added!");
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -280,14 +306,50 @@
         {
             var tr = _transactions.Where(t => t.Id == transactionId).Single();
             var trOtherType = tr.Type == "Expense" ? "Income" : "Expense";
-            var currentCategory = _categories.Where(c => c.Id == tr.CategoryId).Single().Name;
+
+            string currentCategory;
+            try
+            {
+                currentCategory = _categories.Where(c => c.Id == tr.CategoryId).Single().Name;
+            }
+            catch
+            {
+                currentCategory = "";
+            }
             var otherCategories = _categories.Where(c => c.Id != tr.CategoryId).ToList();
 
-            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.CreatedAt, currentCategory, otherCategories);
+            string currentBudget = "None";
+            var otherBudgets = new List<Budget>();
+
+            try
+            {
+                currentBudget = _budgets.Where(b => b.Id == tr.BudgetId).Single().Description;
+            }
+            catch
+            {
+                currentBudget = "None";
+            }
+            if (currentBudget == "None")
+            {
+                try
+                {
+                    otherBudgets = _budgets.ToList();
+                }
+                catch
+                {
+
+                }
+            }
+            else
+            {
+                otherBudgets = _budgets.Where(b => b.Id != tr.BudgetId).ToList();
+                otherBudgets.Add(new Budget { Description = "None" });
+            }
+
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditTransactionModal", tr.Description, tr.Amount, tr.Currency, tr.Type, trOtherType, tr.CreatedAt, currentCategory, otherCategories, currentBudget, otherBudgets);
             if (swalResult != null)
             {
                 var transaction = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), tr.Id);
-                transaction.Id = transactionId;
                 if (await ValidateExistingTransaction(transaction))
                 {
                     if (await transactionsService.UpdateTransaction(transaction))
@@ -302,7 +364,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -324,7 +386,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -380,7 +442,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
 
         }
@@ -418,7 +480,7 @@
             int maxLength = 110;
             return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
         }
-        catch (Exception ex)
+        catch
         {
             return String.Empty;
         }
@@ -434,7 +496,32 @@
     {
         try
         {
-            var category = _categories.Where(c => c.Name == data["category"]).Single();
+            var category = new Category();
+            try
+            {
+                category.Id = _categories.Where(c => c.Name == data["category"]).Single().Id;
+            }
+            catch
+            {
+                category.Id = 0;
+            }
+
+            var budget = new Budget();
+            if (data["type"] == "Expense")
+            {
+                try
+                {
+                    budget.Id = _budgets.Where(b => b.Description == data["budget"]).Single().Id;
+                }
+                catch
+                {
+                    budget.Id = Guid.Empty;
+                }
+            }
+            else
+            {
+                budget.Id = Guid.Empty;
+            }
             return new UpdateTransaction
                 {
                     Id = id,
@@ -444,10 +531,11 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
+                    BudgetId = budget.Id,
                     CreatedAt = DateTime.Parse(data["date"]).ToLocalTime()
                 };
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
             return new UpdateTransaction();
@@ -457,7 +545,26 @@
     {
         try
         {
-            var category = _categories.Where(c => c.Name == data["category"]).Single();
+            var category = new Category();
+            try
+            {
+                category.Id = _categories.Where(c => c.Name == data["category"]).Single().Id;
+            }
+            catch
+            {
+                category.Id = 0;
+            }
+
+            var budget = new Budget();
+            try
+            {
+                budget.Id = _budgets.Where(b => b.IsActive).Single().Id;
+            }
+            catch
+            {
+                budget.Id = Guid.Empty;
+            }
+
             return new NewTransaction
                 {
                     UserId = _user.Id,
@@ -466,10 +573,11 @@
                     Amount = Decimal.Parse(data["amount"]),
                     Currency = data["currency"],
                     Type = data["type"],
+                    BudgetId = budget.Id,
                     CreatedAt = DateTime.Parse(data["date"]).ToLocalTime()
                 };
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
             return new NewTransaction();

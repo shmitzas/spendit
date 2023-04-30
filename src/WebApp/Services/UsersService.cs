@@ -31,7 +31,7 @@ namespace WebApp.Services
                 return userInfo;
 
             }
-            catch (Exception ex)
+            catch
             {
                 return new User();
             }
@@ -48,7 +48,7 @@ namespace WebApp.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -66,7 +66,7 @@ namespace WebApp.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -82,7 +82,7 @@ namespace WebApp.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
