@@ -119,6 +119,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="appsettings.json" />
     <None Include="compilerconfig.json" />
   </ItemGroup>
