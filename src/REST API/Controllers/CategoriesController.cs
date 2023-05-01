@@ -22,9 +22,9 @@ namespace REST_API.Controllers
                 var categories = await _DbContext.Categories.ToListAsync();
                 return Ok(categories);
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("No categories found");
             }
         }
         [HttpGet]
@@ -36,9 +36,9 @@ namespace REST_API.Controllers
                 var category = await _DbContext.Categories.Where(t => t.Id == id).SingleAsync();
                 return Ok(category);
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("Category not found");
             }
         }
     }

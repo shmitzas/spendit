@@ -11701,3 +11701,33 @@ a {
 .wrapper #searchQuerySubmit:hover {
   cursor: pointer;
 }
+
+.custom-border-info {
+  border-top: 5px solid #0dcaf0 !important;
+  border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
+  overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.custom-border-ok {
+  border-top: 5px solid #00b552 !important;
+  border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
+  overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.custom-border-warning {
+  border-top: 5px solid #fb002e !important;
+  border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
+  overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.custom-border-start-ok {
+  border-left: 6px solid #00b552 !important;
+  border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
+  overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.custom-border-start-warning {
+  border-left: 6px solid #fb002e !important;
+  border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
+  overflow: hidden !important; /* clips the content that overflows the curved border */
+}

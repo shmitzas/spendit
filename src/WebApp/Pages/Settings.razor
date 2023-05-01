@@ -21,7 +21,7 @@
                 <h3 class="mb-2 text-start">Account settings</h3>
                 <div class="row justify-content-center bg-body">
                     <div class="col-10 mt-4 mb-4">
-                        @if (_user != null && _currentCurrency != null)
+                        @if (_init)
                         {
                             <div class="row mb-3">
                                 <label for="staticEmail" class="col-sm-3 col-form-label">Username</label>
@@ -78,6 +78,7 @@
     private string _oldPassword;
     private string _newPassword;
     private User _user;
+    private bool _init = false;
     private string _currentCurrency;
     private AuthProvider authProvider;
     private List<string> _Currencies = new List<string> { "EUR" };
@@ -88,6 +89,7 @@
         authProvider = (AuthProvider)authStateProvider;
         _user = await authProvider.GetCurrentUserAsync();
         await GetCurrency(_user.Settings);
+        _init = true;
     }
     private async Task GetCurrency(string settings)
     {
@@ -96,7 +98,7 @@
             _settings = JsonSerializer.Deserialize<Dictionary<string, string>>(settings);
             _currentCurrency = string.IsNullOrEmpty(_settings["currency"]) ? "EUR" : _settings["currency"];
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }
@@ -136,9 +138,8 @@
             _user.Settings = JsonSerializer.Serialize(_settings);
 
             UpdateUser updateUser = await ToUpdateModel();
-            bool res = await usersService.UpdateUser(updateUser);
 
-            if (res)
+            if (await usersService.UpdateUser(updateUser))
             {
                 await alertsService.InvokeSuccess("Your information has been updated!");
                 await authProvider.UpdateAuthState(_user);
@@ -160,8 +161,7 @@
         {
             if (await alertsService.InvokeConfirmation())
             {
-                bool res = await usersService.DeleteUser(_user.Id);
-                if (res)
+                if (await usersService.DeleteUser(_user.Id))
                 {
                     await alertsService.InvokeSuccessTimer("Account deleted successfuly!", 2000);
                     await authProvider.UpdateAuthState(null);
@@ -173,7 +173,7 @@
                 }
             }
         }
-        catch (Exception ex)
+        catch
         {
             await alertsService.InvokeError();
         }

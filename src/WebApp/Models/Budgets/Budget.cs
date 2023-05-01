@@ -1,4 +1,4 @@
-﻿namespace REST_API.Models.Budgets
+﻿namespace WebApp.Models.Budgets
 {
     public class Budget
     {

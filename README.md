@@ -73,9 +73,8 @@ their financial well-being.
 - [x] Categories management
 - [x] Goal setting
 ### III Iteration
-- [ ] Budget tracking
-- [ ] Multi-currency support
-- [ ] Reports and insights
+- [x] Budget tracking
+- [x] Reports and insights
 ### IV Iteration
 - [ ] Bill reminders
 - [ ] Alerts and notifications
@@ -98,6 +97,7 @@ their financial well-being.
 - Implemented User authorization using AspNetCore Authorization instead of Auth0 or oAuth
 - Decided to develop both, Website and REST API using .NET 7 insdead of .NET 6 because of package dependency incompatibility issues
 - For API integrated EntityFramework instead of making SQL calls to the database for ease of use and safety reasons (plus this approach allows to setup in-memory database for easier development of API controllers)
+- Removed "Multi-currency support" from the plan
 
 ## Notes
 - 'main' branch is meant to be treated as a "production" branch

@@ -5,6 +5,7 @@ using REST_API.Models.Users;
 using REST_API.Models.Transactions;
 using REST_API.Models.Goals;
 using REST_API.Models.RecurringTransactions;
+using REST_API.Models.Budgets;
 
 namespace REST_API
 {
@@ -93,12 +94,12 @@ namespace REST_API
 
             List<Transaction> Transactions = new List<Transaction>
             {
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
-                new Transaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 4, Type="Expense", Amount=1500M, Currency = "EUR",  Description = "Car loan", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+                new Transaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 4, Type="Expense", Amount=1500M, Currency = "EUR",  Description = "Car loan", CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
             };
             foreach (Transaction transaction in Transactions)
             {
@@ -106,11 +107,11 @@ namespace REST_API
             }
             List<RecurringTransaction> RecurringTransactions = new List<RecurringTransaction>
             {
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(5), Frequency="Daily"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(6), Frequency="Daily"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid)Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(4), Frequency="Weekly"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(8), Frequency = "Weekly"},
-                new RecurringTransaction { Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(1), Frequency = "Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 7, Type="Income", Amount=1000M, Currency = "EUR",  Description = "Salary", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(5), Frequency="Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 15, Type="Expense", Amount=11.19M, Currency = "EUR",  Description = "Netflix subscription", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(6), Frequency="Daily"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Type="Expense", Amount=469.59M, Currency = "EUR",  Description = "Rent", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(4), Frequency="Weekly"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 8, Type="Income", Amount=100.79M, Currency = "EUR",  Description = "Investment", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(8), Frequency = "Weekly"},
+                new RecurringTransaction { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 11, Type="Income", Amount=100M, Currency = "EUR",  Description = "Birthday present", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(1), Frequency = "Daily"},
                 };
             foreach (RecurringTransaction recurringTransaction in RecurringTransactions)
             {
@@ -118,21 +119,31 @@ namespace REST_API
             }
             List<Goal> Goals = new List<Goal>
             {
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 2, Description = "New apartment", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(4), Amount = 100000m, Currency = "EUR", CurrentAmount = 74000},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 13, Description = "Vacation to Hawaii", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(5), Amount = 5000m, Currency = "EUR", CurrentAmount = 2500},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 4, Description = "Buy a new car", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(6), Amount = 25000m, Currency = "EUR", CurrentAmount = 24000},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 7, Description = "Emergency fund", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(7), Amount = 10000m, Currency = "EUR", CurrentAmount = 0},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 1, Description = "Wedding expenses", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(8), Amount = 15000m, Currency = "EUR", CurrentAmount = 1670},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 2, Description = "Home renovation", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(9), Amount = 20000m, Currency = "EUR", CurrentAmount = 5000},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 8, Description = "Start a business", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(10), Amount = 50000m, Currency = "EUR", CurrentAmount = 19700},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 16, Description = "College fund for kids", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(11), Amount = 40000m, Currency = "EUR", CurrentAmount = 4563},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 9, Description = "Pay off student loans", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(12), Amount = 30000m, Currency = "EUR", CurrentAmount = 4240},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 7, Description = "Retirement savings", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(13), Amount = 100000m, Currency = "EUR", CurrentAmount = 76778},
-                new Goal{ Id = Guid.NewGuid(), UserId= (Guid) Users[0].Id, CategoryId = 12, Description = "Charitable donations", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(14), Amount = 5000m, Currency = "EUR", CurrentAmount = 1240},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Description = "New apartment", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(4), Amount = 100000m, Currency = "EUR", CurrentAmount = 74000},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 13, Description = "Vacation to Hawaii", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(5), Amount = 5000m, Currency = "EUR", CurrentAmount = 2500},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 4, Description = "Buy a new car", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(6), Amount = 25000m, Currency = "EUR", CurrentAmount = 24000},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 7, Description = "Emergency fund", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(7), Amount = 10000m, Currency = "EUR", CurrentAmount = 0},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 1, Description = "Wedding expenses", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(8), Amount = 15000m, Currency = "EUR", CurrentAmount = 1670},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Description = "Home renovation", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(9), Amount = 20000m, Currency = "EUR", CurrentAmount = 5000},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 8, Description = "Start a business", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(10), Amount = 50000m, Currency = "EUR", CurrentAmount = 19700},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 16, Description = "College fund for kids", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(11), Amount = 40000m, Currency = "EUR", CurrentAmount = 4563},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 9, Description = "Pay off student loans", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(12), Amount = 30000m, Currency = "EUR", CurrentAmount = 4240},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 7, Description = "Retirement savings", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(13), Amount = 100000m, Currency = "EUR", CurrentAmount = 76778},
+                new Goal{ Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 12, Description = "Charitable donations", StartDate = DateTime.Now, EndDate = DateTime.Now.AddMonths(14), Amount = 5000m, Currency = "EUR", CurrentAmount = 1240},
             };
             foreach (Goal goal in Goals)
             {
                 context.Goals.Add(goal);
+            }
+
+            List<Budget> Budgets = new List<Budget>
+            {
+                new Budget { Id = Guid.NewGuid(), UserId = Users[0].Id, Description = "Main", Amount = 1000m, CurrentAmount = 0m, Currency = "EUR", CreatedAt = DateTime.Now, IsActive = false},
+                new Budget { Id = Guid.NewGuid(), UserId = Users[0].Id, Description = "Main second agadg", Amount = 1000m, CurrentAmount = 0m, Currency = "EUR", CreatedAt = DateTime.Now, IsActive = true},
+            };
+            foreach (Budget budget in Budgets)
+            {
+                context.Budgets.Add(budget);
             }
 
             context.SaveChanges();

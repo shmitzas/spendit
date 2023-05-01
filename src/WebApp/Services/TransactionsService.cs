@@ -22,7 +22,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Transaction>();
             }
@@ -33,7 +33,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Transaction>($"/api/transactions/{userId}/{transactionId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new Transaction();
             }
@@ -44,7 +44,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Transaction>();
             }
@@ -55,7 +55,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}/category={categoryName}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Transaction>();
             }
@@ -66,7 +66,18 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/filter/category={categoryName}");
             }
-            catch (Exception ex)
+            catch
+            {
+                return new List<Transaction>();
+            }
+        }
+        public async Task<IEnumerable<Transaction>> GetTransactionsByBudget(Guid userId, Guid budgetId)
+        {
+            try
+            {
+                return await _httpClient.GetFromJsonAsync<Transaction[]>($"/api/transactions/{userId}/budget={budgetId}");
+            }
+            catch
             {
                 return new List<Transaction>();
             }
@@ -77,7 +88,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync <IEnumerable<Transaction>> ($"/api/transactions/{userId}/search={query}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Transaction>();
             }
@@ -92,7 +103,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -107,7 +118,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -122,7 +133,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

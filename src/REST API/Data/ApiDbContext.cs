@@ -40,6 +40,12 @@ namespace REST_API.Data
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));
 
+            modelBuilder.Entity<Transaction>()
+                .Property(t => t.BudgetId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
             modelBuilder.Entity<RecurringTransaction>()
                 .Property(t => t.Id)
                 .HasConversion(
@@ -59,6 +65,18 @@ namespace REST_API.Data
                     bytes => new Guid(bytes));
 
             modelBuilder.Entity<Goal>()
+                .Property(g => g.UserId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Budget>()
+                .Property(g => g.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<Budget>()
                 .Property(g => g.UserId)
                 .HasConversion(
                     id => id.ToByteArray(),

@@ -3,8 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
 using REST_API.Models.Goals;
-using REST_API.Models.Users;
-using System;
 
 namespace REST_API.Controllers
 {
@@ -24,12 +22,12 @@ namespace REST_API.Controllers
         {
             try
             {
-                var goal = await _DbContext.Goals.Where(t => t.UserId == userId).OrderByDescending(t => t.EndDate).ToListAsync();
+                var goal = await _DbContext.Goals.Where(t => t.UserId == userId).OrderBy(t => t.EndDate).ToListAsync();
                 return Ok(goal);
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("No goals found");
             }
         }
         [HttpGet]
@@ -41,9 +39,9 @@ namespace REST_API.Controllers
                 var goal = await _DbContext.Goals.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
                 return Ok(goal);
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("Goal not found");
             }
         }
 
@@ -68,9 +66,9 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return BadRequest();
+                return BadRequest("Wrong goal details");
             }
         }
 
@@ -91,9 +89,9 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("Wrong goal details");
             }
         }
 
@@ -108,9 +106,9 @@ namespace REST_API.Controllers
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
-            catch (Exception ex)
+            catch
             {
-                return NotFound();
+                return NotFound("Goal does not exist");
             }
         }
     }

@@ -22,7 +22,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Goal[]>($"/api/goals/{userId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<Goal>();
             }
@@ -33,7 +33,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<Goal>($"/api/goals/{userId}/{goalId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new Goal();
             }
@@ -48,7 +48,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -63,7 +63,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -78,7 +78,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using System.Text.Json;
 using WebApp.Models.Users;
+using WebApp.Models;
 
 namespace WebApp.Services
 {
@@ -30,7 +31,7 @@ namespace WebApp.Services
                 return userInfo;
 
             }
-            catch (Exception ex)
+            catch
             {
                 return new User();
             }
@@ -47,7 +48,7 @@ namespace WebApp.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -60,11 +61,12 @@ namespace WebApp.Services
                 var res = await _httpClient.PostAsync("/api/users", content);
                 if (res.IsSuccessStatusCode)
                 {
+
                     return true;
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -80,7 +82,7 @@ namespace WebApp.Services
                 }
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

@@ -22,7 +22,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<RecurringTransaction>();
             }
@@ -33,7 +33,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<RecurringTransaction>($"/api/recurringtransactions/{userId}/{transactionId}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new RecurringTransaction();
             }
@@ -44,7 +44,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<RecurringTransaction>();
             }
@@ -55,7 +55,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}/filter/start={startDate.ToString("yyyy-MM-dd")}&end={endDate.ToString("yyyy-MM-dd")}/category={categoryName}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<RecurringTransaction>();
             }
@@ -66,7 +66,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync<RecurringTransaction[]>($"/api/recurringtransactions/{userId}/filter/category={categoryName}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<RecurringTransaction>();
             }
@@ -77,7 +77,7 @@ namespace WebApp.Services
             {
                 return await _httpClient.GetFromJsonAsync <IEnumerable<RecurringTransaction>> ($"/api/recurringtransactions/{userId}/search={query}");
             }
-            catch (Exception ex)
+            catch
             {
                 return new List<RecurringTransaction>();
             }
@@ -92,7 +92,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -107,7 +107,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -122,7 +122,7 @@ namespace WebApp.Services
                     return true;
                 return false;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }
@@ -165,7 +165,7 @@ namespace WebApp.Services
                         return false;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

@@ -36,7 +36,7 @@ namespace WebApp.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch
             {
 
             }
@@ -56,7 +56,7 @@ namespace WebApp.Services
                     CreatedAt = DateTime.Now
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 return new NewTransaction();
             }

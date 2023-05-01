@@ -1,0 +1,371 @@
+﻿@page "/budgets"
+@using System.Text.Json
+@using System.Linq
+@using WebApp.Services
+@using WebApp.Models.Budgets
+@using WebApp.Models.Categories
+@using WebApp.Models.Users
+@using WebApp.Auth
+@using System.Text.RegularExpressions
+@inject BudgetsService budgetsService
+@inject TransactionsService transactionsService
+@inject CategoriesService categoriesService
+@inject AuthenticationStateProvider authStateProvider
+@inject AlertsService alertsService
+@inject CategoryIconsService categoryIconsService
+@inject InputValidationService validationService
+@inject IJSRuntime JSRuntime
+@attribute [Authorize]
+
+<PageTitle>Spendit - Budgets</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-12">
+                <div class="row align-items-center mb-2">
+                    <div class="col">
+                        <h3 class="m-0">All budgets</h3>
+                    </div>
+                    <div class="col text-right">
+                        <button @onclick="AddBudget" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
+                    </div>
+                </div>
+
+                @if (_init)
+                {
+                    @if (_budgets.Count() > 0)
+                    {
+                        @foreach (var budget in _budgets)
+                        {
+                            var progress = CalculateProgress(budget.Amount, budget.CurrentAmount).Result;
+                            var isCheckedText = budget.IsActive ? "checked" : "";
+                            var progressColor = CalculateProgressColor(progress).Result;
+                            <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
+                                <div class="col-1 text-center">
+                                    @if (budget.IsActive)
+                                    {
+                                        <input @onclick="()=>SetInactive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                                    }
+                                    else
+                                    {
+                                        <input @onclick="()=>SetActive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                                    }
+                                </div>
+                                <div class="col-8">
+                                    <div class="row align-items-center">
+                                        <div class="col-10 ps-0">
+                                            @BudgetDescLenght(budget.Description).Result
+                                        </div>
+                                        <div class="col-2 text-end pe-0">@budget.Amount @budget.Currency</div>
+                                    </div>
+                                    <div class="row align-items-center justify-content-between">
+                                        <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="1000">
+                                             <div class="progress-bar @progressColor rounded-pill" style="width: @progress%">@budget.CurrentAmount</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2 text-center">
+                                    <button @onclick="()=>InvokeBudgetTransactions(budget.Id)" class="btn btn-primary rounded-pill">Transactions</button>
+                                </div>
+                                <div class="col-1 text-center">
+                                    <button @onclick="()=>EditBudget(budget.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
+                                    <button @onclick="()=>DeleteBudget(budget.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="row justify-content-center mt-5">
+                            <div class="col-10">
+                                <span class="">There are no budgets</span>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="row justify-content-center mt-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private AuthProvider _authProvider;
+    private IEnumerable<Budget>? _budgets;
+    private User _user;
+    private bool _init = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadBudgets();
+        _init = true;
+    }
+    private async Task LoadBudgets()
+    {
+        try
+        {
+            _budgets = await budgetsService.GetBudgets(_user.Id);
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task SetActive(Budget budget)
+    {
+        if (await budgetsService.SetActiveBudget(budget))
+        {
+            await LoadBudgets();
+            StateHasChanged();
+        }
+    }
+    private async Task SetInactive(Budget budget)
+    {
+        if (await budgetsService.SetInactiveBudget(budget))
+        {
+            await LoadBudgets();
+            StateHasChanged();
+        }
+    }
+    private async Task InvokeBudgetTransactions(Guid budgetId)
+    {
+        var budget = _budgets.Where(b => b.Id == budgetId).Single();
+        var transactions = await transactionsService.GetTransactionsByBudget(_user.Id, budgetId);
+        transactions = transactions.Where(t => t.Type == "Expense");
+        var swalResult = await JSRuntime.InvokeAsync<string>("showBudgetTransactionsModal", transactions, budget.Description);
+    }
+    private async Task AddBudget()
+    {
+        try
+        {
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddBudgetModal");
+            if (swalResult == null)
+            {
+                return;
+            }
+
+            var budgetDict = JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult);
+            var budgetToAdd = await ToAddModel(budgetDict);
+            if (!await ValidateNewBudget(budgetToAdd))
+            {
+                return;
+            }
+
+            if (await budgetsService.AddBudget(budgetToAdd))
+            {
+                await LoadBudgets();
+                StateHasChanged();
+            }
+            else
+            {
+                await alertsService.InvokeCustomError("Budget was not added!");
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task EditBudget(Guid budgetId)
+    {
+        try
+        {
+            var budget = _budgets.Where(t => t.Id == budgetId).Single();
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditBudgetModal", budget.Description, budget.Amount, budget.CurrentAmount, budget.Currency);
+            if (swalResult != null)
+            {
+                var budgetToUpdate = await ToUpdateModel(JsonSerializer.Deserialize<Dictionary<string, string>>(swalResult), budget.Id);
+                budgetToUpdate.IsActive = budget.IsActive;
+                if (await ValidateExistingBudget(budgetToUpdate))
+                {
+                    if (await budgetsService.UpdateBudget(budgetToUpdate))
+                    {
+                        await LoadBudgets();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertsService.InvokeCustomError("Budget data was not updated!");
+                    }
+                }
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task DeleteBudget(Guid budgetId)
+    {
+        try
+        {
+            if (await alertsService.InvokeConfirmation())
+            {
+                if (await budgetsService.DeleteBudget(_user.Id, budgetId))
+                {
+                    await LoadBudgets();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertsService.InvokeCustomError("Budget was not removed!");
+                }
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> BudgetDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 110;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch
+        {
+            return String.Empty;
+        }
+    }
+    private async Task<Budget> ToUpdateModel(Dictionary<string, string> data, Guid id)
+    {
+        try
+        {
+            return new Budget
+                {
+                    Id = id,
+                    UserId = _user.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    CurrentAmount = Decimal.Parse(data["currentAmount"]),
+                    Currency = data["currency"],
+                    CreatedAt = DateTime.Now,
+                };
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return new Budget();
+        }
+    }
+    private async Task<NewBudget> ToAddModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            return new NewBudget
+                {
+                    UserId = _user.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    CreatedAt = DateTime.Now,
+                };
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return new NewBudget();
+        }
+    }
+    private async Task<int> CalculateProgress(decimal maxAmount, decimal currentAmount)
+    {
+        try
+        {
+            int res = (int)((currentAmount / maxAmount) * 100);
+            return res;
+        }
+        catch
+        {
+            return 0;
+        }
+    }
+    private async Task<string> CalculateProgressColor(int progress)
+    {
+        try
+        {
+            if (progress > 60 && progress <= 70)
+            {
+                return "bg-info";
+            }
+            if (progress > 70 && progress <= 90)
+            {
+                return "bg-warning";
+            }
+            if (progress > 90)
+            {
+                return "bg-danger";
+            }
+            return "bg-success";
+        }
+        catch
+        {
+            return "bg-success";
+        }
+    }
+    private async Task<bool> ValidateNewBudget(NewBudget budget)
+    {
+        if (!String.IsNullOrEmpty(budget.Description) && await validationService.ValidateText(budget.Description))
+        {
+            if (!String.IsNullOrEmpty(budget.Amount.ToString()) && await validationService.ValidateDecimal(budget.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(budget.Currency) && await validationService.ValidateText(budget.Currency))
+                {
+                    return true;
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+    private async Task<bool> ValidateExistingBudget(Budget budget)
+    {
+        if (!String.IsNullOrEmpty(budget.Description) && await validationService.ValidateText(budget.Description))
+        {
+            if (!String.IsNullOrEmpty(budget.Amount.ToString()) && await validationService.ValidateDecimal(budget.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(budget.Currency) && await validationService.ValidateText(budget.Currency))
+                {
+                    return true;
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+}
