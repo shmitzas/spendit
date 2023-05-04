@@ -76,9 +76,9 @@
                     }
                     else
                     {
-                        <div class="row justify-content-center mt-5">
-                            <div class="col-10">
-                                <span class="">There are no budgets</span>
+                        <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
+                            <div class="col-12 text-center">
+                                <span>No budgets found</span>
                             </div>
                         </div>
                     }
@@ -127,6 +127,7 @@
     {
         if (await budgetsService.SetActiveBudget(budget))
         {
+            alertsService.InvokeCustomToastSuccess($"Budget \"{budget.Description}\" was activated!");
             await LoadBudgets();
             StateHasChanged();
         }
@@ -135,6 +136,7 @@
     {
         if (await budgetsService.SetInactiveBudget(budget))
         {
+            alertsService.InvokeCustomToastSuccess($"Budget \"{budget.Description}\" was deactivated!");
             await LoadBudgets();
             StateHasChanged();
         }
@@ -165,6 +167,7 @@
 
             if (await budgetsService.AddBudget(budgetToAdd))
             {
+                alertsService.InvokeCustomToastSuccess($"Budget \"{budgetToAdd.Description}\" was added!");
                 await LoadBudgets();
                 StateHasChanged();
             }
@@ -192,6 +195,7 @@
                 {
                     if (await budgetsService.UpdateBudget(budgetToUpdate))
                     {
+                        alertsService.InvokeCustomToastSuccess($"Budget data was updated!");
                         await LoadBudgets();
                         StateHasChanged();
                     }
@@ -215,6 +219,8 @@
             {
                 if (await budgetsService.DeleteBudget(_user.Id, budgetId))
                 {
+                    var budgetName = _budgets.Where(b => b.Id == budgetId).Single().Description;
+                    alertsService.InvokeCustomToastSuccess($"Budget \"{budgetName}\" was deleted!");
                     await LoadBudgets();
                     StateHasChanged();
                 }

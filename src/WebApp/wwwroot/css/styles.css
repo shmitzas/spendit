@@ -11636,6 +11636,14 @@ textarea.form-control-lg {
   background-color: #fb002e !important;
 }
 
+.swal2-top-right {
+  padding-top: 5rem !important;
+}
+
+.swal2-top-end {
+  padding-top: 5rem !important;
+}
+
 body {
   background-color: #d5e1ea;
 }

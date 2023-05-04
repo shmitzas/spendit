@@ -670,6 +670,8 @@ function showBudgetTransactionsModal(transactions, budgetName) {
                             </tr>
                           `;
     });
+    if (transactionList.length == 0) transactionList = "<tr><td colspan='12' class='text-center'>No transactions found</td></tr>";
+
     var swalOptions = {
         title: `Transactions in ${budgetName}`,
         html: `<div class='container' style='width:100%'>
@@ -717,6 +719,8 @@ function showInsightsModal(transactions, categoryName) {
                             </tr>
                           `;
     });
+    if (transactionList.length == 0) transactionList = "<tr><td colspan='12' class='text-center'>No transactions found</td></tr>";
+
     var swalOptions = {
         title: `Transactions in ${categoryName}`,
         html: `<div class='container' style='width:100%'>

@@ -55,6 +55,10 @@
                                                 </div>
                                             }
                                         }
+                                        else
+                                        {
+                                            <span>No transactions found</span>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -89,6 +93,10 @@
                                                     </div>
                                                 </div>
                                             }
+                                        }
+                                        else
+                                        {
+                                            <span>No goals found</span>
                                         }
                                     </div>
                                 </div>
@@ -181,7 +189,7 @@
 
             var transactions = await transactionsService.GetTransactionsByDate(_user.Id, startDate, endDate);
 
-            if(transactions.Count() > 0)
+            if (transactions.Count() > 0)
             {
                 foreach (var tr in transactions)
                 {
@@ -255,5 +263,11 @@
         {
             return await categoryIconsService.GetIconByName(String.Empty);
         }
+    }
+    private async Task TestAlerts()
+    {
+        await alertsService.InvokeCustomToastSuccess("Text");
+        await alertsService.InvokeCustomToastWarning("Text");
+        await alertsService.InvokeCustomToastError("Text");
     }
 }

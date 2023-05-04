@@ -1,4 +1,5 @@
 ﻿using CurrieTechnologies.Razor.SweetAlert2;
+
 namespace WebApp.Services
 {
     public class AlertsService
@@ -81,6 +82,45 @@ namespace WebApp.Services
                 CancelButtonText = "No"
             });
             return res.IsConfirmed;
+        }
+        public async Task InvokeCustomToastSuccess(string message)
+        {
+            await _alerts.FireAsync(new SweetAlertOptions
+            {
+                Toast = true,
+                Title = message,
+                Icon = SweetAlertIcon.Success,
+                Position = SweetAlertPosition.TopEnd,
+                ShowConfirmButton = false,
+                Timer = 3000,
+                TimerProgressBar = true
+            });
+        }
+        public async Task InvokeCustomToastWarning(string message)
+        {
+            await _alerts.FireAsync(new SweetAlertOptions
+            {
+                Toast = true,
+                Title = message,
+                Icon = SweetAlertIcon.Warning,
+                Position = SweetAlertPosition.TopEnd,
+                ShowConfirmButton = false,
+                Timer = 3000,
+                TimerProgressBar = true
+            });
+        }
+        public async Task InvokeCustomToastError(string message)
+        {
+            await _alerts.FireAsync(new SweetAlertOptions
+            {
+                Toast = true,
+                Title = message,
+                Icon = SweetAlertIcon.Error,
+                Position = SweetAlertPosition.TopEnd,
+                ShowConfirmButton = false,
+                Timer = 3000,
+                TimerProgressBar = true
+            });
         }
     }
 }

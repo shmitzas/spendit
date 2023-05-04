@@ -138,6 +138,12 @@
                                             </tr>
                                         }
                                     }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="12" class="text-center">No transactions found</td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
                         </div>
@@ -316,6 +322,7 @@
 
             if (await recurringTransactionsService.AddTransaction(transactionToAdd))
             {
+                alertsService.InvokeCustomToastSuccess("Transaction was added!");
                 await LoadTransactions();
                 StateHasChanged();
             }
@@ -350,6 +357,7 @@
                 {
                     if (await recurringTransactionsService.UpdateTransaction(transaction))
                     {
+                        alertsService.InvokeCustomToastSuccess("Transaction data was updated!");
                         await LoadTransactions();
                         StateHasChanged();
                     }
@@ -373,6 +381,7 @@
             {
                 if (await recurringTransactionsService.DeleteTransaction(_user.Id, transactionId))
                 {
+                    alertsService.InvokeCustomToastSuccess("Transaction was deleted!");
                     await LoadTransactions();
                     StateHasChanged();
                 }
