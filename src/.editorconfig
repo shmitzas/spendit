@@ -2,3 +2,6 @@
 
 # CS8603: Possible null reference return.
 dotnet_diagnostic.CS8603.severity = none
+
+# IDE0090: Use 'new(...)'
+dotnet_diagnostic.IDE0090.severity = none

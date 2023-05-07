@@ -5,6 +5,8 @@ using REST_API.Models.RecurringTransactions;
 using REST_API.Models.Transactions;
 using REST_API.Models.Users;
 using REST_API.Models.Goals;
+using REST_API.Models.Bills;
+using System.Text.Json;
 
 namespace REST_API.Data
 {
@@ -20,6 +22,7 @@ namespace REST_API.Data
         public virtual DbSet<RecurringTransaction> RecurringTransactions { get; set; }
         public virtual DbSet<Goal> Goals { get; set; }
         public virtual DbSet<Budget> Budgets { get; set; }
+        public virtual DbSet<BillToDb> Bills { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()
@@ -78,6 +81,18 @@ namespace REST_API.Data
 
             modelBuilder.Entity<Budget>()
                 .Property(g => g.UserId)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<BillToDb>()
+                .Property(b => b.Id)
+                .HasConversion(
+                    id => id.ToByteArray(),
+                    bytes => new Guid(bytes));
+
+            modelBuilder.Entity<BillToDb>()
+                .Property(b => b.UserId)
                 .HasConversion(
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));

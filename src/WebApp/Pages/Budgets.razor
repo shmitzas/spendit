@@ -44,11 +44,11 @@
                                 <div class="col-1 text-center">
                                     @if (budget.IsActive)
                                     {
-                                        <input @onclick="()=>SetInactive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
+                                        <input @onclick="()=>SetInactive(budget)" class="form-check-input" type="checkbox" value="" id="budgetActice" checked>
                                     }
                                     else
                                     {
-                                        <input @onclick="()=>SetActive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
+                                        <input @onclick="()=>SetActive(budget)" class="form-check-input" type="checkbox" value="" id="budgetActice">
                                     }
                                 </div>
                                 <div class="col-8">

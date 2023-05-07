@@ -1,4 +1,6 @@
 ﻿using CurrieTechnologies.Razor.SweetAlert2;
+using System;
+using WebApp.Models.Bills;
 
 namespace WebApp.Services
 {
@@ -69,6 +71,52 @@ namespace WebApp.Services
                 Icon = SweetAlertIcon.Warning,
                 ConfirmButtonText = "Ok",
             });
+        }
+        public async Task<bool> InvokeBillsReminder(List<BillReminder> bills)
+        {
+            var billsHtml = new List<string>();
+            if(bills.Count() > 0)
+            {
+                foreach(var bill in bills)
+                {
+                    
+                    billsHtml.Add(
+                        $@"
+                        <tr>
+                            <td class=""text-start"">{bill.Description}</td>
+                            <td>{bill.DueDate}</td>
+                            <td>{bill.DueIn}</td>
+                        </tr>
+                        ");
+                }
+            }
+            var res = await _alerts.FireAsync(new SweetAlertOptions
+            {
+                Title = "Upcoming bills",
+                Icon = SweetAlertIcon.Warning,
+                ConfirmButtonText = "Details",
+                Html = $@"
+                        <div class='container' style='width:100%'>
+                            <div class=""col-12 pt-2"">
+                                <table class=""table table-hover"">
+                                    <thead class=""border-bottom-1"">
+                                        <tr>
+                                            <th scope=""col"" class=""col-6 text-start"">Description</th>
+                                            <th scope=""col"" class=""col-3 text-center text-primary"">Due date</th>
+                                            <th scope=""col"" class=""col-3 text-center text-primary"">Due in</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {string.Join("", billsHtml)}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        ",
+                Width = "50%",
+                ShowCloseButton = true,
+            }); 
+            return res.IsConfirmed;
         }
         public async Task<bool> InvokeConfirmation()
         {

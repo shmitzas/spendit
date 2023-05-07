@@ -158,9 +158,8 @@ namespace WebApp.Services
                         return now.DayOfYear ==
                                new DateTime(now.Year,
                                             transaction.StartDate.Month,
-                                            Math.Min(transaction.StartDate.Day, DateTime.DaysInMonth(now.Year, transaction.StartDate.Month)))
-                                    .DayOfYear;
-
+                                            Math.Min(transaction.StartDate.Day,
+                                            DateTime.DaysInMonth(now.Year, transaction.StartDate.Month))).DayOfYear;
                     default:
                         return false;
                 }

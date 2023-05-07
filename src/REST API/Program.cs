@@ -6,6 +6,7 @@ using REST_API.Models.Transactions;
 using REST_API.Models.Goals;
 using REST_API.Models.RecurringTransactions;
 using REST_API.Models.Budgets;
+using REST_API.Models.Bills;
 
 namespace REST_API
 {
@@ -18,7 +19,7 @@ namespace REST_API
             //////////////////////////////////////////////
             //-     Enable/Disable Developer mode     -//
             ////////////////////////////////////////////
-            bool DevMode = true;
+            bool DevMode = false;
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
@@ -144,6 +145,15 @@ namespace REST_API
             foreach (Budget budget in Budgets)
             {
                 context.Budgets.Add(budget);
+            }
+
+            List<BillToDb> Bills = new List<BillToDb>
+            {
+                new BillToDb { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Description = "Automobilio remontas", Amount = 200m, Currency = "EUR", DueDate = DateTime.Now.AddMonths(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+            };
+            foreach (BillToDb bill in Bills)
+            {
+                context.Bills.Add(bill);
             }
 
             context.SaveChanges();

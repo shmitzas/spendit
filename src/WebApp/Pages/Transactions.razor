@@ -176,7 +176,7 @@
     private User _user;
     private bool _init = false;
     private string _orderByDate = "fa-sort-down";
-    private string _orderByAmount = "fa-sort-down";
+    private string _orderByAmount = "fa-sort-up";
     private string _filterArrow = "fa-chevron-down";
     private bool _showTime = false;
     private string _query;
@@ -473,7 +473,7 @@
     {
         if (!_showTime)
         {
-            _dateFormat = "yyyy-MM-dd HH:MM";
+            _dateFormat = "yyyy-MM-dd HH:mm";
             StateHasChanged();
         }
         else

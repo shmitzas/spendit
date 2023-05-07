@@ -48,7 +48,8 @@ function showAddTransactionModal(trCategories) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -58,7 +59,7 @@ function showAddTransactionModal(trCategories) {
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toISOString();
                 var category = document.getElementById("categories").value;
 
                 var transactionData = {
@@ -85,8 +86,9 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
     trBudgets.forEach((budget) => {
         budgetsList += `<option value="${budget.description}">${budget.description}</option>`;
     });
-    var trDateObj = new Date(trDate);
-    var trDateString = trDateObj.toISOString().substring(0, 16);
+
+    trDate = trDate.slice(0, 16);
+
     var swalOptions = {
         title: "Edit transaction",
         html: `<div class='container' style='width:100%'>
@@ -137,12 +139,13 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <label for='date'>Date</label>
-                        <input type='datetime-local' class='form-control' id='date' placeholder='Select date' value='${trDateString}'>
+                        <input type='datetime-local' class='form-control' id='date' placeholder='Select date' value='${trDate}'>
                     </div>
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -152,7 +155,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toISOString();
                 var category = document.getElementById("categories").value;
                 var budget = document.getElementById("budgets").value;
 
@@ -246,7 +249,8 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -256,8 +260,8 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("categoryy").value;
                 var frequency = document.getElementById("frequency").value;
 
@@ -289,11 +293,8 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
         frequencyList += `<option value="${frequency}">${frequency}</option>`;
     });
 
-    var trDateObj = new Date(trStartDate);
-    var trStartDateString = trDateObj.toISOString().substring(0, 10);
-
-    trDateObj = new Date(trEndDate);
-    var trEndDateString = trDateObj.toISOString().substring(0, 10);
+    trStartDate = trStartDate.slice(0, 16);
+    trEndDate = trEndDate.slice(0, 16);
 
     var swalOptions = {
         title: "Edit transaction",
@@ -336,11 +337,11 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                         <div class="row">
                             <div class="col-6 text-start">
                                 <label for='date'>Start date</label>
-                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDateString}>
+                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
                             <div class="col-6 text-start">
                                 <label for='date'>End date</label>
-                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDateString}>
+                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
                         </div>
                     </div>
@@ -358,7 +359,8 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -368,8 +370,8 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("ecategory").value;
                 var frequency = document.getElementById("frequency").value;
 
@@ -430,7 +432,8 @@ function showAddGoalModal(trCategories) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -439,7 +442,7 @@ function showAddGoalModal(trCategories) {
                 var description = document.getElementById("description").value;
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toISOString();
                 var category = document.getElementById("category").value;
 
                 var transactionData = {
@@ -463,18 +466,15 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
         categoriesList += `<option value="${category.name}">${category.name}</option>`;
     });
 
-    var trDateObj = new Date(trStartDate);
-    var trStartDateString = trDateObj.toISOString().substring(0, 10);
-
-    trDateObj = new Date(trEndDate);
-    var trEndDateString = trDateObj.toISOString().substring(0, 10);
+    var trStartDate = trStartDate.slice(0, 16);
+    var trEndDate = trEndDate.slice(0, 16);
 
     var swalOptions = {
         title: "Edit goal",
         html: `<div class='container' style='width:100%'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
-                        <textarea class='form-control' id='description' placeholder='Enter description' value=>${trDesc}</textarea>
+                        <textarea class='form-control' id='description' placeholder='Enter description'>${trDesc}</textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
@@ -511,18 +511,19 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                         <div class="row">
                             <div class="col-6 text-start">
                                 <label for='date'>Start date</label>
-                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDateString}>
+                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
                             <div class="col-6 text-start">
                                 <label for='date'>End date</label>
-                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDateString}>
+                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
                         </div>
                     </div>
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -532,8 +533,8 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                 var amount = document.getElementById("amount").value;
                 var currentAmount = document.getElementById("currentAmount").value;
                 var currency = document.getElementById("currency").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("category").value;
 
                 var transactionData = {
@@ -577,7 +578,8 @@ function showAddBudgetModal() {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -634,7 +636,8 @@ function showEditBudgetModal(trDesc, trAmount, trCurrentAmount, trCurrency) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -692,7 +695,8 @@ function showBudgetTransactionsModal(transactions, budgetName) {
                 </div>`,
         showCancelButton: false,
         showSaveButton: false,
-        width: "50%"
+        width: "50%",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -741,13 +745,225 @@ function showInsightsModal(transactions, categoryName) {
                 </div>`,
         showCancelButton: false,
         showSaveButton: false,
-        width: "50%"
+        width: "50%",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
         .then((result) => {
             if (result.isConfirmed) {
                 return null;
+            } else {
+                return null;
+            }
+        });
+}
+
+// --- Bills ---
+function showAddBillModal(trCategories) {
+    var categoriesList = "";
+    trCategories.forEach((category) => {
+        categoriesList += `<option value="${category.name}">${category.name}</option>`;
+    });
+
+    var swalOptions = {
+        title: "Add bill reminder",
+        html: `<div class='container' style='width:100%'>
+                    <div class='form-group mb-3 text-start'>
+                        <label for='description'>Description</label>
+                        <textarea class='form-control' id='description' placeholder='Enter description'></textarea>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class='row'>
+                            <div class='col-8 text-start'>
+                                <label for='amount'>Amount</label>
+                                <input type='number' class='form-control' id='amount' placeholder='Enter bill amount'>
+                            </div>
+                            <div class='col-4 text-start'>
+                                <label for='currency'>Currency</label>
+                                <input value='EUR' type='text' class='form-control' id='currency' disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class="row">
+                            <div class="col-6 text-start">
+                                <label for='dueDate'>Due date</label>
+                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date'>
+                            </div>
+                            <div class="col-6 text-start">
+                                <label for='categories'>Category</label>
+                                <select class='form-select' id='categories' aria-label='Category'>
+                                    ${categoriesList}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-5">
+                    <div class='form-group mb-3'>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start mb-3">Set reminders:</div>
+                            <div class="col-8 text-start">
+                                <label for='reminder1'>Reminder 1</label>
+                                <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date'>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-8 text-start">
+                                <label for='reminder2'>Reminder 2</label>
+                                <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date'>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-8 text-start">
+                                <label for='reminder3'>Reminder 3</label>
+                                <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date'>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
+    };
+
+    return Swal.fire(swalOptions)
+        .then((result) => {
+            if (result.isConfirmed) {
+                var description = document.getElementById("description").value;
+                var amount = document.getElementById("amount").value;
+                var currency = document.getElementById("currency").value;
+                var dueDate = new Date(document.getElementById("dueDate").value).toISOString();
+                var category = document.getElementById("categories").value;
+                var reminder1 = new Date(document.getElementById("reminder1").value).toISOString();
+                var reminder2 = new Date(document.getElementById("reminder2").value).toISOString();
+                var reminder3 = new Date(document.getElementById("reminder3").value).toISOString();
+
+                var reminders = [];
+                reminders.push(reminder1);
+                reminders.push(reminder2);
+                reminders.push(reminder3);
+
+                var transactionData = {
+                    description: description,
+                    amount: amount,
+                    currency: currency,
+                    dueDate: dueDate,
+                    reminders: JSON.stringify(reminders),
+                    category: category
+                };
+                return JSON.stringify(transactionData);
+            } else {
+                return null;
+            }
+        });
+}
+
+function showEditBillModal(trDesc, trAmount, trCurrency, trDueDate, trCurrentCategory, trCategories, trReminders) {
+    var categoriesList = "";
+    trCategories.forEach((category) => {
+        categoriesList += `<option value="${category.name}">${category.name}</option>`;
+    });
+
+    var reminders = [];
+    trReminders.forEach((reminder) => {
+        var reminder = reminder.slice(0, 16);
+        reminders.push(reminder);
+    });
+
+    var date = new Date(trDueDate);
+    trDueDate = date.toISOString().slice(0,16);
+
+    var swalOptions = {
+        title: "Add bill reminder",
+        html: `<div class='container' style='width:100%'>
+                    <div class='form-group mb-3 text-start'>
+                        <label for='description'>Description</label>
+                        <textarea class='form-control' id='description' placeholder='Enter description'>${trDesc}</textarea>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class='row'>
+                            <div class='col-8 text-start'>
+                                <label for='amount'>Amount</label>
+                                <input type='number' class='form-control' id='amount' placeholder='Enter bill amount' value=${trAmount}>
+                            </div>
+                            <div class='col-4 text-start'>
+                                <label for='currency'>Currency</label>
+                                <input value='EUR' type='text' class='form-control' id='currency' disabled value=${trCurrency}>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class="row">
+                            <div class="col-6 text-start">
+                                <label for='dueDate'>Due date</label>
+                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date' value=${trDueDate}>
+                            </div>
+                            <div class="col-6 text-start">
+                                <label for='categories'>Category</label>
+                                <select class='form-select' id='categories' aria-label='Category'>
+                                    <option selected>${trCurrentCategory}</option>
+                                    ${categoriesList}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-5">
+                    <div class='form-group mb-3'>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start mb-3">Set reminders:</div>
+                            <div class="col-8 text-start">
+                                <label for='reminder1'>Reminder 1</label>
+                                <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date' value=${reminders[0]}>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-8 text-start">
+                                <label for='reminder2'>Reminder 2</label>
+                                <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date' value=${reminders[1]}>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-8 text-start">
+                                <label for='reminder3'>Reminder 3</label>
+                                <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date' value=${reminders[2]}>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
+    };
+
+    return Swal.fire(swalOptions)
+        .then((result) => {
+            if (result.isConfirmed) {
+                var description = document.getElementById("description").value;
+                var amount = document.getElementById("amount").value;
+                var currency = document.getElementById("currency").value;
+                var dueDate = (document.getElementById("dueDate").value);
+                var category = document.getElementById("categories").value;
+                var reminder1 = (document.getElementById("reminder1").value);
+                var reminder2 = (document.getElementById("reminder2").value);
+                var reminder3 = (document.getElementById("reminder3").value);
+
+                var reminders = [];
+                reminders.push(reminder1);
+                reminders.push(reminder2);
+                reminders.push(reminder3);
+
+                var transactionData = {
+                    description: description,
+                    amount: amount,
+                    currency: currency,
+                    dueDate: dueDate,
+                    reminders: JSON.stringify(reminders),
+                    category: category
+                };
+                return JSON.stringify(transactionData);
             } else {
                 return null;
             }

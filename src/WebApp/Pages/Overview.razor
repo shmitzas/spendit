@@ -11,6 +11,8 @@
 @inject TransactionsService transactionsService
 @inject AuthenticationStateProvider authStateProvider
 @inject AlertsService alertsService
+@inject BillReminderService billReminderService
+@inject NavigationManager navManager
 @inject IJSRuntime JSRuntime
 @attribute [Authorize]
 
@@ -131,7 +133,7 @@
     private string _currentDay = DateTime.Now.Day.ToString();
     private string _currentMonthName = DateTime.Now.ToString("MMMM");
     private string _currentYear = DateTime.Now.Year.ToString();
-    private string _dateTimeFormat = "yyyy-MM-dd HH:MM";
+    private string _dateTimeFormat = "yyyy-MM-dd HH:mm";
 
     protected override async Task OnInitializedAsync()
     {
@@ -142,6 +144,17 @@
         await LoadCategories();
         await CalculateExpenses();
         _init = true;
+    }
+    protected override async Task OnParametersSetAsync()
+    {
+        var bills = await billReminderService.CycleBills(_user.Id);
+        if (bills.Count() > 0)
+        {
+            if(await alertsService.InvokeBillsReminder(bills))
+            {
+                navManager.NavigateTo("/bills", true);
+            }
+        }
     }
     private async Task<string> TransactionDescLenght(string input)
     {
@@ -263,11 +276,5 @@
         {
             return await categoryIconsService.GetIconByName(String.Empty);
         }
-    }
-    private async Task TestAlerts()
-    {
-        await alertsService.InvokeCustomToastSuccess("Text");
-        await alertsService.InvokeCustomToastWarning("Text");
-        await alertsService.InvokeCustomToastError("Text");
     }
 }
