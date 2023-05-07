@@ -76,8 +76,8 @@ their financial well-being.
 - [x] Budget tracking
 - [x] Reports and insights
 ### IV Iteration
-- [ ] Bill reminders
-- [ ] Alerts and notifications
+- [x] Bill reminders
+- [x] Alerts and notifications
 - [ ] Mobile compatibility
 ## Technologies Used
 - Frontend and Backend:
