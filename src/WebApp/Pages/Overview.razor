@@ -20,27 +20,27 @@
 <AuthorizeView>
     <Authorized>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
                 <h3>Overview</h3>
                 <div class="row justify-content-center bg-body pb-5">
-                    <div class="col-md-11">
+                    <div class="col-11">
                         @if (_init)
                         {
                             <div class="row pt-5 pb-5">
                                 <h5>Recent transactions</h5>
-                                <div class="col-md-12 mt-3">
-                                    <div class="row">
+                                <div class="col-12 mt-3">
+                                    <div class="row justify-content-center">
                                         @if (_recentTransactions != null && _recentTransactions.Count() > 0)
                                         {
                                             foreach (var tr in _recentTransactions)
                                             {
-                                                <div class="col-md-3 card mb-3 border-0">
-                                                    <div class="row g-0">
-                                                        <div class="col-md-2 text-end pt-3">
+                                                <div class="col-lg-3 col-md-4 col-sm-6 col-12 card mb-3 border-0">
+                                                    <div class="row g-0 justify-content-center">
+                                                        <div class="col-4 text-end pt-3">
                                                             <i class="fa-solid fa-money-bill-transfer fa-2x"></i>
                                                         </div>
-                                                        <div class="col-md-10">
-                                                            <div class="card-body">
+                                                        <div class="col-8">
+                                                            <div class="card-body text-start">
                                                                 <p class="card-title pb-0 mb-0">@TransactionDescLenght(tr.Description).Result</p>
                                                                 @if (tr.Type == "Expense")
                                                                 {
@@ -67,7 +67,7 @@
                             <div class="row pb-5">
                                 <h5>Upcoming goals</h5>
                                 <div class="col-md-12 mt-3">
-                                    <div class="row">
+                                    <div class="row justify-content-center">
                                         @if (_goals != null && _goals.Count() > 0 && _categories != null && _categories.Count() > 0)
                                         {
                                             @foreach (var goal in _goals)
@@ -75,8 +75,8 @@
                                                 string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
                                                 string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
 
-                                                <div class="col-4">
-                                                    <div class="row">
+                                                <div class="col-lg-4 col-md-6 col-12 mb-3 mt-3">
+                                                    <div class="row justify-content-center align-items-center">
                                                         <div class="col-2 text-center">
                                                             <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
                                                         </div>
@@ -150,7 +150,7 @@
         var bills = await billReminderService.CycleBills(_user.Id);
         if (bills.Count() > 0)
         {
-            if(await alertsService.InvokeBillsReminder(bills))
+            if (await alertsService.InvokeBillsReminder(bills))
             {
                 navManager.NavigateTo("/bills", true);
             }

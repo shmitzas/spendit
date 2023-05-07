@@ -78,7 +78,7 @@ their financial well-being.
 ### IV Iteration
 - [x] Bill reminders
 - [x] Alerts and notifications
-- [ ] Mobile compatibility
+- [x] Mobile compatibility
 ## Technologies Used
 - Frontend and Backend:
   - Blazor Server Web Application with SignalR
@@ -98,6 +98,7 @@ their financial well-being.
 - Decided to develop both, Website and REST API using .NET 7 insdead of .NET 6 because of package dependency incompatibility issues
 - For API integrated EntityFramework instead of making SQL calls to the database for ease of use and safety reasons (plus this approach allows to setup in-memory database for easier development of API controllers)
 - Removed "Multi-currency support" from the plan
+- Added "Bills" to database model
 
 ## Notes
 - 'main' branch is meant to be treated as a "production" branch

@@ -11644,6 +11644,52 @@ textarea.form-control-lg {
   padding-top: 5rem !important;
 }
 
+@media (min-width: 1400px) {
+  .swal2-popup {
+    width: 30% !important;
+  }
+}
+@media (min-width: 1200px) and (max-width: 1399px) {
+  .swal2-popup {
+    width: 40% !important;
+  }
+}
+@media (min-width: 992px) and (max-width: 1199px) {
+  .swal2-popup {
+    width: 50% !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 991px) {
+  .swal2-popup {
+    width: 65% !important;
+  }
+}
+@media (min-width: 576px) and (max-width: 767px) {
+  .swal2-popup {
+    width: 75% !important;
+  }
+}
+@media (min-width: 360px) and (max-width: 575px) {
+  .swal2-popup {
+    width: 96% !important;
+  }
+}
+
+.swal2-toast {
+  width: 20rem !important;
+}
+
+@media (min-width: 768px) {
+  .custom-filer-divider {
+    max-width: 5px !important;
+  }
+}
+@media (max-width: 576px) {
+  .custom-filer-divider {
+    max-width: 200px !important;
+  }
+}
+
 body {
   background-color: #d5e1ea;
 }
@@ -11738,4 +11784,8 @@ a {
   border-left: 6px solid #fb002e !important;
   border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
   overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.fa-15x {
+  font-size: 1.5rem !important;
 }

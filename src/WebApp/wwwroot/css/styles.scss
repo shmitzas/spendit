@@ -13,47 +13,103 @@ $teal: #20c997;
 $cyan: #0dcaf0;
 $white: #fff;
 
+$xxl-screen: 1400px;
+$xl-screen: 1200px;
+$lg-screen: 992px;
+$md-screen: 768px;
+$sm-screen: 576px;
+$xs-screen: 360px;
+
 @import "../bootstrap/scss/bootstrap.scss";
 
 .swal2-styled.swal2-confirm {
     background-color: $green !important;
     border-radius: 50rem !important;
 }
+
 .swal2-styled.swal2-cancel {
     background-color: $red !important;
     border-radius: 50rem !important;
 }
+
 .swal2-popup {
     border-radius: 1rem !important;
 }
+
 .swal2-icon.swal2-warning {
     color: $yellow !important;
     border-color: $yellow !important;
 }
+
 .swal2-icon.swal2-error {
     color: $red !important;
     border-color: $red !important;
 }
+
 .swal2-icon.swal2-error [class^=swal2-x-mark-line] {
     background-color: $red !important;
 }
-.swal2-top-right{
+
+.swal2-top-right {
     padding-top: 5rem !important;
 }
+
 .swal2-top-end {
     padding-top: 5rem !important;
 }
 
+.swal2-popup {
+    @media (min-width: $xxl-screen) {
+        width: 30% !important;
+    }
+
+    @media (min-width: $xl-screen) and (max-width: $xxl-screen - 1px) {
+        width: 40% !important;
+    }
+
+    @media (min-width: $lg-screen) and (max-width: $xl-screen - 1px) {
+        width: 50% !important;
+    }
+
+    @media (min-width: $md-screen) and (max-width: $lg-screen - 1px) {
+        width: 65% !important;
+    }
+
+    @media (min-width: $sm-screen) and (max-width: $md-screen - 1px) {
+        width: 75% !important;
+    }
+
+    @media (min-width: $xs-screen) and (max-width: $sm-screen - 1px) {
+        width: 96% !important;
+    }
+}
+
+.swal2-toast{
+    width: 20rem !important;
+}
+
+.custom-filer-divider {
+    @media (min-width: $md-screen) {
+        max-width: 5px !important;
+    }
+
+    @media (max-width: $sm-screen) {
+        max-width: 200px !important;
+    }
+}
 
 body {
     background-color: #d5e1ea;
 }
+
 .bg-body {
     border-radius: 0.5rem !important;
 }
+
 .bg-light {
     border-radius: 0.5rem !important;
 }
+
 a {
     text-decoration: none !important;
 }
@@ -145,4 +201,8 @@ a {
     border-left: 6px solid $danger !important;
     border-radius: 15px !important; /* sets a curved border to the bottom-left and bottom-right corners */
     overflow: hidden !important; /* clips the content that overflows the curved border */
+}
+
+.fa-15x{
+    font-size: 1.5rem !important;
 }

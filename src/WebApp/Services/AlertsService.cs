@@ -93,17 +93,17 @@ namespace WebApp.Services
             var res = await _alerts.FireAsync(new SweetAlertOptions
             {
                 Title = "Upcoming bills",
-                Icon = SweetAlertIcon.Warning,
+                Icon = SweetAlertIcon.Info,
                 ConfirmButtonText = "Details",
                 Html = $@"
-                        <div class='container' style='width:100%'>
-                            <div class=""col-12 pt-2"">
+                        <div class='container'>
+                            <div class=""pt-2"">
                                 <table class=""table table-hover"">
                                     <thead class=""border-bottom-1"">
                                         <tr>
-                                            <th scope=""col"" class=""col-6 text-start"">Description</th>
-                                            <th scope=""col"" class=""col-3 text-center text-primary"">Due date</th>
-                                            <th scope=""col"" class=""col-3 text-center text-primary"">Due in</th>
+                                            <th scope=""col"" class=""col-md-6 col-4 text-start"">Description</th>
+                                            <th scope=""col"" class=""col-md-3 col-4 text-center text-primary"">Due date</th>
+                                            <th scope=""col"" class=""col-md-3 col-4 text-center text-primary"">Due in</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -113,7 +113,7 @@ namespace WebApp.Services
                             </div>
                         </div>
                         ",
-                Width = "50%",
+                Width = "col-xl-4 col-lg-6 col-md-8 col-12",
                 ShowCloseButton = true,
             }); 
             return res.IsConfirmed;
