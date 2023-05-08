@@ -102,10 +102,9 @@
                                     <tr>
                                         <th style="min-width: 80px" scope="col" class="col-1 text-center">Category</th>
                                         <th style="min-width: 150px" scope="col" class="col-2 text-center">Description</th>
-                                        <th style="min-width: 80px" scope="col" class="col-1 text-center">Type</th>
                                         <th style="min-width: 150px" scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByStartDate" role="button">Start date <i class="fa-solid @_orderByStartDate"></i></span></th>
                                         <th style="min-width: 150px" scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByEndDate" role="button">End date <i class="fa-solid @_orderByEndDate"></i></span></th>
-                                        <th style="min-width: 150px" scope="col" class="col-1 ps-0 pe-0 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                        <th style="min-width: 150px" scope="col" class="col-2 ps-0 pe-0 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
                                         <th style="min-width: 80px" scope="col" class="col-2 text-center">Frequency</th>
                                         <th style="min-width: 100px" scope="col" class="col-1 text-center">Actions</th>
                                     </tr>
@@ -120,7 +119,6 @@
                                             <tr class="align-middle">
                                                 <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button></td>
                                                 <td>@TransactionDescLenght(tr.Description).Result</td>
-                                                <td class="text-center">@tr.Type</td>
                                                 <td class="text-center">@tr.StartDate.ToString(@_dateFormat)</td>
                                                 <td class="text-center">@tr.EndDate.ToString(@_dateFormat)</td>
                                                 @if (tr.Type == "Expense")
