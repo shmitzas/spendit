@@ -38,13 +38,13 @@
                             string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
                             string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
 
-                            <div class="row bg-body  shadow-sm pt-3 pb-3 mb-3">
+                            <div class="row bg-body shadow-sm pt-3 pb-3 mb-3">
                                 <div class="col-12">
                                     <div class="row justify-content-center align-items-center">
                                         <div class="col-lg-1 col-md-2 col-sm-2 col-12 text-sm-center text-start">
                                             <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
                                         </div>
-                                        <div class="col-lg-9 col-md-8 col-sm-7 col-11">
+                                        <div class="col-lg-10 col-md-8 col-sm-7 col-11">
                                             <div class="row align-items-center">
                                                 <div class="col-md-6 col-5 ps-0">
                                                     @GoalDescLenght(goal.Description).Result
