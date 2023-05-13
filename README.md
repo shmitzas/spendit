@@ -90,8 +90,14 @@ their financial well-being.
 - Database:
   - MySQL
 ## Launch Instructions
-> **TBA**
+1. Clone repo or download as archive
+2. Open the solution in Visual Studio
+3. In "REST API" project open Program.cs
+4. Set `bool DevMode` to `true` to enable pre-filled in-memory database (or use `false` to use external MySQL database)
+5. In "Configure Startup Projects" make sure both projects are started at the same time
+6. Run the project in debugger
 
+**If you use external database (DevMode is false) - set connection string in appsettings.json as per appsettings.json.example!**
 ## Changes Made During Development
 - Changed from using Razor pages for frontend and Blazor for backend to Blazor integrated with SignalR for server-side rendering
 - Implemented User authorization using AspNetCore Authorization instead of Auth0 or oAuth
