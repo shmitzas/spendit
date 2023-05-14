@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using REST_API.Data;
 using REST_API.Models.Users;
 
@@ -98,19 +99,28 @@ namespace REST_API.Controllers
         {
             try
             {
-                if (userInfo.Password == null || userInfo.Email == null || userInfo.Settings == null)
+                try
                 {
-                    return BadRequest();
+                    var emailExists = await _DbContext.Users.Where(u => u.Email.ToLower() == userInfo.Email.ToLower()).SingleAsync();
+                    if (emailExists.Id != userInfo.Id)
+                    {
+                        return BadRequest();
+                    }
                 }
-                var emailExists = await _DbContext.Users.AnyAsync(u => u.Email.ToLower() == userInfo.Email.ToLower());
-                if (emailExists)
-                {
-                    return BadRequest();
-                }
+                catch { }
                 var user = await _DbContext.Users.Where(u => u.Id == userInfo.Id).SingleAsync();
-                user.Password = userInfo.Password;
-                user.Email = userInfo.Email;
-                user.Settings = userInfo.Settings;
+                if (!string.IsNullOrEmpty(userInfo.Password))
+                {
+                    user.Password = userInfo.Password;
+                }
+                if (!string.IsNullOrEmpty(userInfo.Email))
+                {
+                    user.Email = userInfo.Email;
+                }
+                if (!string.IsNullOrEmpty(userInfo.Settings))
+                {
+                    user.Settings = userInfo.Settings;
+                }
 
                 _DbContext.Users.Update(user);
                 await _DbContext.SaveChangesAsync();

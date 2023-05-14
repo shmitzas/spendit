@@ -111,10 +111,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\REST API\REST API.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\images\" />
   </ItemGroup>
 
@@ -129,8 +125,9 @@
     <PackageReference Include="CurrieTechnologies.Razor.SweetAlert2" Version="5.5.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.5" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.9.0" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.9.0" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.10.0" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.10.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

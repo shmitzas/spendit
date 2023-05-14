@@ -26,14 +26,14 @@ function showAddTransactionModal(trCategories) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense'>
                                     <option value='Expense' selected>Expense</option>
                                     <option value='Income'>Income</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='categories'>Category</label>
                                 <select class='form-select' id='categories' aria-label='Category'>
                                     ${categoriesList}
@@ -111,14 +111,14 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense''>
                                     <option selected>${trType}</option>
                                     <option value='${trOtherType}'>${trOtherType}</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='categories' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
@@ -129,7 +129,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-10 text-start">
+                            <div class="col-12 text-start">
                                 <label for='budgets'>Budget</label>
                                 <select class='form-select' id='budgets' aria-label='Budget'>
                                     <option selected>${trCurrentBudget}</option>
@@ -210,14 +210,14 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense'>
                                     <option selected>Expense</option>
                                     <option value='Income'>Income</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='categoryy' aria-label='Category'>
                                     ${categoriesList}
@@ -227,11 +227,11 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
                                 <input type='date' class='form-control' id='startDate' placeholder='Select date'>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
                                 <input type='date' class='form-control' id='endDate' placeholder='Select date'>
                             </div>
@@ -320,14 +320,14 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense''>
                                     <option selected>${trType}</option>
                                     <option value='${trOtherType}'>${trOtherType}</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='ecategory' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
@@ -338,11 +338,11 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
                                 <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
                                 <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
@@ -496,11 +496,11 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='currentAmount'>Current amount</label>
                                 <input type='number' class='form-control' id='currentAmount' placeholder='Enter current goal amount' value='${trCurrentAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -515,11 +515,11 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
                                 <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
                                 <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
@@ -629,11 +629,11 @@ function showEditBudgetModal(trDesc, trAmount, trCurrentAmount, trCurrency) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='currentAmount'>Current amount</label>
                                 <input type='number' class='form-control' id='currentAmount' placeholder='Enter current budget amount' value='${trCurrentAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -791,15 +791,15 @@ function showAddBillModal(trCategories) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-6 text-start">
-                                <label for='dueDate'>Due date</label>
-                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date'>
-                            </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='categories'>Category</label>
                                 <select class='form-select' id='categories' aria-label='Category'>
                                     ${categoriesList}
                                 </select>
+                            </div>
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
+                                <label for='dueDate'>Due date</label>
+                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date'>
                             </div>
                         </div>
                     </div>
@@ -807,19 +807,19 @@ function showAddBillModal(trCategories) {
                     <div class='form-group mb-3'>
                         <div class="row mb-3">
                             <div class="col-12 text-start mb-3">Set reminders:</div>
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder1'>Reminder 1</label>
                                 <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date'>
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder2'>Reminder 2</label>
                                 <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date'>
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder3'>Reminder 3</label>
                                 <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date'>
                             </div>
@@ -900,36 +900,36 @@ function showEditBillModal(trDesc, trAmount, trCurrency, trDueDate, trCurrentCat
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-6 text-start">
-                                <label for='dueDate'>Due date</label>
-                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date' value=${trDueDate}>
+                            <div class="col-sm-6 col-12 text-start">
+                                    <label for='categories'>Category</label>
+                                    <select class='form-select' id='categories' aria-label='Category'>
+                                        <option selected>${trCurrentCategory}</option>
+                                        ${categoriesList}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
+                                    <label for='dueDate'>Due date</label>
+                                    <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date' value=${trDueDate}>
+                                </div>
                             </div>
-                            <div class="col-6 text-start">
-                                <label for='categories'>Category</label>
-                                <select class='form-select' id='categories' aria-label='Category'>
-                                    <option selected>${trCurrentCategory}</option>
-                                    ${categoriesList}
-                                </select>
-                            </div>
-                        </div>
                     </div>
                     <hr class="mt-5">
                     <div class='form-group mb-3'>
                         <div class="row mb-3">
                             <div class="col-12 text-start mb-3">Set reminders:</div>
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder1'>Reminder 1</label>
                                 <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date' value=${reminders[0]}>
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder2'>Reminder 2</label>
                                 <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date' value=${reminders[1]}>
                             </div>
                         </div>
                         <div class="row mb-3">
-                            <div class="col-8 text-start">
+                            <div class="col-12 text-start">
                                 <label for='reminder3'>Reminder 3</label>
                                 <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date' value=${reminders[2]}>
                             </div>

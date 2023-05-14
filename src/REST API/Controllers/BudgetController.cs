@@ -115,13 +115,14 @@ namespace REST_API.Controllers
             try
             {
                 var budget = await _DbContext.Budgets.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
-                _DbContext.Remove(budget);
+                
                 var transactions = await _DbContext.Transactions.Where(t => t.BudgetId == id).ToListAsync();
                 foreach (var transaction in transactions)
                 {
                     transaction.BudgetId = Guid.Empty;
                     _DbContext.Transactions.Update(transaction);
                 }
+                _DbContext.Remove(budget);
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
