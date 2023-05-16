@@ -210,7 +210,6 @@
     }
     private async Task CalculateInsights()
     {
-
         await LoadTransactions();
         _budgetLimit = await GetBudgetLimit();
         _budgetUsed = await GetBudgetUsed();

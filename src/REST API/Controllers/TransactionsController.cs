@@ -234,7 +234,6 @@ namespace REST_API.Controllers
                 }
                 
                 _DbContext.Remove(transaction);
-
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }

@@ -86,10 +86,8 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
     trBudgets.forEach((budget) => {
         budgetsList += `<option value="${budget.description}">${budget.description}</option>`;
     });
-
     var date = new Date(trDate);
     trDate = date.toISOString().slice(0, 16);
-
     var swalOptions = {
         title: "Edit transaction",
         html: `<div class='container'>

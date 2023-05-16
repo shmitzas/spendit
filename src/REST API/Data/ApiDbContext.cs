@@ -84,7 +84,6 @@ namespace REST_API.Data
                 .HasConversion(
                     id => id.ToByteArray(),
                     bytes => new Guid(bytes));
-
             modelBuilder.Entity<BillToDb>()
                 .Property(b => b.Id)
                 .HasConversion(

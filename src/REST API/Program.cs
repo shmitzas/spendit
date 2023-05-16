@@ -162,7 +162,6 @@ namespace REST_API
             {
                 context.Bills.Add(bill);
             }
-
             context.SaveChanges();
         }
     }
