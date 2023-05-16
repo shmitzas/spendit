@@ -41,8 +41,7 @@ CREATE TABLE spendit.Transactions (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (UserId) REFERENCES Users(Id),
-    FOREIGN KEY (CategoryId) REFERENCES Categories(Id),
-    FOREIGN KEY (BudgetId) REFERENCES Budgets(Id)
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
 );
 
 CREATE TABLE spendit.RecurringTransactions (
@@ -94,24 +93,8 @@ CREATE TABLE spendit.Bills (
     FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
 );
 
-CREATE TABLE spendit.Bills (
-    Id BINARY(16) PRIMARY KEY UNIQUE,
-    UserId BINARY(16) NOT NULL,
-    CategoryId INT NOT NULL,
-    Description VARCHAR(255) NOT NULL,
-    Amount DECIMAL(10, 2) NOT NULL,
-    Currency VARCHAR(3) NOT NULL,
-    DueDate TIMESTAMP NOT NULL,
-    Reminders VARCHAR(255),
-    IsPaid TINYINT(1) NOT NULL DEFAULT 0,
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id),
-    FOREIGN KEY (CategoryId) REFERENCES categories(Id)
-);
-
 DROP USER IF EXISTS 'api';
-CREATE USER 'api' IDENTIFIED BY 'APIpass123';
+CREATE USER 'api' IDENTIFIED BY '<api_password>';
 
 GRANT ALL ON spendit.* TO 'api';
 

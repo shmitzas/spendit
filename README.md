@@ -42,13 +42,11 @@ their financial well-being.
    -  A system to set alerts and notifications for budget limits, unusual spending, and other financial events.
 8. Mobile compatibility:
    -  A mobile-friendly interface that allows users to access the web application and manage their budget from their mobile devices.
-9. Multi-currency support:
-   -  A system to support multiple currencies for users who travel or transact in different currencies.
-10. User account management:
+9.  User account management:
     - A system to allow users to manage their account details, such as password, email, and personal information.
-11. Goal setting:
+10. Goal setting:
     - A system to set and track financial goals, such as saving for a down payment on a house or paying off debt.
-12. Bill reminders:
+11. Bill reminders:
     - Users should be able to set reminders for upcoming bills, so that they can keep track of when payments are due and avoid late fees.
 
 ## Non-functional Requirements
@@ -80,31 +78,38 @@ their financial well-being.
 - [x] Alerts and notifications
 - [x] Mobile compatibility
 ## Technologies Used
-- Frontend and Backend:
-  - Blazor Server Web Application with SignalR
+- Frontend
+  - HTML
+  - SCSS
   - Bootstrap v5.3
+  - SweetAlert2
+  - JavaScript
+- Backend:
+  - Blazor Server Web Application with SignalR
 - REST API:
   - Blazor Server Web API
+  - Entity Framework
 - ASP.NET version:
-  - .NET 7.0 framework
+  - .NET 7.0
 - Database:
-  - MySQL
+  - MariaDB
 ## Launch Instructions
 1. Clone repo or download as archive
 2. Open the solution in Visual Studio
 3. In "REST API" project open Program.cs
-4. Set `bool DevMode` to `true` to enable pre-filled in-memory database (or use `false` to use external MySQL database)
+4. Set `bool DevMode` to `true` to enable pre-filled in-memory database (or use `false` to use external MariaDB database)
 5. In "Configure Startup Projects" make sure both projects are started at the same time
 6. Run the project in debugger
 
 **If you use external database (DevMode is false) - set connection string in appsettings.json as per appsettings.json.example!**
 ## Changes Made During Development
 - Changed from using Razor pages for frontend and Blazor for backend to Blazor integrated with SignalR for server-side rendering
-- Implemented User authorization using AspNetCore Authorization instead of Auth0 or oAuth
+- Implemented User authorization using AspNetCore Authorization instead of Auth0 or oAuth for easier authentication processing
 - Decided to develop both, Website and REST API using .NET 7 insdead of .NET 6 because of package dependency incompatibility issues
 - For API integrated EntityFramework instead of making SQL calls to the database for ease of use and safety reasons (plus this approach allows to setup in-memory database for easier development of API controllers)
 - Removed "Multi-currency support" from the plan
 - Added "Bills" to database model
+- Changed database from MySQL to MariaDB due to MySQL .NET connector being extremely unstable when running in other environments other than Windows OS
 
 ## Notes
 - 'main' branch is meant to be treated as a "production" branch
