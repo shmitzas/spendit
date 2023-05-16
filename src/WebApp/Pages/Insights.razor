@@ -26,23 +26,26 @@
             <div class="col-md-12">
                 <h3>Report and insights</h3>
                 <div class="row justify-content-center bg-body mb-3 pt-5 pb-5">
-                    <div class="col-md-11">
+                    <div class="col-11 ps-2 pe-2">
                         <div class="row mb-5">
-                            <div class="col">
+                            <div class="col-sm-5 col-12">
                                 @{
                                     var startMonth = new DateTime(_selectedDate.Year, _selectedDate.Month, 1);
                                     var firstDay = startMonth.Day;
                                     var lastDay = startMonth.AddMonths(1).AddDays(-1).Day;
-                                
-                                    <h4><strong>@firstDay-@lastDay</strong> @_selectedDate.ToString("MMMM") @_selectedDate.Year</h4>
-                                    <div class="col-4 mt-3">
-                                        <label for="date">Select a month</label>
-                                        <input @onchange="DateChanged" type="month" class="form-control" id="date" placeholder="Select month">
+                                    <div class="row">
+                                        <h4><strong>@firstDay-@lastDay</strong> @_selectedDate.ToString("MMMM") @_selectedDate.Year</h4>
+                                    </div>
+                                    <div class="row justify-content-sm-start justify-content-center">
+                                        <div class="col-xxl-4 col-xl-5 col-lg-6 col-md-8 col-sm-10 col-8 mt-3 text-sm-start text-center">
+                                            <label for="date">Select a month</label>
+                                            <input @onchange="DateChanged" type="month" class="form-control text-center" id="date" placeholder="Select month">
+                                        </div>
                                     </div>
                                 }
                             </div>
-                            <div class="col">
-                                <div class="row align-items-center justify-content-end">
+                            <div class="col-sm-7 col-12">
+                                <div class="row align-items-center justify-content-sm-end justify-content-center mt-sm-0 mt-3">
                                     <div class="col-auto">
                                         <span class="d-inline-block">Use budget limit</span>
                                     </div>
@@ -93,10 +96,17 @@
                                         var categoryProgress = CalculateProgress(insight.amount, categoryLimit).Result;
                                         <div class="col-12 shadow-sm border-0 @cardColor mb-3">
                                             <div class="row align-items-center pt-3 pb-3">
-                                                <div class="col-3">
-                                                    <h5 class="m-auto"><i class="@categoryIcon pe-2 text-info"></i>@insight.categoryName</h5>
+                                                <div class="col-lg-3 col-sm-1 col-2">
+                                                    <div class="row">
+                                                        <div class="col-2">
+                                                            <i class="@categoryIcon text-info fa-15x"></i>
+                                                        </div>
+                                                        <div class="col-lg-10 d-lg-inline-block d-none">
+                                                            <h5>@insight.categoryName</h5>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                                <div class="col-7">
+                                                <div class="col-lg-7 col-md-9 col-sm-8 col-6">
                                                     <div class="row align-items-center">
                                                         <div class="col-6 text-start">
                                                             0
@@ -107,7 +117,7 @@
                                                         <div class="progress-bar rounded-pill" style="width: @categoryProgress%">@insight.amount</div>
                                                     </div>
                                                 </div>
-                                                <div class="col-2 text-center">
+                                                <div class="col-md-2 col-sm-3 col-4 text-center">
                                                     <button @onclick="()=>InvokeInsightDetails(insight.categoryId)" class="btn btn-primary rounded-pill">Details</button>
                                                 </div>
                                             </div>
@@ -204,6 +214,7 @@
         _budgetLimit = await GetBudgetLimit();
         _budgetUsed = await GetBudgetUsed();
         _insights = await SpentAmountPerCategory();
+        _init = true;
     }
     private async Task<decimal> GetBudgetLimit()
     {
@@ -333,6 +344,7 @@
     private async Task SetBaseForCalculations()
     {
         _incomeAsBase = !_incomeAsBase;
+        _init = false;
         await CalculateInsights();
         StateHasChanged();
     }
@@ -389,6 +401,7 @@
     }
     private async Task DateChanged(ChangeEventArgs e)
     {
+        _init = false;
         _selectedDate = DateTime.Parse(e.Value.ToString());
         await CalculateInsights();
         StateHasChanged();

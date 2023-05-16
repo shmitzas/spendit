@@ -40,45 +40,49 @@
                             var progress = CalculateProgress(budget.Amount, budget.CurrentAmount).Result;
                             var isCheckedText = budget.IsActive ? "checked" : "";
                             var progressColor = CalculateProgressColor(progress).Result;
-                            <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
-                                <div class="col-1 text-center">
-                                    @if (budget.IsActive)
-                                    {
-                                        <input @onclick="()=>SetInactive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault" checked>
-                                    }
-                                    else
-                                    {
-                                        <input @onclick="()=>SetActive(budget)" class="form-check-input" type="checkbox" value="" id="flexCheckDefault">
-                                    }
-                                </div>
-                                <div class="col-8">
-                                    <div class="row align-items-center">
-                                        <div class="col-10 ps-0">
-                                            @BudgetDescLenght(budget.Description).Result
+                            <div class="row justify-content-center">
+                                <div class="col-12">
+                                    <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
+                                        <div class="col-sm-1 col-2 text-center">
+                                            @if (budget.IsActive)
+                                            {
+                                                <input @onclick="()=>SetInactive(budget)" class="form-check-input" type="checkbox" value="" id="budgetActice" checked>
+                                            }
+                                            else
+                                            {
+                                                <input @onclick="()=>SetActive(budget)" class="form-check-input" type="checkbox" value="" id="budgetActice">
+                                            }
                                         </div>
-                                        <div class="col-2 text-end pe-0">@budget.Amount @budget.Currency</div>
-                                    </div>
-                                    <div class="row align-items-center justify-content-between">
-                                        <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="1000">
-                                             <div class="progress-bar @progressColor rounded-pill" style="width: @progress%">@budget.CurrentAmount</div>
+                                        <div class="col-lg-8 col-md-7 col-sm-10 col-9">
+                                            <div class="row align-items-center">
+                                                <div class="col-xl-10 col-8 ps-0">
+                                                    @BudgetDescLenght(budget.Description).Result
+                                                </div>
+                                                <div class="col-xl-2 col-4 text-end pe-0">@budget.Amount @budget.Currency</div>
+                                            </div>
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="1000">
+                                                    <div class="progress-bar @progressColor rounded-pill" style="width: @progress%">@budget.CurrentAmount</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2 col-6 mt-md-0 text-md-center text-start">
+                                            <button @onclick="()=>InvokeBudgetTransactions(budget.Id)" class="btn btn-primary rounded-pill">Transactions</button>
+                                        </div>
+                                        <div class="col-lg 1 col-md-2 col-6 mt-md-0 mt-3 text-md-center text-end">
+                                            <button @onclick="()=>EditBudget(budget.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
+                                            <button @onclick="()=>DeleteBudget(budget.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="col-2 text-center">
-                                    <button @onclick="()=>InvokeBudgetTransactions(budget.Id)" class="btn btn-primary rounded-pill">Transactions</button>
-                                </div>
-                                <div class="col-1 text-center">
-                                    <button @onclick="()=>EditBudget(budget.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
-                                    <button @onclick="()=>DeleteBudget(budget.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
                                 </div>
                             </div>
                         }
                     }
                     else
                     {
-                        <div class="row justify-content-center mt-5">
-                            <div class="col-10">
-                                <span class="">There are no budgets</span>
+                        <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
+                            <div class="col-12 text-center">
+                                <span>No budgets found</span>
                             </div>
                         </div>
                     }
@@ -127,6 +131,7 @@
     {
         if (await budgetsService.SetActiveBudget(budget))
         {
+            alertsService.InvokeCustomToastSuccess($"Budget \"{budget.Description}\" was activated!");
             await LoadBudgets();
             StateHasChanged();
         }
@@ -135,6 +140,7 @@
     {
         if (await budgetsService.SetInactiveBudget(budget))
         {
+            alertsService.InvokeCustomToastSuccess($"Budget \"{budget.Description}\" was deactivated!");
             await LoadBudgets();
             StateHasChanged();
         }
@@ -165,6 +171,7 @@
 
             if (await budgetsService.AddBudget(budgetToAdd))
             {
+                alertsService.InvokeCustomToastSuccess($"Budget \"{budgetToAdd.Description}\" was added!");
                 await LoadBudgets();
                 StateHasChanged();
             }
@@ -192,6 +199,7 @@
                 {
                     if (await budgetsService.UpdateBudget(budgetToUpdate))
                     {
+                        alertsService.InvokeCustomToastSuccess($"Budget data was updated!");
                         await LoadBudgets();
                         StateHasChanged();
                     }
@@ -215,6 +223,8 @@
             {
                 if (await budgetsService.DeleteBudget(_user.Id, budgetId))
                 {
+                    var budgetName = _budgets.Where(b => b.Id == budgetId).Single().Description;
+                    alertsService.InvokeCustomToastSuccess($"Budget \"{budgetName}\" was deleted!");
                     await LoadBudgets();
                     StateHasChanged();
                 }

@@ -1,0 +1,597 @@
+﻿@page "/bills"
+@using System.Linq
+@using Newtonsoft.Json
+@using WebApp.Services
+@using WebApp.Models.Bills
+@using WebApp.Models.Categories
+@using WebApp.Models.Users
+@using WebApp.Models.Budgets
+@using WebApp.Auth
+@using System.Text.RegularExpressions
+@inject BillsService billsService
+@inject CategoriesService categoriesService
+@inject BudgetsService budgetsService
+@inject AuthenticationStateProvider authStateProvider
+@inject AlertsService alertsService
+@inject CategoryIconsService categoryIconsService
+@inject InputValidationService validationService
+@inject IJSRuntime JSRuntime
+@inject BillReminderService billReminderService
+@attribute [Authorize]
+
+<PageTitle>Spendit - Bills</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <div class="row">
+            <div class="col-12">
+                @if (_init)
+                {
+                    <div class="row mt-5 align-items-center mb-2">
+                        <div class="col-10">
+                            <h3 class="m-0">All bills</h3>
+                        </div>
+                        <div class="col-2 text-right">
+                            <button @onclick="AddBill" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
+                        </div>
+                    </div>
+                    <div class="row bg-body shadow-sm mb-2">
+                        <div class="table-responsive-lg pt-2">
+                            <table class="table table-hover">
+                                <thead class="border-bottom-1">
+                                    <tr>
+                                        <th style="min-width: 80px" scope="col" class="col-1 text-center">Category</th>
+                                        <th style="min-width: 150px" scope="col" class="col-4 text-center">Description</th>
+                                        <th style="min-width: 180px" scope="col" class="col-2 text-center text-primary">
+                                            <span @onclick="OrderByDate" role="button">Due date <i class="fa-solid @_orderByDate"></i></span>
+                                            <label class="form-check-label  ms-2" for="showTime">Time</label>
+                                            <input class="form-check-input" type="checkbox" id="showTime" @bind="_showTime" @onclick="ShowTime">
+                                        </th>
+                                        <th style="min-width: 150px" scope="col" class="col-1 text-center">Due in</th>
+                                        <th style="min-width: 150px" scope="col" class="col-2 text-center text-primary"><span @onclick="OrderByAmount" role="button">Ammount <i class="fa-solid @_orderByAmount"></i></span></th>
+                                        <th style="min-width: 20px" scope="col" class="col-1 text-center">Paid</th>
+                                        <th style="min-width: 100px" scope="col" class="col-1 text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+
+                                    @if (_bills != null && _bills.Count() > 0 && _categories != null && _categories.Count() > 0)
+                                    {
+
+                                        for (int i = 0; i < _bills.Count(); i++)
+                                        {
+                                            var bill = _bills.ElementAt(i);
+                                            var dueIn = bill.DueDate - DateTime.Now;
+                                            string categoryIcon = GetCategoryIcon(bill.CategoryId).Result;
+                                            <tr class="align-middle">
+                                                <td class="text-center"><button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button></td>
+                                                <td class="">@BillDescLenght(bill.Description).Result</td>
+                                                <td class="text-center">@bill.DueDate.ToString(_dateFormat)</td>
+                                                @if (dueIn.Days > 1)
+                                                {
+                                                    <td class="text-center">@string.Format("{0} days", dueIn.Days)</td>
+                                                }
+                                                else
+                                                {
+                                                    <td class="text-center">@string.Format("{0}h {1}min", dueIn.Hours, dueIn.Minutes)</td>
+                                                }
+                                                <td class="text-center text-danger">-@bill.Amount @bill.Currency</td>
+                                                <td class="text-center text-danger">
+                                                    @if (bill.IsPaid)
+                                                    {
+                                                        <input @onclick="()=> UpdateBillStatus(bill)" class="form-check-input" type="checkbox" id="paid" checked>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input @onclick="()=> UpdateBillStatus(bill)" class="form-check-input" type="checkbox" id="paid">
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    <button @onclick="()=> EditBill(bill.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
+                                                    @if (bill.IsPaid)
+                                                    {
+                                                        <button @onclick="()=> DeleteBill(bill.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-check"></i></button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button @onclick="()=> DeleteBill(bill.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="12" class="text-center">No bills found</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="row justify-content-center mt-5">
+                        <div class="spinner-border text-info" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+    private AuthProvider _authProvider;
+    private IEnumerable<Bill>? _bills;
+    private IEnumerable<Category>? _categories;
+    private User _user;
+    private bool _isPaid = false;
+    private bool _init = false;
+    private string _orderByDate = "fa-sort-up";
+    private string _orderByAmount = "fa-sort-up";
+    private bool _showTime = false;
+    private string _dateFormat = "yyyy-MM-dd";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _authProvider = (AuthProvider)authStateProvider;
+        _user = await _authProvider.GetCurrentUserAsync();
+        await LoadBills();
+        await LoadCategories();
+        _init = true;
+    }
+    private async Task LoadBills()
+    {
+        try
+        {
+            _bills = await billsService.GetBills(_user.Id);
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task LoadCategories()
+    {
+        try
+        {
+            _categories = await categoriesService.GetCategories();
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task<string> GetCategoryName(int id)
+    {
+        return _categories.Where(c => c.Id == id).Single().Name;
+    }
+    private async Task<string> GetCategoryIcon(int id)
+    {
+        try
+        {
+            string categoryName = await GetCategoryName(id);
+            string icon = await categoryIconsService.GetIconByName(categoryName);
+            return icon;
+        }
+        catch
+        {
+            return await categoryIconsService.GetIconByName(String.Empty);
+        }
+    }
+    private async Task OrderByDate()
+    {
+        if (_orderByDate == "fa-sort-down")
+        {
+            _bills = _bills.OrderBy(t => t.DueDate);
+            _orderByDate = "fa-sort-up";
+            StateHasChanged();
+        }
+        else
+        {
+            _bills = _bills.OrderByDescending(t => t.DueDate);
+            _orderByDate = "fa-sort-down";
+            StateHasChanged();
+        }
+    }
+    private async Task OrderByAmount()
+    {
+        if (_orderByAmount == "fa-sort-down")
+        {
+            _bills = _bills.OrderBy(t => t.Amount);
+            _orderByAmount = "fa-sort-up";
+            StateHasChanged();
+        }
+        else
+        {
+            _bills = _bills.OrderByDescending(t => t.Amount);
+            _orderByAmount = "fa-sort-down";
+            StateHasChanged();
+        }
+    }
+    private async Task UpdateBillStatus(Bill bill)
+    {
+        bill.IsPaid = !bill.IsPaid;
+
+        if (await billsService.UpdateBillStatus(bill))
+        {
+            alertsService.InvokeCustomToastSuccess("Bill status was updated!");
+            await LoadBills();
+            StateHasChanged();
+        }
+        else
+        {
+            await alertsService.InvokeCustomError("Bill status was not updated!");
+        }
+    }
+    private async Task AddBill()
+    {
+        try
+        {
+            var swalResult = await JSRuntime.InvokeAsync<string>("showAddBillModal", _categories);
+            if (swalResult == null)
+            {
+                return;
+            }
+
+            var billDict = JsonConvert.DeserializeObject<Dictionary<string, string>>(swalResult);
+
+            var billToAdd = await ToAddModel(billDict);
+            if (!await ValidateNewBill(billToAdd))
+            {
+                return;
+            }
+
+            if (await billsService.AddBill(billToAdd))
+            {
+                alertsService.InvokeCustomToastSuccess("Bill was added!");
+                await LoadBills();
+                StateHasChanged();
+            }
+            else
+            {
+                await alertsService.InvokeCustomError("Bill was not added!");
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task EditBill(Guid billId)
+    {
+        try
+        {
+            var bill = _bills.Where(b => b.Id == billId).Single();
+
+            string currentCategory;
+            try
+            {
+                currentCategory = _categories.Where(c => c.Id == bill.CategoryId).Single().Name;
+            }
+            catch
+            {
+                currentCategory = "";
+            }
+            var otherCategories = _categories.Where(c => c.Id != bill.CategoryId).ToList();
+
+            var swalResult = await JSRuntime.InvokeAsync<string>("showEditBillModal", bill.Description, bill.Amount, bill.Currency, bill.DueDate.AddHours(3), currentCategory, otherCategories, bill.Reminders);
+            if (swalResult != null)
+            {
+                var billToUpdate = await ToUpdateModel(JsonConvert.DeserializeObject<Dictionary<string, string>>(swalResult), billId);
+                if (await ValidateExistingBill(billToUpdate))
+                {
+                    if (await billsService.UpdateBill(billToUpdate))
+                    {
+                        alertsService.InvokeCustomToastSuccess("Bill data was updated!");
+                        await LoadBills();
+                        StateHasChanged();
+                    }
+                    else
+                    {
+                        await alertsService.InvokeCustomError("Bill data was not updated!");
+                    }
+                }
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task DeleteBill(Guid billId)
+    {
+        try
+        {
+            if (await alertsService.InvokeConfirmation())
+            {
+                if (await billsService.DeleteBill(_user.Id, billId))
+                {
+                    alertsService.InvokeCustomToastSuccess("Bill was deleted!");
+                    await LoadBills();
+                    StateHasChanged();
+                }
+                else
+                {
+                    await alertsService.InvokeCustomError("Bill was not removed!");
+                }
+            }
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+        }
+    }
+    private async Task ShowTime()
+    {
+        if (!_showTime)
+        {
+            _dateFormat = "yyyy-MM-dd HH:mm";
+            StateHasChanged();
+        }
+        else
+        {
+            _dateFormat = "yyyy-MM-dd";
+            StateHasChanged();
+        }
+    }
+    private async Task<string> BillDescLenght(string input)
+    {
+        try
+        {
+            int maxLength = 110;
+            return input.Length > maxLength ? input.Substring(0, maxLength) + "..." : input;
+        }
+        catch
+        {
+            return String.Empty;
+        }
+    }
+    private async Task<Bill> ToUpdateModel(Dictionary<string, string> data, Guid id)
+    {
+        try
+        {
+            var category = new Category();
+            var reminders = new List<DateTime>();
+            var dateTime = new DateTime();
+            var incorrectReminders = new List<int>();
+            try
+            {
+                category.Id = _categories.Where(c => c.Name == data["category"]).Single().Id;
+            }
+            catch
+            {
+                category.Id = 0;
+            }
+            try
+            {
+                var reminderList = JsonConvert.DeserializeObject<List<string>>(data["reminders"]);
+                for (int i = 0; i < reminderList.Count(); i++)
+                {
+                    if (DateTime.TryParse(reminderList[i], out dateTime))
+                    {
+                        if (dateTime >= DateTime.Now && dateTime <= DateTime.Parse(data["dueDate"]))
+                        {
+                            reminders.Add(dateTime);
+                        }
+                        else
+                        {
+                            incorrectReminders.Add(i);
+                        }
+                    }
+                }
+            }
+            catch { }
+            if (incorrectReminders.Count() > 0)
+            {
+                var message = "";
+                if (incorrectReminders.Count() > 1)
+                {
+                    message = "Reminders ";
+                }
+                else
+                {
+                    message = "Reminder ";
+                }
+                foreach (var i in incorrectReminders)
+                {
+                    if (i == incorrectReminders.Count())
+                    {
+                        message += $"#{i+1}";
+                    }
+                    else
+                    {
+                        message += $"#{i+1}, ";
+                    }
+                }
+                if (incorrectReminders.Count() > 1)
+                {
+                    message += " were incorrect and will be discarded!";
+                }
+                else
+                {
+                    message += " was incorrect and will be discarded!";
+                }
+                await alertsService.InvokeCustomToastWarning(message);
+            }
+
+            return new Bill
+                {
+                    Id = id,
+                    UserId = _user.Id,
+                    CategoryId = category.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    DueDate = DateTime.Parse(data["dueDate"]),
+                    Reminders = reminders,
+                    CreatedAt = _bills.Where(b => b.Id == id).Single().CreatedAt,
+                    UpdatedAt = DateTime.Now
+                };
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return new Bill();
+        }
+    }
+    private async Task<NewBill> ToAddModel(Dictionary<string, string> data)
+    {
+        try
+        {
+            var category = new Category();
+            var reminders = new List<DateTime>();
+            var dateTime = new DateTime();
+            var incorrectReminders = new List<int>();
+            try
+            {
+                category.Id = _categories.Where(c => c.Name == data["category"]).Single().Id;
+            }
+            catch
+            {
+                category.Id = 0;
+            }
+
+            try
+            {
+                var reminderList = JsonConvert.DeserializeObject<List<string>>(data["reminders"]);
+                for (int i = 0; i < reminderList.Count(); i++)
+                {
+                    if (DateTime.TryParse(reminderList[i], out dateTime))
+                    {
+                        if (dateTime >= DateTime.Now && dateTime <= DateTime.Parse(data["dueDate"]))
+                        {
+                            reminders.Add(dateTime);
+                        }
+                        else
+                        {
+                            incorrectReminders.Add(i);
+                        }
+                    }
+                }
+            }
+            catch { }
+            if (incorrectReminders.Count() > 0)
+            {
+                var message = "";
+                if (incorrectReminders.Count() > 1)
+                {
+                    message = "Reminders ";
+                }
+                else
+                {
+                    message = "Reminder ";
+                }
+                foreach (var i in incorrectReminders)
+                {
+                    if (i == incorrectReminders.Count())
+                    {
+                        message += $"#{i + 1}";
+                    }
+                    else
+                    {
+                        message += $"#{i + 1}, ";
+                    }
+                }
+                if (incorrectReminders.Count() > 1)
+                {
+                    message += " were incorrect and will be discarded!";
+                }
+                else
+                {
+                    message += " was incorrect and will be discarded!";
+                }
+                await alertsService.InvokeCustomToastWarning(message);
+            }
+
+            return new NewBill
+                {
+                    UserId = _user.Id,
+                    CategoryId = category.Id,
+                    Description = data["description"],
+                    Amount = Decimal.Parse(data["amount"]),
+                    Currency = data["currency"],
+                    DueDate = DateTime.Parse(data["dueDate"]),
+                    Reminders = reminders,
+                };
+        }
+        catch
+        {
+            await alertsService.InvokeError();
+            return new NewBill();
+        }
+    }
+
+    private async Task<bool> ValidateNewBill(NewBill bill)
+    {
+        if (!String.IsNullOrEmpty(bill.Description) && await validationService.ValidateText(bill.Description))
+        {
+            if (!String.IsNullOrEmpty(bill.Amount.ToString()) && await validationService.ValidateDecimal(bill.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(bill.Currency) && await validationService.ValidateText(bill.Currency))
+                {
+                    if (!String.IsNullOrEmpty(bill.DueDate.ToString()) && await validationService.ValidateDate(bill.DueDate.ToString()))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Due date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+    private async Task<bool> ValidateExistingBill(Bill bill)
+    {
+        if (!String.IsNullOrEmpty(bill.Description) && await validationService.ValidateText(bill.Description))
+        {
+            if (!String.IsNullOrEmpty(bill.Amount.ToString()) && await validationService.ValidateDecimal(bill.Amount.ToString()))
+            {
+                if (!String.IsNullOrEmpty(bill.Currency) && await validationService.ValidateText(bill.Currency))
+                {
+                    if (!String.IsNullOrEmpty(bill.DueDate.ToString()) && await validationService.ValidateDate(bill.DueDate.ToString()))
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        await alertsService.InvokeWarning("Due date's format is incorrect!");
+                    }
+                }
+                else
+                {
+                    await alertsService.InvokeWarning("Currency's format is incorrect!");
+                }
+            }
+            else
+            {
+                await alertsService.InvokeWarning("Ammount is incorrect!");
+            }
+        }
+        else
+        {
+            await alertsService.InvokeWarning("Description text contains illegal characters!");
+        }
+        return false;
+    }
+}

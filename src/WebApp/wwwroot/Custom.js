@@ -7,18 +7,18 @@ function showAddTransactionModal(trCategories) {
 
     var swalOptions = {
         title: "Add transaction",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder='Enter description'></textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='EUR' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -26,14 +26,14 @@ function showAddTransactionModal(trCategories) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense'>
                                     <option value='Expense' selected>Expense</option>
                                     <option value='Income'>Income</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='categories'>Category</label>
                                 <select class='form-select' id='categories' aria-label='Category'>
                                     ${categoriesList}
@@ -48,7 +48,8 @@ function showAddTransactionModal(trCategories) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -58,7 +59,7 @@ function showAddTransactionModal(trCategories) {
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toLocaleString();
                 var category = document.getElementById("categories").value;
 
                 var transactionData = {
@@ -85,22 +86,22 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
     trBudgets.forEach((budget) => {
         budgetsList += `<option value="${budget.description}">${budget.description}</option>`;
     });
-    var trDateObj = new Date(trDate);
-    var trDateString = trDateObj.toISOString().substring(0, 16);
+    var date = new Date(trDate);
+    trDate = date.toISOString().slice(0, 16);
     var swalOptions = {
         title: "Edit transaction",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder='Enter description' value=>${trDesc}</textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount' value='${trAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -108,14 +109,14 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense''>
                                     <option selected>${trType}</option>
                                     <option value='${trOtherType}'>${trOtherType}</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='categories' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
@@ -126,7 +127,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-10 text-start">
+                            <div class="col-12 text-start">
                                 <label for='budgets'>Budget</label>
                                 <select class='form-select' id='budgets' aria-label='Budget'>
                                     <option selected>${trCurrentBudget}</option>
@@ -137,12 +138,13 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <label for='date'>Date</label>
-                        <input type='datetime-local' class='form-control' id='date' placeholder='Select date' value='${trDateString}'>
+                        <input type='datetime-local' class='form-control' id='date' placeholder='Select date' value='${trDate}'>
                     </div>
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -152,7 +154,7 @@ function showEditTransactionModal(trDesc, trAmount, trCurrency, trType, trOtherT
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toISOString();
                 var category = document.getElementById("categories").value;
                 var budget = document.getElementById("budgets").value;
 
@@ -187,18 +189,18 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
 
     var swalOptions = {
         title: "Add transaction",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder='Enter description'></textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='EUR' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -206,14 +208,14 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense'>
                                     <option selected>Expense</option>
                                     <option value='Income'>Income</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='categoryy' aria-label='Category'>
                                     ${categoriesList}
@@ -223,11 +225,11 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
                                 <input type='date' class='form-control' id='startDate' placeholder='Select date'>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
                                 <input type='date' class='form-control' id='endDate' placeholder='Select date'>
                             </div>
@@ -246,7 +248,8 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -256,8 +259,8 @@ function showAddRecurringTransactionModal(trCategories, trFrequencies) {
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("categoryy").value;
                 var frequency = document.getElementById("frequency").value;
 
@@ -289,26 +292,25 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
         frequencyList += `<option value="${frequency}">${frequency}</option>`;
     });
 
-    var trDateObj = new Date(trStartDate);
-    var trStartDateString = trDateObj.toISOString().substring(0, 10);
-
-    trDateObj = new Date(trEndDate);
-    var trEndDateString = trDateObj.toISOString().substring(0, 10);
+    var startDate = new Date(trStartDate);
+    trStartDate = startDate.toISOString().slice(0, 16);
+    var endDate = new Date(trEndDate);
+    trEndDate = endDate.toISOString().slice(0, 16);
 
     var swalOptions = {
         title: "Edit transaction",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder='Enter description' value=>${trDesc}</textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter transaction amount' value='${trAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -316,14 +318,14 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                     </div>
                     <div class='form-group mb-3'>
                         <div class="row">
-                            <div class="col-5 text-start">
+                            <div class="col-sm-5 col-12 text-start">
                                 <label for='type'>Type</label>
                                 <select class='form-select' id='type' aria-label='Expense''>
                                     <option selected>${trType}</option>
                                     <option value='${trOtherType}'>${trOtherType}</option>
                                 </select>
                             </div>
-                            <div class="col-7 text-start">
+                            <div class="col-sm-7 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='category'>Category</label>
                                 <select class='form-select' id='ecategory' aria-label='Category'>
                                     <option selected>${trCurrentCategory}</option>
@@ -334,13 +336,13 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
-                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDateString}>
+                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
-                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDateString}>
+                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
                         </div>
                     </div>
@@ -358,7 +360,8 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -368,8 +371,8 @@ function showEditRecurringTransactionModal(trDesc, trAmount, trCurrency, trType,
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
                 var type = document.getElementById("type").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("ecategory").value;
                 var frequency = document.getElementById("frequency").value;
 
@@ -400,18 +403,18 @@ function showAddGoalModal(trCategories) {
 
     var swalOptions = {
         title: "Add goal",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder="Enter description (keep it short)"></textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter goal amount'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='EUR' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -430,7 +433,8 @@ function showAddGoalModal(trCategories) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -439,7 +443,7 @@ function showAddGoalModal(trCategories) {
                 var description = document.getElementById("description").value;
                 var amount = document.getElementById("amount").value;
                 var currency = document.getElementById("currency").value;
-                var date = document.getElementById("date").value;
+                var date = new Date(document.getElementById("date").value).toISOString();
                 var category = document.getElementById("category").value;
 
                 var transactionData = {
@@ -463,26 +467,26 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
         categoriesList += `<option value="${category.name}">${category.name}</option>`;
     });
 
-    var trDateObj = new Date(trStartDate);
-    var trStartDateString = trDateObj.toISOString().substring(0, 10);
-
-    trDateObj = new Date(trEndDate);
-    var trEndDateString = trDateObj.toISOString().substring(0, 10);
+    var startDate = new Date(trStartDate);
+    trStartDate = startDate.toISOString().slice(0, 10);
+    var endDate = new Date(trEndDate);
+    trEndDate = endDate.toISOString().slice(0, 10);
+    console.log(trStartDate, trEndDate);
 
     var swalOptions = {
         title: "Edit goal",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
-                        <textarea class='form-control' id='description' placeholder='Enter description' value=>${trDesc}</textarea>
+                        <textarea class='form-control' id='description' placeholder='Enter description'>${trDesc}</textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter goal amount' value='${trAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -490,11 +494,11 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='currentAmount'>Current amount</label>
                                 <input type='number' class='form-control' id='currentAmount' placeholder='Enter current goal amount' value='${trCurrentAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -509,20 +513,21 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                     </div>
                     <div class='form-group mb-3 text-start'>
                         <div class="row">
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 text-start">
                                 <label for='date'>Start date</label>
-                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDateString}>
+                                <input type='date' class='form-control' id='startDate' placeholder='Select date' value=${trStartDate}>
                             </div>
-                            <div class="col-6 text-start">
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
                                 <label for='date'>End date</label>
-                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDateString}>
+                                <input type='date' class='form-control' id='endDate' placeholder='Select date' value=${trEndDate}>
                             </div>
                         </div>
                     </div>
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -532,8 +537,8 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
                 var amount = document.getElementById("amount").value;
                 var currentAmount = document.getElementById("currentAmount").value;
                 var currency = document.getElementById("currency").value;
-                var startDate = document.getElementById("startDate").value;
-                var endDate = document.getElementById("endDate").value;
+                var startDate = new Date(document.getElementById("startDate").value).toISOString();
+                var endDate = new Date(document.getElementById("endDate").value).toISOString();
                 var category = document.getElementById("category").value;
 
                 var transactionData = {
@@ -557,18 +562,18 @@ function showEditGoalModal(trDesc, trAmount, trCurrentAmount, trCurrency, trStar
 function showAddBudgetModal() {
     var swalOptions = {
         title: "Add budget",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder="Enter description (keep it short)"></textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter budget amount'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='EUR' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -577,7 +582,8 @@ function showAddBudgetModal() {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -602,18 +608,18 @@ function showAddBudgetModal() {
 function showEditBudgetModal(trDesc, trAmount, trCurrentAmount, trCurrency) {
     var swalOptions = {
         title: "Edit budget",
-        html: `<div class='container' style='width:100%'>
+        html: `<div class='container'>
                     <div class='form-group mb-3 text-start'>
                         <label for='description'>Description</label>
                         <textarea class='form-control' id='description' placeholder='Enter description' value=>${trDesc}</textarea>
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='amount'>Amount</label>
                                 <input type='number' class='form-control' id='amount' placeholder='Enter budget amount' value='${trAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -621,11 +627,11 @@ function showEditBudgetModal(trDesc, trAmount, trCurrentAmount, trCurrency) {
                     </div>
                     <div class='form-group mb-3'>
                         <div class='row'>
-                            <div class='col-8 text-start'>
+                            <div class='col-7 text-start'>
                                 <label for='currentAmount'>Current amount</label>
                                 <input type='number' class='form-control' id='currentAmount' placeholder='Enter current budget amount' value='${trCurrentAmount}'>
                             </div>
-                            <div class='col-4 text-start'>
+                            <div class='col-5 text-start'>
                                 <label for='currency'>Currency</label>
                                 <input value='${trCurrency}' type='text' class='form-control' id='currency' disabled>
                             </div>
@@ -634,7 +640,8 @@ function showEditBudgetModal(trDesc, trAmount, trCurrentAmount, trCurrency) {
                 </div>`,
         showCancelButton: true,
         confirmButtonText: "Save",
-        cancelButtonText: "Cancel"
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -670,16 +677,18 @@ function showBudgetTransactionsModal(transactions, budgetName) {
                             </tr>
                           `;
     });
+    if (transactionList.length == 0) transactionList = "<tr><td colspan='12' class='text-center'>No transactions found</td></tr>";
+
     var swalOptions = {
         title: `Transactions in ${budgetName}`,
-        html: `<div class='container' style='width:100%'>
-                    <div class="col-12 pt-2">
+        html: `<div class='container'>
+                    <div class="table-responsive-xl pt-2">
                         <table class="table table-hover">
                             <thead class="border-bottom-1">
                                 <tr>
-                                    <th scope="col" class="col-6 text-start">Description</th>
-                                    <th scope="col" class="col-3 text-center text-primary">Date</th>
-                                    <th scope="col" class="col-3 text-center text-primary">Amount</th>
+                                    <th style="min-width: 150px" scope="col" class="col-6 text-start">Description</th>
+                                    <th style="min-width: 160px" scope="col" class="col-3 text-center text-primary">Date</th>
+                                    <th style="min-width: 150px" scope="col" class="col-3 text-center text-primary">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -690,7 +699,7 @@ function showBudgetTransactionsModal(transactions, budgetName) {
                 </div>`,
         showCancelButton: false,
         showSaveButton: false,
-        width: "50%"
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
@@ -717,16 +726,18 @@ function showInsightsModal(transactions, categoryName) {
                             </tr>
                           `;
     });
+    if (transactionList.length == 0) transactionList = "<tr><td colspan='12' class='text-center'>No transactions found</td></tr>";
+
     var swalOptions = {
         title: `Transactions in ${categoryName}`,
-        html: `<div class='container' style='width:100%'>
-                    <div class="col-12 pt-2">
+        html: `<div class='container'>
+                    <div class="table-responsive-xl pt-2">
                         <table class="table table-hover">
                             <thead class="border-bottom-1">
                                 <tr>
-                                    <th scope="col" class="col-6 text-start">Description</th>
-                                    <th scope="col" class="col-3 text-center text-primary">Date</th>
-                                    <th scope="col" class="col-3 text-center text-primary">Amount</th>
+                                    <th style="min-width: 150px" scope="col" class="col-6 text-start">Description</th>
+                                    <th style="min-width: 160px" scope="col" class="col-3 text-center text-primary">Date</th>
+                                    <th style="min-width: 150px" scope="col" class="col-3 text-center text-primary">Amount</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -737,13 +748,224 @@ function showInsightsModal(transactions, categoryName) {
                 </div>`,
         showCancelButton: false,
         showSaveButton: false,
-        width: "50%"
+        allowOutsideClick: false
     };
 
     return Swal.fire(swalOptions)
         .then((result) => {
             if (result.isConfirmed) {
                 return null;
+            } else {
+                return null;
+            }
+        });
+}
+
+// --- Bills ---
+function showAddBillModal(trCategories) {
+    var categoriesList = "";
+    trCategories.forEach((category) => {
+        categoriesList += `<option value="${category.name}">${category.name}</option>`;
+    });
+
+    var swalOptions = {
+        title: "Add bill reminder",
+        html: `<div class='container'>
+                    <div class='form-group mb-3 text-start'>
+                        <label for='description'>Description</label>
+                        <textarea class='form-control' id='description' placeholder='Enter description'></textarea>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class='row'>
+                            <div class='col-7 text-start'>
+                                <label for='amount'>Amount</label>
+                                <input type='number' class='form-control' id='amount' placeholder='Enter bill amount'>
+                            </div>
+                            <div class='col-5 text-start'>
+                                <label for='currency'>Currency</label>
+                                <input value='EUR' type='text' class='form-control' id='currency' disabled>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class="row">
+                            <div class="col-sm-6 col-12 text-start">
+                                <label for='categories'>Category</label>
+                                <select class='form-select' id='categories' aria-label='Category'>
+                                    ${categoriesList}
+                                </select>
+                            </div>
+                            <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
+                                <label for='dueDate'>Due date</label>
+                                <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date'>
+                            </div>
+                        </div>
+                    </div>
+                    <hr class="mt-5">
+                    <div class='form-group mb-3'>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start mb-3">Set reminders:</div>
+                            <div class="col-12 text-start">
+                                <label for='reminder1'>Reminder 1</label>
+                                <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date'>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start">
+                                <label for='reminder2'>Reminder 2</label>
+                                <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date'>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start">
+                                <label for='reminder3'>Reminder 3</label>
+                                <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date'>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
+    };
+
+    return Swal.fire(swalOptions)
+        .then((result) => {
+            if (result.isConfirmed) {
+                var description = document.getElementById("description").value;
+                var amount = document.getElementById("amount").value;
+                var currency = document.getElementById("currency").value;
+                var dueDate = document.getElementById("dueDate").value;
+                var category = document.getElementById("categories").value;
+                var reminder1 = document.getElementById("reminder1").value;
+                var reminder2 = document.getElementById("reminder2").value;
+                var reminder3 = document.getElementById("reminder3").value;
+
+                var reminders = [];
+                reminders.push(reminder1);
+                reminders.push(reminder2);
+                reminders.push(reminder3);
+
+                var transactionData = {
+                    description: description,
+                    amount: amount,
+                    currency: currency,
+                    dueDate: dueDate,
+                    reminders: JSON.stringify(reminders),
+                    category: category
+                };
+                return JSON.stringify(transactionData);
+            } else {
+                return null;
+            }
+        });
+}
+
+function showEditBillModal(trDesc, trAmount, trCurrency, trDueDate, trCurrentCategory, trCategories, trReminders) {
+    var categoriesList = "";
+    trCategories.forEach((category) => {
+        categoriesList += `<option value="${category.name}">${category.name}</option>`;
+    });
+
+    var reminders = [];
+    trReminders.forEach((reminder) => {
+        var reminder = reminder.slice(0, 16);
+        reminders.push(reminder);
+    });
+
+    var date = new Date(trDueDate);
+    trDueDate = date.toISOString().slice(0,16);
+
+    var swalOptions = {
+        title: "Add bill reminder",
+        html: `<div class='container'>
+                    <div class='form-group mb-3 text-start'>
+                        <label for='description'>Description</label>
+                        <textarea class='form-control' id='description' placeholder='Enter description'>${trDesc}</textarea>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class='row'>
+                            <div class='col-7 text-start'>
+                                <label for='amount'>Amount</label>
+                                <input type='number' class='form-control' id='amount' placeholder='Enter bill amount' value=${trAmount}>
+                            </div>
+                            <div class='col-5 text-start'>
+                                <label for='currency'>Currency</label>
+                                <input value='EUR' type='text' class='form-control' id='currency' disabled value=${trCurrency}>
+                            </div>
+                        </div>
+                    </div>
+                    <div class='form-group mb-3'>
+                        <div class="row">
+                            <div class="col-sm-6 col-12 text-start">
+                                    <label for='categories'>Category</label>
+                                    <select class='form-select' id='categories' aria-label='Category'>
+                                        <option selected>${trCurrentCategory}</option>
+                                        ${categoriesList}
+                                    </select>
+                                </div>
+                                <div class="col-sm-6 col-12 mt-sm-0 mt-3 text-start">
+                                    <label for='dueDate'>Due date</label>
+                                    <input type='datetime-local' class='form-control' id='dueDate' placeholder='Select date' value=${trDueDate}>
+                                </div>
+                            </div>
+                    </div>
+                    <hr class="mt-5">
+                    <div class='form-group mb-3'>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start mb-3">Set reminders:</div>
+                            <div class="col-12 text-start">
+                                <label for='reminder1'>Reminder 1</label>
+                                <input type='datetime-local' class='form-control' id='reminder1' placeholder='Select date' value=${reminders[0]}>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start">
+                                <label for='reminder2'>Reminder 2</label>
+                                <input type='datetime-local' class='form-control' id='reminder2' placeholder='Select date' value=${reminders[1]}>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-12 text-start">
+                                <label for='reminder3'>Reminder 3</label>
+                                <input type='datetime-local' class='form-control' id='reminder3' placeholder='Select date' value=${reminders[2]}>
+                            </div>
+                        </div>
+                    </div>
+                </div>`,
+        showCancelButton: true,
+        confirmButtonText: "Save",
+        cancelButtonText: "Cancel",
+        allowOutsideClick: false
+    };
+
+    return Swal.fire(swalOptions)
+        .then((result) => {
+            if (result.isConfirmed) {
+                var description = document.getElementById("description").value;
+                var amount = document.getElementById("amount").value;
+                var currency = document.getElementById("currency").value;
+                var dueDate = (document.getElementById("dueDate").value);
+                var category = document.getElementById("categories").value;
+                var reminder1 = (document.getElementById("reminder1").value);
+                var reminder2 = (document.getElementById("reminder2").value);
+                var reminder3 = (document.getElementById("reminder3").value);
+
+                var reminders = [];
+                reminders.push(reminder1);
+                reminders.push(reminder2);
+                reminders.push(reminder3);
+
+                var transactionData = {
+                    description: description,
+                    amount: amount,
+                    currency: currency,
+                    dueDate: dueDate,
+                    reminders: JSON.stringify(reminders),
+                    category: category
+                };
+                return JSON.stringify(transactionData);
             } else {
                 return null;
             }

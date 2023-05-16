@@ -23,6 +23,8 @@ namespace WebApp
             builder.Services.AddHttpClient<CategoriesService>(client => client.BaseAddress = apiUrl);
             builder.Services.AddHttpClient<GoalsService>(client => client.BaseAddress = apiUrl);
             builder.Services.AddHttpClient<BudgetsService>(client => client.BaseAddress = apiUrl);
+            builder.Services.AddHttpClient<BillsService>(client => client.BaseAddress = apiUrl);
+            builder.Services.AddHttpClient<BillReminderService>(client => client.BaseAddress = apiUrl);
             builder.Services.AddScoped<InputValidationService>(); 
             builder.Services.AddScoped<CategoryIconsService>();
             builder.Services.AddScoped<AlertsService>();

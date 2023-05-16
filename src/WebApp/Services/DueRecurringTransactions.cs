@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using WebApp.Models.RecurringTransactions;
+﻿using WebApp.Models.RecurringTransactions;
 using WebApp.Models.Transactions;
 
 namespace WebApp.Services

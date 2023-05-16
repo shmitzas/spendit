@@ -6,6 +6,7 @@ using REST_API.Models.Transactions;
 using REST_API.Models.Goals;
 using REST_API.Models.RecurringTransactions;
 using REST_API.Models.Budgets;
+using REST_API.Models.Bills;
 
 namespace REST_API
 {
@@ -24,34 +25,41 @@ namespace REST_API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
-            if (DevMode) builder.Services.AddDbContext<ApiDbContext>(options => options.UseInMemoryDatabase("InMemoryDB"));
-            else builder.Services.AddDbContext<ApiDbContext>(options => options.UseMySQL(builder.Configuration.GetConnectionString("SpenditDB")));
-
-            var app = builder.Build();
-
             if (DevMode)
             {
-                var scope = app.Services.CreateScope();
-                ApiDbContext context = scope.ServiceProvider.GetService<ApiDbContext>();
-                SetupInMemoryDatabase(context);
+                builder.Services.AddDbContext<ApiDbContext>(options => options.UseInMemoryDatabase("InMemoryDB"));
             }
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
+            else
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                var serverVersion = new MySqlServerVersion(new Version(8, 0, 33));
+                builder.Services.AddDbContext<ApiDbContext>(options => options.UseMySql(builder.Configuration.GetConnectionString("SpenditDB"), serverVersion));
             }
 
-            app.UseHttpsRedirection();
+                var app = builder.Build();
 
-            app.UseAuthorization();
+                if (DevMode)
+                {
+                    var scope = app.Services.CreateScope();
+                    ApiDbContext context = scope.ServiceProvider.GetService<ApiDbContext>();
+                    SetupInMemoryDatabase(context);
+                }
+
+                // Configure the HTTP request pipeline.
+                if (app.Environment.IsDevelopment())
+                {
+                    app.UseSwagger();
+                    app.UseSwaggerUI();
+                }
+
+                app.UseHttpsRedirection();
+
+                app.UseAuthorization();
 
 
-            app.MapControllers();
+                app.MapControllers();
 
-            app.Run();
-        }
+                app.Run();
+            }
 
         private static void SetupInMemoryDatabase(ApiDbContext context)
         {
@@ -146,6 +154,14 @@ namespace REST_API
                 context.Budgets.Add(budget);
             }
 
+            List<BillToDb> Bills = new List<BillToDb>
+            {
+                new BillToDb { Id = Guid.NewGuid(), UserId = Users[0].Id, CategoryId = 2, Description = "Automobilio remontas", Amount = 200m, Currency = "EUR", DueDate = DateTime.Now.AddMonths(1), CreatedAt = DateTime.Now, UpdatedAt = DateTime.Now},
+            };
+            foreach (BillToDb bill in Bills)
+            {
+                context.Bills.Add(bill);
+            }
             context.SaveChanges();
         }
     }

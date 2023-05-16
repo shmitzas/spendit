@@ -22,48 +22,63 @@
         <div class="row">
             <div class="col-12">
                 <div class="row align-items-center mb-2">
-                    <div class="col">
+                    <div class="col-10">
                         <h3 class="m-0">All goals</h3>
                     </div>
-                    <div class="col text-right">
+                    <div class="col-2 text-right">
                         <button @onclick="AddGoal" class="btn btn-success rounded-5 float-end shadow-sm">+</button>
                     </div>
                 </div>
                 @if (_goals != null && _categories != null && _categories.Count() > 0)
                 {
-                    @foreach (var goal in _goals)
+                    @if (_goals.Count() > 0)
                     {
-                        string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
-                        string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
+                        @foreach (var goal in _goals)
+                        {
+                            string categoryIcon = GetCategoryIcon(goal.CategoryId).Result;
+                            string progress = CalculateProgress(goal.Amount, goal.CurrentAmount).Result;
 
+                            <div class="row bg-body shadow-sm pt-3 pb-3 mb-3">
+                                <div class="col-12">
+                                    <div class="row justify-content-center align-items-center">
+                                        <div class="col-lg-1 col-md-2 col-sm-2 col-12 text-sm-center text-start">
+                                            <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
+                                        </div>
+                                        <div class="col-lg-10 col-md-8 col-sm-7 col-11">
+                                            <div class="row align-items-center">
+                                                <div class="col-md-6 col-5 ps-0">
+                                                    @GoalDescLenght(goal.Description).Result
+                                                </div>
+                                                <div class="col-md-3 col-4 text-center"><span>@goal.EndDate.ToString(_dateFormat)</span></div>
+                                                <div class="col-md-3 col-3 text-end pe-0">@goal.Amount @goal.Currency</div>
+                                            </div>
+                                            <div class="row align-items-center justify-content-between">
+                                                <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
+                                                    <div class="progress-bar rounded-pill" style="width: @progress">@goal.CurrentAmount</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xl-1 col-lg-2 col-md-2 col-sm-3 col-12 mt-s-0 mt-3 text-sm-center text-end">
+                                            <button @onclick="()=>EditGoal(goal.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
+                                            @if (goal.CurrentAmount >= goal.Amount)
+                                            {
+                                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-check"></i></button>
+                                            }
+                                            else
+                                            {
+                                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
                         <div class="row bg-body align-items-center shadow-sm pt-3 pb-3 mb-3">
-                            <div class="col-1 text-center">
-                                <button class="btn btn-info rounded-5 opacity-100 pt-2 pb-2" disabled><i class="@categoryIcon"></i></button>
-                            </div>
-                            <div class="col-10">
-                                <div class="row align-items-center">
-                                    <div class="col-8 ps-0">
-                                        @GoalDescLenght(goal.Description).Result
-                                    </div>
-                                    <div class="col-2 text-center"><span>@goal.EndDate.ToString(_dateFormat)</span></div>
-                                    <div class="col-2 text-end pe-0">@goal.Amount @goal.Currency</div>
-                                </div>
-                                <div class="row align-items-center justify-content-between">
-                                    <div class="progress rounded-pill ps-0 pe-0" role="progressbar" aria-label="Basic example" aria-valuenow="25" aria-valuemin="0" aria-valuemax="10000">
-                                        <div class="progress-bar rounded-pill" style="width: @progress">@goal.CurrentAmount</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-1 text-center">
-                                <button @onclick="()=>EditGoal(goal.Id)" class="btn btn-info rounded-5 btn-sm me-1"><i class="fa-solid fa-pen"></i></button>
-                            @if(goal.CurrentAmount >= goal.Amount)
-                            {
-                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-success rounded-5 btn-sm"><i class="fa-solid fa-check"></i></button>
-                            }
-                            else
-                            {
-                                <button @onclick="()=>DeleteGoal(goal.Id)" class="btn btn-danger rounded-5 btn-sm"><i class="fa-solid fa-trash"></i></button>
-                            }
+                            <div class="col-12 text-center">
+                                <span>No goals found</span>
                             </div>
                         </div>
                     }
@@ -165,6 +180,7 @@
             var success = await goalsService.AddGoal(goalToAdd);
             if (success)
             {
+                alertsService.InvokeCustomToastSuccess("Goal was added!");
                 await LoadGoals();
                 StateHasChanged();
             }
@@ -193,6 +209,7 @@
                 {
                     if (await goalsService.UpdateGoal(updatedGoal))
                     {
+                        alertsService.InvokeCustomToastSuccess("Goal data was updated!");
                         await LoadGoals();
                         StateHasChanged();
                     }
@@ -216,6 +233,7 @@
             {
                 if (await goalsService.DeleteGoal(_user.Id, goalId))
                 {
+                    alertsService.InvokeCustomToastSuccess("Goal was deleted!");
                     await LoadGoals();
                     StateHasChanged();
                 }

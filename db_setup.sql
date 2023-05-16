@@ -26,7 +26,7 @@ CREATE TABLE spendit.Budgets (
     IsActive TINYINT(1) NOT NULL DEFAULT 0,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id)
+    FOREIGN KEY (UserId) REFERENCES Users(Id)
 );
 
 CREATE TABLE spendit.Transactions (
@@ -40,9 +40,8 @@ CREATE TABLE spendit.Transactions (
     Currency VARCHAR(3) NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id),
-    FOREIGN KEY (CategoryId) REFERENCES categories(Id),
-    FOREIGN KEY (BudgetId) REFERENCES budgets(Id)
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
 );
 
 CREATE TABLE spendit.RecurringTransactions (
@@ -58,8 +57,8 @@ CREATE TABLE spendit.RecurringTransactions (
     Frequency ENUM('Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually') NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id),
-    FOREIGN KEY (CategoryId) REFERENCES categories(Id)
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
 );
 
 CREATE TABLE spendit.Goals (
@@ -74,11 +73,29 @@ CREATE TABLE spendit.Goals (
     Currency VARCHAR(3) NOT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (UserId) REFERENCES users(Id),
-    FOREIGN KEY (CategoryId) REFERENCES categories(Id)
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
+);
+
+CREATE TABLE spendit.Bills (
+    Id BINARY(16) PRIMARY KEY UNIQUE,
+    UserId BINARY(16) NOT NULL,
+    CategoryId INT NOT NULL,
+    Description VARCHAR(255) NOT NULL,
+    Amount DECIMAL(10, 2) NOT NULL,
+    Currency VARCHAR(3) NOT NULL,
+    DueDate TIMESTAMP NOT NULL,
+    Reminders VARCHAR(255),
+    IsPaid TINYINT(1) NOT NULL DEFAULT 0,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserId) REFERENCES Users(Id),
+    FOREIGN KEY (CategoryId) REFERENCES Categories(Id)
 );
 
 DROP USER IF EXISTS 'api';
-CREATE USER 'api';
+CREATE USER 'api' IDENTIFIED BY '<api_password>';
 
 GRANT ALL ON spendit.* TO 'api';
+
+FLUSH PRIVILEGES;

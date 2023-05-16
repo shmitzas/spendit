@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using REST_API.Data;
 using REST_API.Models.Budgets;
 using REST_API.Models.Transactions;
-using System;
 
 namespace REST_API.Controllers
 {
@@ -228,12 +226,14 @@ namespace REST_API.Controllers
             try
             {
                 var transaction = await _DbContext.Transactions.Where(t => t.UserId == userId && t.Id == id).SingleAsync();
+                if (transaction.BudgetId != Guid.Empty)
+                {
+                    var oldBudget = await _DbContext.Budgets.Where(b => b.Id == transaction.BudgetId).SingleAsync();
+                    oldBudget.CurrentAmount -= transaction.Amount;
+                    _DbContext.Budgets.Update(oldBudget);
+                }
+                
                 _DbContext.Remove(transaction);
-
-                var oldBudget = await _DbContext.Budgets.Where(b => b.Id == transaction.BudgetId).SingleAsync();
-                oldBudget.CurrentAmount -= transaction.Amount;
-                _DbContext.Budgets.Update(oldBudget);
-
                 await _DbContext.SaveChangesAsync();
                 return Ok();
             }
